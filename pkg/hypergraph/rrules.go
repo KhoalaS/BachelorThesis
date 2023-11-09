@@ -8,9 +8,9 @@ package hypergraph
 // If all vertices of the edge e are present in the compared edge comp
 // and if comp has more vertices, than we conclude that comp is a strict superset of e.
 
-// Time Complexity: |E|^2 * 3
+// Time Complexity: |E|^2 * d
 
-func EdgeDomination(g HyperGraph) HyperGraph{
+func EdgeDomination(g HyperGraph) HyperGraph {
 	remEdges := make(map[int]bool)
 
 	for _, e := range g.edges {
@@ -29,17 +29,25 @@ func EdgeDomination(g HyperGraph) HyperGraph{
 			}
 
 			if subset && len(comp.v) > len(e.v) {
-				remEdges[e.id] = true
+				remEdges[comp.id] = true
 			}
 		}
 	}
 
+	newVertices := make([]Vertex, len(g.vertices))
+	var newEdges []Edge
+
 	for e := range remEdges {
-		g.edges = removeEdgeSlice(g.edges, e)
+		newEdges = removeEdgeSlice(g.edges, e)
 	}
 
-	return g
+	for i, v := range g.vertices {
+		newVertices[i] = v
+	}
+	return NewHyperGraph(newVertices, newEdges)
 }
+
+// Time Complexity: |E| * d
 
 func RemoveEdges(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bool) {
 	remEdges := []int{}
@@ -63,28 +71,55 @@ func RemoveEdges(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bool)
 		return g, c
 	}
 
+	var newEdges []Edge
+	var newVertices []Vertex
+
+
 	if t == SMALL {
 		for _, v := range remVertex {
-			for i, w := range g.adjMatrix[v] {
+			for i, w := range g.GetEntry(v) {
 				if w == 1 {
-					g.edges = removeEdgeSlice(g.edges, i)
+					newEdges = removeEdgeSlice(g.edges, i)
 				}
 			}
 		}
 	} else {
 		for _, id := range remEdges {
-			g.edges = removeEdgeSlice(g.edges, id)
+			newEdges = removeEdgeSlice(g.edges, id)
 		}
 	}
 	
 
 	for _, id := range remVertex {
-		g.vertices = removeVertexSlice(g.vertices, id)
+		newVertices = removeVertexSlice(g.vertices, id)
 	}
 
-	return g, cCopy
+	return NewHyperGraph(newVertices, newEdges), cCopy
 }
 
-func VertexDomination(g HyperGraph) HyperGraph {
-	
+func ApproxVertexDomination(g HyperGraph, V int, d int)  {
+	for _, e := range g.edges {
+		if len(e.v) < d {
+			continue
+		}
+		sumSet := make(map[int][]int)
+
+		for _, f := range g.edges {
+			if e.id == f.id {
+				continue
+			}
+			sum := make([]int, V)
+
+			for i := range e.v {
+				if f.v[i] {
+					sum[g.idIndexMap[i]] = 2
+				} else {
+					sum[g.idIndexMap[i]] = 1
+				}
+			}
+			sumSet[f.id] = sum
+		}
+
+	}
+
 }
