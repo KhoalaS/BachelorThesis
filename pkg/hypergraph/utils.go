@@ -1,43 +1,34 @@
 package hypergraph
 
-import "log"
-
-func removeEdgeSlice(s []Edge, id int) []Edge {
-    newEdges := make([]Edge, len(s))
-	for i, e := range s {
-		newEdges[i] = e
-	}
-
-    i := -1
-    for j := 0; j < len(s); j++ {
-        if s[j].id == id{
-            i = j
-            break
+func removeEdges(e map[int]Edge, remIds map[int]bool) []Edge {
+    eCopy := []Edge{}
+    for id, edge := range e {
+        if remIds[id] {
+            continue
         }
+        eCopy = append(eCopy, copyEdge(edge))
     }
-    if(i == -1){
-        log.Fatalf("Edge with id %d does not exist", id)
-    }
-    newEdges[i] = s[len(s)-1]
-    return newEdges[:len(s)-1]
+    return eCopy
 }
 
-func removeVertexSlice(s []Vertex, id int) []Vertex {
-    newVertices := make([]Vertex, len(s))
-	for i, e := range s {
-		newVertices[i] = e
-	}
-
-    i := -1
-    for j := 0; j < len(s); j++ {
-        if s[j].id == id{
-            i = j
-            break
+func copyEdge(e Edge) Edge {
+    vertices := []int{}
+    for i, v := range e.v {
+        if v {
+            vertices = append(vertices, i)
         }
     }
-    if(i == -1){
-        log.Fatalf("Vertex with id %d does not exist", id)
+    return NewEdge(vertices...)
+}
+
+func removeVertices(v map[int]Vertex, remIds map[int]bool) []Vertex {
+    vCopy := []Vertex{}
+    for id, vertex := range v {
+        if remIds[id] {
+            continue
+        }
+        // mind that data can be non primitive
+        vCopy = append(vCopy, Vertex{id: vertex.id, data: vertex.data})
     }
-    newVertices[i]= s[len(s)-1]
-    return newVertices[:len(s)-1]
+    return vCopy
 }

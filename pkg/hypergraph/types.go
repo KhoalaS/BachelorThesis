@@ -1,22 +1,23 @@
 package hypergraph
 
-import "fmt"
+import (
+	"fmt"
+)
 
-
+// Simple Hypergraph structure
+// Uses maps for vertices and edges.
 type HyperGraph struct {
-	vertices []Vertex
-	edges []Edge
-	adjMatrix [][]int
-	idIndexMap map[int]int
+	vertices map[int]Vertex
+	edges map[int]Edge
 }
 
 func (g HyperGraph) Print() {
-	fmt.Println("Vertices:")
+	fmt.Print("Vertices: \n\t")
 	for _, v := range g.vertices {
-		fmt.Printf("\tID: %d\n", v.id)
+		fmt.Printf("%d,", v.id)
 	}
 
-	fmt.Println("Edges:")
+	fmt.Println("\nEdges:")
 	for _, e := range g.edges {
 		ids := []int{}
 		for id := range e.v {
@@ -24,59 +25,52 @@ func (g HyperGraph) Print() {
 		}
 		fmt.Printf("\t%d\n",ids)
 	}
+	fmt.Println("--------------------------")
 } 
 
-func NewHyperGraph(vertices []Vertex, edges []Edge) HyperGraph {
-	vSize := len(vertices)
-	eSize := len(edges)
-	adjMatrix := make([][]int, vSize)
-	idIndexMap := make(map[int]int)
-
-	// needs an object to map indices to vertex ids, 
-	// in case a vertex deletion shifts the indices/ids
-	// Example: deletion of vertex 0 shifts the indices when a new graph is created
-	//		0	1
-	//	0	1   1
-	//	1   0   1
-
-	// or keep the original size of the graph intact, which seems more complicated
-
-
-
-	for i, v := range vertices {
-		idIndexMap[v.id] = i
+// Hypergraph Constructor
+// Arguments: Vertex slice v, Edge slice e
+// We map the vertex id to the vertex itself and the edge ids are numbered and mapped
+// to ids 0 to |E|-1.
+// We explicity do not ensure that the resulting hypergraph is a decoupled
+// from the inputs. That should be done before calling the constructor.
+func NewHyperGraph(v []Vertex, e []Edge) HyperGraph {
+	
+	vertices := make(map[int]Vertex)
+	edges := make(map[int]Edge)
+	
+	for _, vertex := range v {
+		vertices[vertex.id] = vertex		
 	}
 
-	for i := range vertices {		
-		adjMatrix[i] = make([]int, eSize)
+	for i, edge := range e {
+		edges[i] = edge
 	}
 
-	for i, e := range edges {
-		edges[i].id = i
-		for v := range e.v {
-			adjMatrix[idIndexMap[v]][i] = 1
-		}
-	}
-	return HyperGraph{vertices, edges, adjMatrix, idIndexMap}
-}
-
-func (g HyperGraph) GetEntry(id int) []int {
-	return g.adjMatrix[g.idIndexMap[id]]
+	return HyperGraph{vertices, edges}
 }
 
 func (g HyperGraph) IsSimple() bool {
-	// Time Complexity |V|*|d|
-	for i := range g.vertices {
-		row := g.adjMatrix[i]
-		degree := 0
-		for _, val := range row {
-			degree += val
+	// Time Complexity |E|*|d|
+	degMap := make(map[int]int)
+	simple := true
+	outerBreak := false
+
+	for _, e := range g.edges {
+		for id := range e.v {
+			degMap[id] = degMap[id]+1
+			if degMap[id] == 3 {
+				simple = false
+				outerBreak = true
+				break
+			}
 		}
-		if(degree > 2){
-			return false
+		if outerBreak {
+			break
 		}
 	}
-	return true
+	
+	return simple
 }
 
 // TODO: Dont use New[Vertex/Edge] functions but methods on the graph 
@@ -92,7 +86,6 @@ func NewVertex(id int, data any) Vertex {
 }
 
 type Edge struct {
-	id int
 	v map[int]bool
 }
 
@@ -101,7 +94,7 @@ func NewEdge(v... int) Edge {
 	for _, v := range v {
 		s[v] = true
 	}
-	return Edge{0, s}
+	return Edge{s}
 }
 
 const (
