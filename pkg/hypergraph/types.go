@@ -17,6 +17,32 @@ import (
 type HyperGraph struct {
 	Vertices map[int32]Vertex
 	Edges map[int32]Edge
+	EdgeCounter int32
+	Degree int32
+}
+
+func (g *HyperGraph) AddVertex(id int32, data any) {
+	g.Vertices[id] = Vertex{id, data}
+}
+
+func (g *HyperGraph) AddEdge(eps... int32) {
+	e := Edge{v: make(map[int32]bool)}
+	
+	for _, ep := range eps {
+		e.v[ep] = true
+	}
+	g.Edges[g.EdgeCounter] = e
+	g.EdgeCounter++
+}
+
+func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
+	e := Edge{v: make(map[int32]bool)}
+	
+	for ep := range eps {
+		e.v[ep] = true
+	}
+	g.Edges[g.EdgeCounter] = e
+	g.EdgeCounter++
 }
 
 func (g HyperGraph) Print() {
@@ -26,36 +52,20 @@ func (g HyperGraph) Print() {
 	}
 
 	fmt.Println("\nEdges:")
-	for _, e := range g.Edges {
+	for eId, e := range g.Edges {
 		ids := []int32{}
 		for id := range e.v {
 			ids = append(ids, id)
 		}
-		fmt.Printf("\t%d\n",ids)
+		fmt.Printf("\t%d:%d\n",eId, ids)
 	}
 	fmt.Println("--------------------------")
 } 
 
-// Hypergraph Constructor
-// Arguments: Vertex slice v, Edge slice e
-// We map the vertex id to the vertex itself and the edge ids are numbered and mapped
-// to ids 0 to |E|-1.
-// We explicity do not ensure that the resulting hypergraph is a decoupled
-// from the inputs. That should be done before calling the constructor.
-func NewHyperGraph(v []Vertex, e []Edge) HyperGraph {
-	
+func NewHyperGraph() HyperGraph {
 	vertices := make(map[int32]Vertex)
 	edges := make(map[int32]Edge)
-	
-	for _, vertex := range v {
-		vertices[vertex.id] = vertex		
-	}
-
-	for i, edge := range e {
-		edges[int32(i)] = edge
-	}
-
-	return HyperGraph{vertices, edges}
+	return HyperGraph{Vertices: vertices, Edges: edges, Degree: 3}
 }
 
 func (g HyperGraph) IsSimple() bool {
@@ -89,20 +99,8 @@ type Vertex struct {
 	data any
 }
 
-func NewVertex(id int32, data any) Vertex {
-	return Vertex{id, data}
-}
-
 type Edge struct {
 	v map[int32]bool
-}
-
-func NewEdge(v... int32) Edge {
-	s := make(map[int32]bool)
-	for _, v := range v {
-		s[v] = true
-	}
-	return Edge{s}
 }
 
 const (

@@ -3,34 +3,59 @@ package main
 import (
 	"com/khoa/thesis/pkg/hypergraph"
 	"fmt"
+	"math/rand"
 )
 
 func main(){
 
-	vertices := []hypergraph.Vertex{}
-	edges := []hypergraph.Edge{}
+	g := hypergraph.NewHyperGraph()
 	
 	var i int32 = 0
-	for ; i<5; i++ {
-		vertices = append(vertices, hypergraph.NewVertex(i,0))
+	var vSize int32 = 1000000
+	var eSize int32 = 250000
+
+	for ; i < vSize; i++ {
+		g.AddVertex(i, 0)
 	}
 
-	edges = append(edges, hypergraph.NewEdge(0,1,2))
-	edges = append(edges, hypergraph.NewEdge(0,1))
-	edges = append(edges, hypergraph.NewEdge(2,3))
-	edges = append(edges, hypergraph.NewEdge(4))
+	i = 0
 
-	g := hypergraph.NewHyperGraph(vertices, edges)
+	for ; i < eSize; i++ {
+		d := 1
+		r := rand.Float32()
+		if r > 0.1 && r < 0.6 {
+			d = 2
+		} else if r >= 0.6 {
+			d = 3
+		}
+		eps := make(map[int32]bool)
+		for j := 0; j < d; j++ {
+			val := rand.Int31n(vSize)
+			for eps[val] {
+				val = rand.Int31n(vSize)
+			}
+			eps[val] = true
+		}
+		g.AddEdgeMap(eps)
+	}
+
 	c := make(map[int32]bool)
-	g_1, c1 := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-	g_2, _ := hypergraph.EdgeDominationRule(g_1, c1)
+
+	//g.Print()
+	
+	hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+	
+	fmt.Println("|After Tiny Edge Rule|")
+	//g.Print()
+	
+	hypergraph.EdgeDominationRule(g, c)
+	
+	fmt.Println("|After Edge Domination Rule|")
+	//g.Print()
+	
 	
 	fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
-	g.Print()
+	//g.Print()
+	fmt.Println(c)
 
-	fmt.Println("|After Tiny Edge Rule|")
-	g_1.Print()
-
-	fmt.Println("|After Edge Domination Rule|")
-	g_2.Print()
 }
