@@ -5,20 +5,23 @@ import (
 )
 
 // Simple Hypergraph structure
-// Uses maps for vertices and edges.
+// We use maps for vertices and edges.
+// An earlier approach utilized slices for both edges and vertices and an additional
+// incidence matrix. While some operations are faster on the incidence matrix,
+// the algorithms for the reduction rules.
 type HyperGraph struct {
-	vertices map[int]Vertex
-	edges map[int]Edge
+	Vertices map[int]Vertex
+	Edges map[int]Edge
 }
 
 func (g HyperGraph) Print() {
 	fmt.Print("Vertices: \n\t")
-	for _, v := range g.vertices {
+	for _, v := range g.Vertices {
 		fmt.Printf("%d,", v.id)
 	}
 
 	fmt.Println("\nEdges:")
-	for _, e := range g.edges {
+	for _, e := range g.Edges {
 		ids := []int{}
 		for id := range e.v {
 			ids = append(ids, id)
@@ -56,7 +59,7 @@ func (g HyperGraph) IsSimple() bool {
 	simple := true
 	outerBreak := false
 
-	for _, e := range g.edges {
+	for _, e := range g.Edges {
 		for id := range e.v {
 			degMap[id] = degMap[id]+1
 			if degMap[id] == 3 {
