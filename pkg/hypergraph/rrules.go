@@ -1,5 +1,9 @@
 package hypergraph
 
+// Currently the rules will output a new hypergraph struct.
+// A implementation that only manipulates the partial solution C and
+// computes the 'current graph' derived from C is possibly better.
+
 // Iterate over all edges of G.
 
 // Then compare the current edge e to all other edges of G, excluding the edge itself
@@ -10,11 +14,11 @@ package hypergraph
 
 // Time Complexity: |E|^2 * d
 
-func EdgeDomination(g HyperGraph) HyperGraph {
+func EdgeDominationRule(g HyperGraph) HyperGraph {
 	remEdges := make(map[int]bool)
 
-	for eId, e := range g.edges {
-		for cId, comp := range g.edges {
+	for eId, e := range g.Edges {
+		for cId, comp := range g.Edges {
 			if eId == cId || remEdges[cId]{
 				continue
 			}
@@ -34,12 +38,12 @@ func EdgeDomination(g HyperGraph) HyperGraph {
 		}
 	}
 
-	newVertices := make([]Vertex, len(g.vertices))
+	newVertices := make([]Vertex, len(g.Vertices))
 	var newEdges []Edge
 
-	newEdges = removeEdges(g.edges, remEdges)
+	newEdges = removeEdges(g.Edges, remEdges)
 
-	for i, v := range g.vertices {
+	for i, v := range g.Vertices {
 		newVertices[i] = v
 	}
 	return NewHyperGraph(newVertices, newEdges)
@@ -55,7 +59,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bo
         cCopy[k] = v
     }
 
-	for id, e := range g.edges {
+	for id, e := range g.Edges {
 		if len(e.v) == t {
 			remEdges[id] = true
 			for v := range e.v {
@@ -70,11 +74,81 @@ func RemoveEdgeRule(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bo
 	}
 
 	
-	newEdges := removeEdges(g.edges, remEdges)
-	newVertices := removeVertices(g.vertices, remVertices)
+	newEdges := removeEdges(g.Edges, remEdges)
+	newVertices := removeVertices(g.Vertices, remVertices)
 	
 	return NewHyperGraph(newVertices, newEdges), cCopy
 }
 
-func ApproxVertexDomination(g HyperGraph, V int, d int)  {
+// Complexity: (|E| * d)^2 
+// Currently a lot of overlap. 
+
+func ApproxVertexDominationRule(g HyperGraph, c map[int]bool) (HyperGraph, map[int]bool) {
+	cCopy := make(map[int]bool)
+	for k, v := range c {
+        cCopy[k] = v
+    }
+
+	remVertices := make(map[int]bool)
+	remEdges := make(map[int]bool)
+
+	var yz Edge
+	xDom := -1
+	
+	for id, edge := range g.Edges {
+		if len(edge.v) < 3 {
+			continue
+		}
+
+		for x, _ := range edge.v {
+
+			cond := true
+
+			for idComp, edgeComp := range g.Edges {
+				if id == idComp {
+					continue
+				}
+				if edgeComp.v[x] {
+					sum := 0
+					for vertex, _ := range edge.v {
+						if edgeComp.v[vertex] {
+							sum += 1
+						}
+					}
+					if sum < 2 {
+						cond = false
+						break
+					}
+				}
+			}
+			if cond {
+				xDom = x	
+				yz = edge
+				break
+			}
+		}
+		if xDom != -1 {
+			break
+		}
+	}
+
+	if xDom != -1 {
+		for vertex := range yz.v {
+			if vertex != xDom {
+				remVertices[vertex] = true
+				cCopy[vertex] = true
+				for eId, edge := range g.Edges {
+					if edge.v[vertex] {
+						remEdges[eId] = true
+					}
+				}
+			}
+		}
+		newVertices := removeVertices(g.Vertices, remVertices)
+		newEdges := removeEdges(g.Edges, remEdges)
+		return NewHyperGraph(newVertices, newEdges), cCopy
+	}
+
+	return g,c
 }
+
