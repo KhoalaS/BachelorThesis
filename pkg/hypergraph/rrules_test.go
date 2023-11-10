@@ -3,13 +3,14 @@ package hypergraph
 import "testing"
 
 func TestApproxVertexDominationRule(t *testing.T){
-	vSize := 8
-	eSize := 2
+	var vSize int32 = 8
+	var eSize int32 = 2
 
 	vertices := make([]Vertex, vSize)
 	edges := make([]Edge, eSize)
-
-	for i := 0; i < vSize; i++ {
+	
+	var i int32 = 0
+	for ; i < vSize; i++ {
 		vertices[i] = NewVertex(i, 0)
 	}
 
@@ -17,7 +18,7 @@ func TestApproxVertexDominationRule(t *testing.T){
 	edges[1] = NewEdge(0,2,7)
 
 	g := NewHyperGraph(vertices, edges)
-	c := make(map[int]bool)
+	c := make(map[int32]bool)
 
 	g1, c1 := ApproxVertexDominationRule(g, c)
 

@@ -10,7 +10,8 @@ func main(){
 	vertices := []hypergraph.Vertex{}
 	edges := []hypergraph.Edge{}
 	
-	for i := 0; i<5; i++ {
+	var i int32 = 0
+	for ; i<5; i++ {
 		vertices = append(vertices, hypergraph.NewVertex(i,0))
 	}
 
@@ -20,7 +21,7 @@ func main(){
 	edges = append(edges, hypergraph.NewEdge(4))
 
 	g := hypergraph.NewHyperGraph(vertices, edges)
-	c := make(map[int]bool)
+	c := make(map[int32]bool)
 	g_1, _ := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 	g_2 := hypergraph.EdgeDominationRule(g_1)
 	

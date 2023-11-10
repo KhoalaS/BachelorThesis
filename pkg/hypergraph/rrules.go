@@ -15,7 +15,7 @@ package hypergraph
 // Time Complexity: |E|^2 * d
 
 func EdgeDominationRule(g HyperGraph) HyperGraph {
-	remEdges := make(map[int]bool)
+	remEdges := make(map[int32]bool)
 
 	for eId, e := range g.Edges {
 		for cId, comp := range g.Edges {
@@ -51,10 +51,10 @@ func EdgeDominationRule(g HyperGraph) HyperGraph {
 
 // Time Complexity: |E| * d
 
-func RemoveEdgeRule(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bool) {
-	remEdges := make(map[int]bool)
-	remVertices := make(map[int]bool)
-	cCopy := make(map[int]bool)
+func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) (HyperGraph, map[int32]bool) {
+	remEdges := make(map[int32]bool)
+	remVertices := make(map[int32]bool)
+	cCopy := make(map[int32]bool)
 	for k, v := range c {
         cCopy[k] = v
     }
@@ -83,17 +83,17 @@ func RemoveEdgeRule(g HyperGraph, c map[int]bool, t int) (HyperGraph, map[int]bo
 // Complexity: (|E| * d)^2 
 // Currently a lot of overlap. 
 
-func ApproxVertexDominationRule(g HyperGraph, c map[int]bool) (HyperGraph, map[int]bool) {
-	cCopy := make(map[int]bool)
+func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) (HyperGraph, map[int32]bool) {
+	cCopy := make(map[int32]bool)
 	for k, v := range c {
         cCopy[k] = v
     }
 
-	remVertices := make(map[int]bool)
-	remEdges := make(map[int]bool)
+	remVertices := make(map[int32]bool)
+	remEdges := make(map[int32]bool)
 
 	var yz Edge
-	xDom := -1
+	var xDom int32 = -1
 	
 	for id, edge := range g.Edges {
 		if len(edge.v) < 3 {

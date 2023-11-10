@@ -15,8 +15,8 @@ import (
 // data structure and only use maps for both vertices and edges.
 
 type HyperGraph struct {
-	Vertices map[int]Vertex
-	Edges map[int]Edge
+	Vertices map[int32]Vertex
+	Edges map[int32]Edge
 }
 
 func (g HyperGraph) Print() {
@@ -27,7 +27,7 @@ func (g HyperGraph) Print() {
 
 	fmt.Println("\nEdges:")
 	for _, e := range g.Edges {
-		ids := []int{}
+		ids := []int32{}
 		for id := range e.v {
 			ids = append(ids, id)
 		}
@@ -44,15 +44,15 @@ func (g HyperGraph) Print() {
 // from the inputs. That should be done before calling the constructor.
 func NewHyperGraph(v []Vertex, e []Edge) HyperGraph {
 	
-	vertices := make(map[int]Vertex)
-	edges := make(map[int]Edge)
+	vertices := make(map[int32]Vertex)
+	edges := make(map[int32]Edge)
 	
 	for _, vertex := range v {
 		vertices[vertex.id] = vertex		
 	}
 
 	for i, edge := range e {
-		edges[i] = edge
+		edges[int32(i)] = edge
 	}
 
 	return HyperGraph{vertices, edges}
@@ -60,7 +60,7 @@ func NewHyperGraph(v []Vertex, e []Edge) HyperGraph {
 
 func (g HyperGraph) IsSimple() bool {
 	// Time Complexity |E|*|d|
-	degMap := make(map[int]int)
+	degMap := make(map[int32]int32)
 	simple := true
 	outerBreak := false
 
@@ -85,20 +85,20 @@ func (g HyperGraph) IsSimple() bool {
 // itself like addVertex(). 
 
 type Vertex struct {
-	id int
+	id int32
 	data any
 }
 
-func NewVertex(id int, data any) Vertex {
+func NewVertex(id int32, data any) Vertex {
 	return Vertex{id, data}
 }
 
 type Edge struct {
-	v map[int]bool
+	v map[int32]bool
 }
 
-func NewEdge(v... int) Edge {
-	s := make(map[int]bool)
+func NewEdge(v... int32) Edge {
+	s := make(map[int32]bool)
 	for _, v := range v {
 		s[v] = true
 	}
