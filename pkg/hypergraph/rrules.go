@@ -14,8 +14,12 @@ package hypergraph
 
 // Time Complexity: |E|^2 * d
 
-func EdgeDominationRule(g HyperGraph) HyperGraph {
+func EdgeDominationRule(g HyperGraph, c map[int32]bool) (HyperGraph, map[int32]bool) {
 	remEdges := make(map[int32]bool)
+	cCopy := make(map[int32]bool)
+	for k, v := range c {
+        cCopy[k] = v
+    }
 
 	for eId, e := range g.Edges {
 		for cId, comp := range g.Edges {
@@ -46,7 +50,7 @@ func EdgeDominationRule(g HyperGraph) HyperGraph {
 	for i, v := range g.Vertices {
 		newVertices[i] = v
 	}
-	return NewHyperGraph(newVertices, newEdges)
+	return NewHyperGraph(newVertices, newEdges), c
 }
 
 // Time Complexity: |E| * d
@@ -59,9 +63,9 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) (HyperGraph, map[int3
         cCopy[k] = v
     }
 
-	for id, e := range g.Edges {
+	for _, e := range g.Edges {
 		if len(e.v) == t {
-			remEdges[id] = true
+			//remEdges[id] = true
 			for v := range e.v {
 				remVertices[v] = true
 				cCopy[v] = true
@@ -69,8 +73,13 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) (HyperGraph, map[int3
 		}
 	}
 
-	if len(remEdges) == 0 {
-		return g, c
+	for id, e := range g.Edges {
+		for remV := range remVertices {
+			if e.v[remV] {
+				remEdges[id] = true
+				break
+			}
+		}
 	}
 
 	

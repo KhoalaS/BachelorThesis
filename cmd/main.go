@@ -22,8 +22,8 @@ func main(){
 
 	g := hypergraph.NewHyperGraph(vertices, edges)
 	c := make(map[int32]bool)
-	g_1, _ := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-	g_2 := hypergraph.EdgeDominationRule(g_1)
+	g_1, c1 := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+	g_2, _ := hypergraph.EdgeDominationRule(g_1, c1)
 	
 	fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
 	g.Print()
