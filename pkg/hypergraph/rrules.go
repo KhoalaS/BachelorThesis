@@ -100,7 +100,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int]bool) (HyperGraph, map[i
 			continue
 		}
 
-		for x, _ := range edge.v {
+		for x := range edge.v {
 
 			cond := true
 
@@ -110,7 +110,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int]bool) (HyperGraph, map[i
 				}
 				if edgeComp.v[x] {
 					sum := 0
-					for vertex, _ := range edge.v {
+					for vertex := range edge.v {
 						if edgeComp.v[vertex] {
 							sum += 1
 						}
