@@ -88,33 +88,6 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 	for eId := range remEdges {
 		delete(g.Edges, eId)
 	}	
-	/*
-		for _, e := range g.Edges {
-		if len(e.v) == int(g.Degree) {
-			continue
-		}
-		counter++
-		fmt.Printf("%d/%d\r", counter, l)
-		for cId, comp := range g.Edges {
-			if remEdges[cId] || len(comp.v) <= len(e.v){
-				continue
-			}
-
-			subset := true
-
-			for id := range e.v {
-				if !comp.v[id] {
-					subset = false
-					break
-				}
-			}
-
-			if subset {
-				remEdges[cId] = true
-			}
-		}
-	}
-	*/
 }
 
 // Time Complexity: |E| * d
