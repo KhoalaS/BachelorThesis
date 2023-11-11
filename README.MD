@@ -22,7 +22,7 @@ There are little optimizations possible, like checking the number vertices of th
 
 A better optimization can be achieved by partitioning the set of edges into two disjoint subsets $sub$ and $dom$. While the set $sub$ only contains edges that are possibly subsets of other edges, the set $dom$ only contains edges that can be dominated. Since we assume that edges of degree 1 are already removed from our graph, we know that $dom=\left\{ e| e\in E \text{ with } |e| =3 \right\}$.
 
-This results in a time complexity of $r_s\cdot r_d \cdot|E|^2 \cdot d$, where $r_s$ denotes the ratio $\frac{|sub|}{|E|}$ and $r_d$ denotes $\frac{|dom|}{|E|}$. This is slightly better but still close to the original complexity if $|r_s - r_d|$ is big.
+This results in a time complexity of $r_s\cdot r_d \cdot|E|^2 \cdot d$, where $r_s$ denotes the ratio $\frac{|sub|}{|E|}$ and $r_d$ denotes $\frac{|dom|}{|E|}$. This is slightly better but still close to the original complexity if $r_s \cdot r_d$ is close to 1.
 
 We therefore employ paralellism to solve the problem in somewhat feasable time. The $sub$ set is partitioned into $\texttt{nCPU}$ many subsets of (near) equal size, where $\texttt{nCPU}$ denotes the number of physical CPU cores of the system. We then solve the problem in parallel for all of these subsets.
 

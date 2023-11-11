@@ -42,16 +42,12 @@ func batchSubComp(g HyperGraph, subEdges []int32, domEdges map[int32]bool, done 
 	runtime.UnlockOSThread()
 }
 
-func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
-	remEdges := make(map[int32]bool)
-	
+func EdgeDominationRule(g HyperGraph, c map[int32]bool) {	
 	subEdges := []int32{}
 	domEdges := make(map[int32]bool)
 
-	d := int(g.Degree)
-
 	for eId, e := range g.Edges {
-		if len(e.v) < d {
+		if len(e.v) == 2 {
 			subEdges = append(subEdges, eId)
 		} else {
 			domEdges[eId] = true
@@ -122,10 +118,6 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 		}
 	}
 	*/
-
-	for eId := range remEdges {
-		delete(g.Edges, eId)
-	}
 }
 
 // Time Complexity: |E| * d
