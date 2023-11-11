@@ -11,8 +11,8 @@ func main(){
 	g := hypergraph.NewHyperGraph()
 	
 	var i int32 = 0
-	var vSize int32 = 1000000
-	var eSize int32 = 250000
+	var vSize int32 = 100000
+	var eSize int32 = 20000
 
 	for ; i < vSize; i++ {
 		g.AddVertex(i, 0)
@@ -56,6 +56,6 @@ func main(){
 	
 	fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
 	//g.Print()
-	fmt.Println(c)
+	//fmt.Println(c)
 
 }

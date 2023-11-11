@@ -1,27 +1,102 @@
 package hypergraph
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+	"sync"
+)
 
 // Currently the rules will output a new hypergraph struct.
 // A implementation that only manipulates the partial solution C and
 // computes the 'current graph' derived from C is possibly better.
 
-// Iterate over all edges of G.
-
-// Then compare the current edge e to all other edges of G, excluding the edge itself
-// and already removed edges.
-
-// If all vertices of the edge e are present in the compared edge comp
-// and if comp has more vertices, than we conclude that comp is a strict superset of e.
-
 // Time Complexity: |E|^2 * d
+
+var wg sync.WaitGroup
+
+func batchSubComp(g HyperGraph, subEdges []int32, domEdges map[int32]bool, done chan<- map[int32]bool) {
+	runtime.LockOSThread()
+	defer wg.Done()
+
+	remEdges := make(map[int32]bool)
+
+	for _, eId := range subEdges {
+		for compId := range domEdges {
+			if remEdges[compId] {
+				continue
+			}
+			subset := true
+			for vId := range g.Edges[eId].v {
+				if !g.Edges[compId].v[vId] {
+					subset = false
+					break
+				}
+			}
+			if subset {
+				remEdges[compId] = true
+			}
+		}
+	}
+	done <- remEdges
+
+	runtime.UnlockOSThread()
+}
 
 func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 	remEdges := make(map[int32]bool)
-	l := len(g.Edges)
-	counter := 0
+	
+	subEdges := []int32{}
+	domEdges := make(map[int32]bool)
 
-	for _, e := range g.Edges {
+	d := int(g.Degree)
+
+	for eId, e := range g.Edges {
+		if len(e.v) < d {
+			subEdges = append(subEdges, eId)
+		} else {
+			domEdges[eId] = true
+		} 
+	}
+
+	nCPU := runtime.NumCPU()
+	lSub := len(subEdges)
+	batchSize := lSub/nCPU
+	if lSub < nCPU {
+		batchSize = lSub
+		nCPU = 1
+	}
+
+	channels := make([]chan map[int32]bool, nCPU)
+
+	wg.Add(nCPU)
+
+	fmt.Println(batchSize)
+
+	for i := 0; i<nCPU; i++ {
+		channels[i] = make(chan map[int32]bool)
+		start := i*batchSize
+		end := start + batchSize
+
+		if lSub - end < batchSize {
+			end = lSub
+		}
+		go batchSubComp(g ,subEdges[start:end], domEdges, channels[i])
+	}
+
+
+
+	for i := 0; i<nCPU; i++ {
+		select {
+        	default:
+				msg := <-channels[i]
+				for id := range msg {
+					delete(g.Edges, id)
+				}
+		}
+	}
+
+	/*
+		for _, e := range g.Edges {
 		if len(e.v) == int(g.Degree) {
 			continue
 		}
@@ -46,6 +121,7 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 			}
 		}
 	}
+	*/
 
 	for eId := range remEdges {
 		delete(g.Edges, eId)
