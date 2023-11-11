@@ -17,7 +17,7 @@ import (
 type HyperGraph struct {
 	Vertices map[int32]Vertex
 	Edges map[int32]Edge
-	EdgeCounter int32
+	edgeCounter int32
 	Degree int32
 }
 
@@ -31,8 +31,8 @@ func (g *HyperGraph) AddEdge(eps... int32) {
 	for _, ep := range eps {
 		e.v[ep] = true
 	}
-	g.Edges[g.EdgeCounter] = e
-	g.EdgeCounter++
+	g.Edges[g.edgeCounter] = e
+	g.edgeCounter++
 }
 
 func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
@@ -41,8 +41,8 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	for ep := range eps {
 		e.v[ep] = true
 	}
-	g.Edges[g.EdgeCounter] = e
-	g.EdgeCounter++
+	g.Edges[g.edgeCounter] = e
+	g.edgeCounter++
 }
 
 func (g HyperGraph) Print() {
