@@ -83,8 +83,6 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 		epArr = nil
 	}
 
-	fmt.Println(len(remEdges))
-
 	for eId := range remEdges {
 		delete(g.Edges, eId)
 	}	
@@ -104,8 +102,6 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 			}
 		}
 	}
-
-	fmt.Println(len(remVertices))
 
 	for id, e := range g.Edges {
 		for v := range e.v {
