@@ -1,7 +1,7 @@
 package main
 
 import (
-	"com/khoa/thesis/pkg/hypergraph"
+	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 	"fmt"
 	"math/rand"
 )
@@ -12,7 +12,7 @@ func main(){
 	
 	var i int32 = 0
 	var vSize int32 = 2000000
-	var eSize int32 = 1000000
+	var eSize int32 = 8000000
 
 	for ; i < vSize; i++ {
 		g.AddVertex(i, 0)
