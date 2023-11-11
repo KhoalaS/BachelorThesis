@@ -1,4 +1,4 @@
-module com/khoa/thesis
+module github.com/KhoalaS/thesis
 
 go 1.18
 
