@@ -1,4 +1,4 @@
-module github.com/KhoalaS/thesis
+module github.com/KhoalaS/BachelorThesis
 
 go 1.18
 
