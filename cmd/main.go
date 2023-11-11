@@ -11,8 +11,8 @@ func main(){
 	g := hypergraph.NewHyperGraph()
 	
 	var i int32 = 0
-	var vSize int32 = 100000
-	var eSize int32 = 20000
+	var vSize int32 = 1000000
+	var eSize int32 = 500000
 
 	for ; i < vSize; i++ {
 		g.AddVertex(i, 0)
@@ -47,15 +47,19 @@ func main(){
 	
 	fmt.Println("|After Tiny Edge Rule|")
 	//g.Print()
+	fmt.Println(len(c))
 	
+
 	hypergraph.EdgeDominationRule(g, c)
 	
 	fmt.Println("|After Edge Domination Rule|")
 	//g.Print()
+	fmt.Println(len(c))
+
 	
 	
 	fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
 	//g.Print()
-	//fmt.Println(c)
+	//fmt.Println(len(c))
 
 }

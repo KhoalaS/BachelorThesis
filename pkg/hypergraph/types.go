@@ -2,6 +2,12 @@ package hypergraph
 
 import (
 	"fmt"
+	"io"
+	"sort"
+	"strconv"
+	"strings"
+
+	"github.com/OneOfOne/xxhash"
 )
 
 // Simple Hypergraph structure
@@ -11,14 +17,14 @@ import (
 // the algorithms for the reduction rules often rely on iterating through all pairs of edges.
 // Or checking if a vertex is an element of an edge.
 
-// Since the use cases of the incidence matrix was so low, we decided to remove it from the 
+// Since the use cases of the incidence matrix was so low, we decided to remove it from the
 // data structure and only use maps for both vertices and edges.
 
 type HyperGraph struct {
 	Vertices map[int32]Vertex
 	Edges map[int32]Edge
 	edgeCounter int32
-	Degree int32
+	Degree int
 }
 
 func (g *HyperGraph) AddVertex(id int32, data any) {
@@ -102,6 +108,30 @@ type Vertex struct {
 type Edge struct {
 	v map[int32]bool
 }
+
+func (e *Edge) getHash() uint32 {
+	h := xxhash.New32()
+
+	arr := make([]int32, len(e.v))
+	var i int32 = 0
+	for ep := range e.v {
+		arr[i] = ep
+		i++
+	}
+	sort.Slice(arr, func(i2, j int) bool {
+		return arr[i2] < arr[j]
+	})
+
+	in := ""
+
+	for _, j := range arr {
+		in += (strconv.Itoa(int(j)) + "|")
+	}
+	r := strings.NewReader(in)
+	io.Copy(h, r)
+
+	return h.Sum32();
+}	
 
 const (
 	TINY = 1

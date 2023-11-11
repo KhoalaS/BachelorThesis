@@ -1,6 +1,7 @@
 package hypergraph
 
 import (
+	"container/list"
 	"fmt"
 	"runtime"
 	"sync"
@@ -43,54 +44,50 @@ func batchSubComp(g HyperGraph, subEdges []int32, domEdges map[int32]bool, done 
 }
 
 func EdgeDominationRule(g HyperGraph, c map[int32]bool) {	
-	subEdges := []int32{}
+	subEdges := make(map[uint32]bool)
 	domEdges := make(map[int32]bool)
+	remEdges := make(map[int32]bool)
+
 
 	for eId, e := range g.Edges {
 		if len(e.v) == 2 {
-			subEdges = append(subEdges, eId)
+			eHash := e.getHash()
+			subEdges[eHash] = true
 		} else {
 			domEdges[eId] = true
 		} 
 	}
 
-	nCPU := runtime.NumCPU()
-	lSub := len(subEdges)
-	batchSize := lSub/nCPU
-	if lSub < nCPU {
-		batchSize = lSub
-		nCPU = 1
-	}
+	epArr := []int32{}
 
-	channels := make([]chan map[int32]bool, nCPU)
 
-	wg.Add(nCPU)
-
-	fmt.Println(batchSize)
-
-	for i := 0; i<nCPU; i++ {
-		channels[i] = make(chan map[int32]bool)
-		start := i*batchSize
-		end := start + batchSize
-
-		if lSub - end < batchSize {
-			end = lSub
+	for eId := range domEdges {
+		for ep := range g.Edges[eId].v {
+			epArr = append(epArr, ep)
 		}
-		go batchSubComp(g ,subEdges[start:end], domEdges, channels[i])
-	}
 
+		// compute all subsets of edge with id eId
+		subsets := list.New()
 
-
-	for i := 0; i<nCPU; i++ {
-		select {
-        	default:
-				msg := <-channels[i]
-				for id := range msg {
-					delete(g.Edges, id)
-				}
+		for s := g.Degree-1; s > 0; s--{
+			getSubsetsRec(epArr, 0, len(epArr), s, make([]int32, s), 0, subsets)
 		}
+
+		for item := subsets.Front(); item != nil; item = item.Next() {
+			hash := getHash(item.Value.([]int32))
+			if subEdges[hash] {
+				remEdges[eId] = true
+				break
+			}
+		}
+		epArr = nil
 	}
 
+	fmt.Println(len(remEdges))
+
+	for eId := range remEdges {
+		delete(g.Edges, eId)
+	}	
 	/*
 		for _, e := range g.Edges {
 		if len(e.v) == int(g.Degree) {
