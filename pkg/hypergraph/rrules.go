@@ -7,7 +7,6 @@ import (
 	"sync"
 )
 
-
 func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
@@ -24,7 +23,7 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 		// compute all subsets of edge with id eId
 		subsets := list.New()
 
-		for s := g.Degree-1; s > 0; s--{
+		for s := g.Degree - 1; s > 0; s-- {
 			getSubsetsRec(epArr, 0, len(epArr), s, make([]int32, s), 0, subsets)
 		}
 
@@ -37,7 +36,7 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 		}
 		epArr = nil
 	}
-	
+
 	done <- remEdges
 
 	runtime.UnlockOSThread()
@@ -45,7 +44,7 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 
 // Time Complexity: |E| * d^3
 
-func EdgeDominationRule(g HyperGraph, c map[int32]bool) {	
+func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 	var wg sync.WaitGroup
 
 	subEdges := make(map[uint32]bool)
@@ -57,13 +56,13 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 			subEdges[eHash] = true
 		} else {
 			domEdges = append(domEdges, eId)
-		} 
+		}
 	}
 
 	numCPU := runtime.NumCPU()
 	lDom := len(domEdges)
-	batchSize := lDom/numCPU
-	channels := make([]chan map[int32]bool, numCPU)
+	batchSize := lDom / numCPU
+	channel := make(chan map[int32]bool, numCPU)
 
 	if lDom < numCPU {
 		numCPU = 1
@@ -72,32 +71,24 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 
 	wg.Add(numCPU)
 
-	for i := 0; i<numCPU; i++ {
-		start := i*batchSize
-		end := start+batchSize
-		if lDom - end < batchSize {
+	for i := 0; i < numCPU; i++ {
+		start := i * batchSize
+		end := start + batchSize
+		if lDom-end < batchSize {
 			end = lDom
-		} 
-		channels[i] = make(chan map[int32]bool)
-		go batchSubComp(&wg, g, subEdges, domEdges[start:end], channels[i])
-	}
-
-	remEdges := make(map[int32]bool)
-
-	for i:=0; i<numCPU; i++ {
-		select{
-		default:
-			msg := <- channels[i]
-			for eId := range msg {
-				remEdges[eId] = true
-			}
 		}
-
+		go batchSubComp(&wg, g, subEdges, domEdges[start:end], channel)
 	}
 
-	for eId := range remEdges {
-		delete(g.Edges, eId)
-	}		
+	wg.Wait()
+	close(channel)
+
+	for msg := range channel {
+		for eId := range msg {
+			delete(g.Edges, eId)
+		}
+	}
+
 }
 
 // Time Complexity: |E| * d
@@ -120,13 +111,13 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 			if remVertices[v] {
 				remEdges[id] = true
 				break
-			}		
+			}
 		}
 	}
 
 	for eId := range remEdges {
 		delete(g.Edges, eId)
-	}	
+	}
 
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
@@ -134,8 +125,8 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 	fmt.Println("delete finished")
 }
 
-// Complexity: (|E| * d)^2 
-// Currently a lot of overlap. 
+// Complexity: (|E| * d)^2
+// Currently a lot of overlap.
 
 func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 	remVertices := make(map[int32]bool)
@@ -143,7 +134,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 
 	var yz Edge
 	var xDom int32 = -1
-	
+
 	for id, edge := range g.Edges {
 		if len(edge.v) < 3 {
 			continue
@@ -171,7 +162,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 				}
 			}
 			if cond {
-				xDom = x	
+				xDom = x
 				yz = edge
 				break
 			}
@@ -195,11 +186,10 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 		}
 		for eId := range remEdges {
 			delete(g.Edges, eId)
-		}	
-	
+		}
+
 		for vId := range remVertices {
 			delete(g.Vertices, vId)
 		}
 	}
 }
-
