@@ -7,61 +7,16 @@ import (
 	"sync"
 )
 
-// Currently the rules will output a new hypergraph struct.
-// A implementation that only manipulates the partial solution C and
-// computes the 'current graph' derived from C is possibly better.
 
-// Time Complexity: |E|^2 * d
-
-var wg sync.WaitGroup
-
-func batchSubComp(g HyperGraph, subEdges []int32, domEdges map[int32]bool, done chan<- map[int32]bool) {
+func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
 
 	remEdges := make(map[int32]bool)
 
-	for _, eId := range subEdges {
-		for compId := range domEdges {
-			if remEdges[compId] {
-				continue
-			}
-			subset := true
-			for vId := range g.Edges[eId].v {
-				if !g.Edges[compId].v[vId] {
-					subset = false
-					break
-				}
-			}
-			if subset {
-				remEdges[compId] = true
-			}
-		}
-	}
-	done <- remEdges
-
-	runtime.UnlockOSThread()
-}
-
-func EdgeDominationRule(g HyperGraph, c map[int32]bool) {	
-	subEdges := make(map[uint32]bool)
-	domEdges := make(map[int32]bool)
-	remEdges := make(map[int32]bool)
-
-
-	for eId, e := range g.Edges {
-		if len(e.v) == 2 {
-			eHash := e.getHash()
-			subEdges[eHash] = true
-		} else {
-			domEdges[eId] = true
-		} 
-	}
-
 	epArr := []int32{}
 
-
-	for eId := range domEdges {
+	for _, eId := range domEdges {
 		for ep := range g.Edges[eId].v {
 			epArr = append(epArr, ep)
 		}
@@ -82,10 +37,67 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 		}
 		epArr = nil
 	}
+	
+	done <- remEdges
+
+	runtime.UnlockOSThread()
+}
+
+// Time Complexity: |E| * d^3
+
+func EdgeDominationRule(g HyperGraph, c map[int32]bool) {	
+	var wg sync.WaitGroup
+
+	subEdges := make(map[uint32]bool)
+	domEdges := []int32{}
+
+	for eId, e := range g.Edges {
+		if len(e.v) == 2 {
+			eHash := e.getHash()
+			subEdges[eHash] = true
+		} else {
+			domEdges = append(domEdges, eId)
+		} 
+	}
+
+	numCPU := runtime.NumCPU()
+	lDom := len(domEdges)
+	batchSize := lDom/numCPU
+	channels := make([]chan map[int32]bool, numCPU)
+
+	if lDom < numCPU {
+		numCPU = 1
+		batchSize = lDom
+	}
+
+	wg.Add(numCPU)
+
+	for i := 0; i<numCPU; i++ {
+		start := i*batchSize
+		end := start+batchSize
+		if lDom - end < batchSize {
+			end = lDom
+		} 
+		channels[i] = make(chan map[int32]bool)
+		go batchSubComp(&wg, g, subEdges, domEdges[start:end], channels[i])
+	}
+
+	remEdges := make(map[int32]bool)
+
+	for i:=0; i<numCPU; i++ {
+		select{
+		default:
+			msg := <- channels[i]
+			for eId := range msg {
+				remEdges[eId] = true
+			}
+		}
+
+	}
 
 	for eId := range remEdges {
 		delete(g.Edges, eId)
-	}	
+	}		
 }
 
 // Time Complexity: |E| * d

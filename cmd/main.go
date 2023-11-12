@@ -12,7 +12,7 @@ func main(){
 	
 	var i int32 = 0
 	var vSize int32 = 10000
-	var eSize int32 = 10000000
+	var eSize int32 = 1000000
 
 	for ; i < vSize; i++ {
 		g.AddVertex(i, 0)
