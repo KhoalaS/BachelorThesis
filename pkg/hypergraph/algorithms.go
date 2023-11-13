@@ -23,3 +23,24 @@ func getSubsetsRec(arr []int32, i int, end int, s int, data []int32, index int, 
     getSubsetsRec(arr, i+1, end, s, data, index+1, subsets)
     getSubsetsRec(arr, i+1, end, s, data, index, subsets)
 }
+
+func twoSum(arr []IdValueHolder, n int) ([][]int32) { 
+    N := int32(n)
+    lookup := make(map[int32][]IdValueHolder)
+    solutions := [][]int32{}
+
+    for _, val := range arr {
+        if _, ex := lookup[N - val.Value]; ex {
+            for _, comp := range lookup[N - val.Value] {
+                solutions = append(solutions, []int32{val.Id, comp.Id})
+            }
+        } else {
+            if _, ex := lookup[val.Value]; !ex {
+                lookup[val.Value] = []IdValueHolder{}
+            }
+            lookup[val.Value] = append(lookup[val.Value], val)
+        }
+
+    }
+    return solutions
+}
