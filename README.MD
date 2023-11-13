@@ -94,7 +94,12 @@ $$
 As in the quadratic version, one can speed up real world runtime through paralellism.
 
 ##### Remarks
-We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
+We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first. 
 
 ### Approximative Vertex Domination Rule
 
+## Possible Optimizations
+
+Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 
+
+Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.

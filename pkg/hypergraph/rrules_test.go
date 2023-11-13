@@ -114,6 +114,24 @@ func TestRemoveEdgeRule(t *testing.T) {
 			}
 		}
 	}
-
 	
+}
+
+func TestApproxVertexDominationRule2(t *testing.T) {
+	var vSize int32 = 8
+	g := NewHyperGraph()
+	
+	var i int32 = 0
+
+	for ; i < vSize; i++ {
+		g.AddVertex(i, 0)
+	}
+
+	g.AddEdge(0,3,2)
+	g.AddEdge(1,6,7)
+	g.AddEdge(3,6,5)
+
+	c := make(map[int32]bool)
+
+	ApproxVertexDominationRule2(g, c)
 }

@@ -126,7 +126,21 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 }
 
 // Complexity: (|E| * d)^2
-// Currently a lot of overlap.
+// What can be done fast:
+// - Extract size-3 edges
+// - compute subsets
+// - 
+
+// New Algorithm
+// Iterate over all edges, extracting all edges degree 3
+// associate every vertex with its other vertices in an edge
+	// vSub := map[int32]map[int32][]int32
+// sum the occurences of these size two sets up in a map
+// if the map contains at least two values a,b such that a+b=len(vSub)+1 then we know, that there
+// exists two vertices that are part of every edge that x is an element of 
+// Complexity: 
+// |E| + |E| + d
+
 
 func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 	remVertices := make(map[int32]bool)
@@ -192,4 +206,36 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 			delete(g.Vertices, vId)
 		}
 	}
+}
+
+
+func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) {
+	dThree := make([]int32, len(g.Edges))	
+	vSub := make(map[int32]map[uint32][]int32)
+
+
+	// Time Complexity: |E| * d^2
+	i := 0
+	for eId, e := range g.Edges {
+		if len(e.v) == 3{
+			dThree[i] = eId
+			i++
+		}
+		for vId0 := range e.v {
+			sub := []int32{}
+			for vId1 := range e.v {
+				if vId0 != vId1 {
+					sub = append(sub, vId1)
+				}
+			}
+			if _, ex := vSub[vId0]; !ex {
+				vSub[vId0] = make(map[uint32][]int32)
+			}
+			subHash := getHash(sub) 
+			vSub[vId0][subHash] = sub
+		} 
+	}
+	dThree = dThree[0:i]
+	fmt.Println(vSub)
+	
 }
