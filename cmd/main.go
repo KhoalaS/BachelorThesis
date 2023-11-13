@@ -3,41 +3,11 @@ package main
 import (
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 	"fmt"
-	"math/rand"
 )
 
 func main(){
 
-	g := hypergraph.NewHyperGraph()
-	
-	var i int32 = 0
-	var vSize int32 = 10000
-	var eSize int32 = 4000000
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
-	}
-
-	i = 0
-
-	for ; i < eSize; i++ {
-		d := 1
-		r := rand.Float32()
-		if r > 0.0001 && r < 0.6 {
-			d = 2
-		} else if r >= 0.6 {
-			d = 3
-		}
-		eps := make(map[int32]bool)
-		for j := 0; j < d; j++ {
-			val := rand.Int31n(vSize)
-			for eps[val] {
-				val = rand.Int31n(vSize)
-			}
-			eps[val] = true
-		}
-		g.AddEdgeMap(eps)
-	}
+	g := hypergraph.GenerateTestGraph(10000, 4000000)
 
 	c := make(map[int32]bool)
 	

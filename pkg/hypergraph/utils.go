@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"io"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,3 +27,36 @@ func getHash(arr []int32) uint32 {
 
 	return h.Sum32();
 }	
+
+func GenerateTestGraph(numVertices int32, numEdges int32) HyperGraph {
+	g := NewHyperGraph()
+	
+	var i int32 = 0
+
+	for ; i < numVertices; i++ {
+		g.AddVertex(i, 0)
+	}
+
+	i = 0
+
+	for ; i < numEdges; i++ {
+		d := 1
+		r := rand.Float32()
+		if r > 0.0001 && r < 0.6 {
+			d = 2
+		} else if r >= 0.6 {
+			d = 3
+		}
+		eps := make(map[int32]bool)
+		for j := 0; j < d; j++ {
+			val := rand.Int31n(numVertices)
+			for eps[val] {
+				val = rand.Int31n(numVertices)
+			}
+			eps[val] = true
+		}
+		g.AddEdgeMap(eps)
+	}
+
+	return g
+}
