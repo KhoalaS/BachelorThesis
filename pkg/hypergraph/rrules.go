@@ -210,32 +210,74 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 
 
 func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) {
-	dThree := make([]int32, len(g.Edges))	
-	vSub := make(map[int32]map[uint32][]int32)
+	vSub := make(map[int32]map[uint32]bool)
+	vSubCount := make(map[int32]map[int32]int32)
+	remVertices := make(map[int32]bool)
+	remEdges := make(map[int32]bool)
 
 
 	// Time Complexity: |E| * d^2
-	i := 0
-	for eId, e := range g.Edges {
-		if len(e.v) == 3{
-			dThree[i] = eId
-			i++
-		}
+	for _, e := range g.Edges {
 		for vId0 := range e.v {
 			sub := []int32{}
+
+			if _, ex := vSubCount[vId0]; !ex {
+				vSubCount[vId0] = make(map[int32]int32)
+				vSub[vId0] = make(map[uint32]bool)
+			}
+
 			for vId1 := range e.v {
 				if vId0 != vId1 {
 					sub = append(sub, vId1)
+					vSubCount[vId0][vId1]++
 				}
 			}
-			if _, ex := vSub[vId0]; !ex {
-				vSub[vId0] = make(map[uint32][]int32)
-			}
+
 			subHash := getHash(sub) 
-			vSub[vId0][subHash] = sub
+			vSub[vId0][subHash] = true
 		} 
 	}
-	dThree = dThree[0:i]
-	fmt.Println(vSub)
-	
+
+
+	// Time Complexity: |V| * (|V| + ? * 2) 
+	for vId, count := range vSubCount {
+		
+		arr := make([]IdValueHolder, len(count))
+		i := 0
+		for id, val := range count {
+			arr[i] = IdValueHolder{Id: id, Value: val}
+		}
+
+		solutions := twoSum(arr, len(vSub[vId]) + 1)
+		for _, sol := range solutions {
+			hash := getHash(sol)
+			if vSub[vId][hash] {
+				for _, v := range sol {
+					remVertices[v] = true
+				}
+			}
+		}	
+	}
+
+	for id, e := range g.Edges {
+		for v := range e.v {
+			if remVertices[v] {
+				remEdges[id] = true
+				break
+			}
+		}
+	}
+
+	for eId := range remEdges {
+		delete(g.Edges, eId)
+	}
+
+	for vId := range remVertices {
+		delete(g.Vertices, vId)
+	}
+}
+
+type IdValueHolder struct {
+	Id int32
+	Value int32
 }
