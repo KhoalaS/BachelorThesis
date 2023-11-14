@@ -62,13 +62,14 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 	numCPU := runtime.NumCPU()
 	lDom := len(domEdges)
 	batchSize := lDom / numCPU
-	channel := make(chan map[int32]bool, numCPU)
-
+	
 	if lDom < numCPU {
 		numCPU = 1
 		batchSize = lDom
 	}
-
+	
+	channel := make(chan map[int32]bool, numCPU)
+	
 	wg.Add(numCPU)
 
 	for i := 0; i < numCPU; i++ {
