@@ -7,7 +7,7 @@ import (
 
 func main(){
 
-	g := hypergraph.GenerateTestGraph(10000, 4000000)
+	g := hypergraph.GenerateTestGraph(1000000, 2000000)
 
 	c := make(map[int32]bool)
 	
@@ -16,10 +16,17 @@ func main(){
 	fmt.Println("|After Tiny Edge Rule|")
 	fmt.Println(len(c))
 	fmt.Println(len(g.Edges))
-
+	/*
 	hypergraph.EdgeDominationRule(g, c)
 	
 	fmt.Println("|After Edge Domination Rule|")
+	fmt.Println(len(c))
+	fmt.Println(len(g.Edges))
+
+	*/
+
+	hypergraph.ApproxVertexDominationRule2(g, c)
+	fmt.Println("|After Approx Vertex Domination Rule|")
 	fmt.Println(len(c))
 	fmt.Println(len(g.Edges))
 	
