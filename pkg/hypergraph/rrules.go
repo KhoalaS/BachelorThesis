@@ -235,7 +235,7 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) {
 		}
 	}
 
-	// Time Complexity: |V| * (|V| + ? * 4)
+	// Time Complexity: |V| * (|V| + 4 * c)
 	for vId, count := range vSubCount {
 		if c[vId] {
 			continue
