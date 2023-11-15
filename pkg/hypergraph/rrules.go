@@ -208,7 +208,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 	}
 }
 
-func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) {
+func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 	vSub := make(map[int32]map[uint32]bool)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
