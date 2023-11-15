@@ -136,7 +136,7 @@ $\square$
 
 We are only interested in one valid solution per entry in $\texttt{vSub[v]}$. We then add the two vertices to our partial solution $c$.
 
-The only problem right now is that we have to call this rule exhaustively, since putting vertices in our partial solution mutates the graphs edges. 
+The only problem right now is that we have to call this rule exhaustively, since putting vertices in our partial solution mutates the graphs edges. Instead of calling this rule exhaustively, we should aim to find a way to recalculate the maps $\texttt{vSub}$ and $\texttt{vSubCount}$ efficiently. 
 ## Possible Optimizations
 
 Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 

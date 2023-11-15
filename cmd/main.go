@@ -7,7 +7,7 @@ import (
 
 func main(){
 
-	g := hypergraph.GenerateTestGraph(1000000, 2000000)
+	g := hypergraph.GenerateTestGraph(10000, 20000)
 
 	c := make(map[int32]bool)
 	
@@ -25,7 +25,9 @@ func main(){
 
 	*/
 
-	hypergraph.ApproxVertexDominationRule2(g, c)
+	//for ex := hypergraph.ApproxVertexDominationRule2(g, c); ex; ex = hypergraph.ApproxVertexDominationRule2(g, c){}
+	
+	hypergraph.ApproxVertexDominationRule3(g, c)
 	fmt.Println("|After Approx Vertex Domination Rule|")
 	fmt.Println(len(c))
 	fmt.Println(len(g.Edges))

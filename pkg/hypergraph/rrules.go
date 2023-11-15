@@ -142,7 +142,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 // Complexity:
 // |E| + |E| + d
 
-func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
+func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) bool {
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
 
@@ -205,7 +205,9 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) {
 		for vId := range remVertices {
 			delete(g.Vertices, vId)
 		}
+		return true
 	}
+	return false
 }
 
 func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
@@ -248,6 +250,8 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 			i++
 		}
 		solutions := twoSum(arr, len(vSub[vId])+1)
+		solFound := false
+
 		for _, sol := range solutions {
 			hash := getHash(sol)
 			if vSub[vId][hash] {
@@ -269,9 +273,18 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 					remVertices[v] = true
 					c[v] = true
 				}
+				solFound = true
 				break
 			}
 		}
+
+		if solFound {
+			break
+		}
+	}
+
+	if len(remVertices) == 0 {
+		return false
 	}
 
 	for id, e := range g.Edges {
@@ -283,7 +296,95 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 		}
 	}
 
-	fmt.Println(len(remVertices))
+	for eId := range remEdges {
+		delete(g.Edges, eId)
+	}
+
+	for vId := range remVertices {
+		delete(g.Vertices, vId)
+	}
+
+	return true
+}
+
+func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) bool {
+	vSub := make(map[int32]map[uint32]bool)
+	vSubCount := make(map[int32]map[int32]int32)
+	remVertices := make(map[int32]bool)
+	remEdges := make(map[int32]bool)
+
+	// Time Complexity: |E| * d^2
+	for _, e := range g.Edges {
+		for vId0 := range e.v {
+			sub := []int32{}
+
+			if _, ex := vSubCount[vId0]; !ex {
+				vSubCount[vId0] = make(map[int32]int32)
+				vSub[vId0] = make(map[uint32]bool)
+			}
+
+			for vId1 := range e.v {
+				if vId0 != vId1 {
+					sub = append(sub, vId1)
+					vSubCount[vId0][vId1]++
+				}
+			}
+
+			subHash := getHash(sub)
+			vSub[vId0][subHash] = true
+		}
+	}
+
+	// Time Complexity: |V| * (|V| + 4 * c)
+	for vId, count := range vSubCount {
+		if c[vId] {
+			continue
+		}
+		arr := make([]IdValueHolder, len(count))
+		i := 0
+		for id, val := range count {
+			arr[i] = IdValueHolder{Id: id, Value: val}
+			i++
+		}
+		solutions := twoSum(arr, len(vSub[vId])+1)
+
+		for _, sol := range solutions {
+			hash := getHash(sol)
+			if vSub[vId][hash] {
+				
+				isNew := true
+				
+				for _, v := range sol {
+					if c[v] {
+						isNew = false
+						break
+					}
+				}
+
+				if !isNew {
+					continue					
+				}
+
+				for _, v := range sol {
+					remVertices[v] = true
+					c[v] = true
+				}
+			}
+		}
+	}
+
+	if len(remVertices) == 0 {
+		return false
+	}
+
+	for id, e := range g.Edges {
+		for v := range e.v {
+			if remVertices[v] {
+				remEdges[id] = true
+				break
+			}
+		}
+	}
 
 	for eId := range remEdges {
 		delete(g.Edges, eId)
@@ -292,6 +393,8 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
 	}
+
+	return false
 }
 
 type IdValueHolder struct {
