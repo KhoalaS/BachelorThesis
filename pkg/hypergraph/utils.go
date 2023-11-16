@@ -60,3 +60,19 @@ func GenerateTestGraph(numVertices int32, numEdges int32) HyperGraph {
 
 	return g
 }
+
+func SetMinus(e Edge, elem int32) ([]int32, bool) {
+	arr := []int32{}
+	lenBefore := len(e.v)
+
+	for v := range e.v {
+		if v == elem {
+			continue
+		}
+		arr = append(arr, v)
+	}
+
+	lenAfter := len(arr)
+
+	return arr, lenBefore != lenAfter
+}

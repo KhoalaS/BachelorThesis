@@ -130,7 +130,7 @@ $$\texttt{a.value} + \texttt{b.value} = occur$$
 
 Since we know that the edge $\{ v,a,b \}$ exists, we can conclude that $\texttt{a}$ or $\texttt{b}$ are occuring $occur-2 = |\texttt{vSub[v]}|-1$ times in other edges containing $\texttt{v}$. Under the assumption that we dont have duplicate edges, $\texttt{a}$ or $\texttt{b}$ can't occur in the same edge. Therfore all edges with endpoint $\texttt{v}$ either contain $\texttt{a}$ or $\texttt{b}$.
 
-__Case 2:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ does not exist. The edge $\{ v,a,b \}$ does not exist.
+__Case 2:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ does not exist. The edge $\{ v,a,b \}$ does not exist. The solution is wrong.
 
 $\square$
 

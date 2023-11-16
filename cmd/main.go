@@ -24,13 +24,14 @@ func main(){
 	fmt.Println(len(g.Edges))
 
 	*/
+	hypergraph.ApproxVertexDominationRule3(g, c)
+	fmt.Println("|After Approx Vertex Domination Rule3|")
+	fmt.Println(len(c))
 
 	//for ex := hypergraph.ApproxVertexDominationRule2(g, c); ex; ex = hypergraph.ApproxVertexDominationRule2(g, c){}
+	//fmt.Println("|After Approx Vertex Domination Rule2|")
+	//fmt.Println(len(c))
+	//fmt.Println(len(g.Edges))
 	
-	hypergraph.ApproxVertexDominationRule3(g, c)
-	fmt.Println("|After Approx Vertex Domination Rule|")
-	fmt.Println(len(c))
-	fmt.Println(len(g.Edges))
-	
-	fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
+	//fmt.Printf("Graph g is simple: %v\n", g.IsSimple())
 }
