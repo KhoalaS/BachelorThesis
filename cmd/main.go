@@ -6,8 +6,7 @@ import (
 )
 
 func main(){
-
-	g := hypergraph.GenerateTestGraph(10000, 20000)
+	g := hypergraph.GenerateTestGraph(1000000, 2000000)
 
 	c := make(map[int32]bool)
 	

@@ -308,7 +308,7 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 	return true
 }
 
-func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) bool {
+func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 	vSub := make(map[int32]map[uint32]bool)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
@@ -411,24 +411,15 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) bool {
 					break
 				}
 			}
-			if solFound {
-				break
-			}
 		}
 		if !solFound {
 			break
 		}
 	}
 
-	if len(remVertices) == 0 {
-		return false
-	}
-
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
 	}
-
-	return true
 }
 
 type IdValueHolder struct {
