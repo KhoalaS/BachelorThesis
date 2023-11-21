@@ -1,4 +1,4 @@
-# Selbstüberwachende Approximationsalgorithmen | Implementierung und Evaluierung eines 3-HS Algorithmus
+# Self-monitoring Approximation Algorithms | Implementation of a 3-HS Algorithm
 
 ## Datastructures
 
@@ -26,7 +26,7 @@ When working with the endpoints of an edge, we are usually not interested in the
 
 This simulates a $\texttt{Set}$ datatype while allowing faster access times than simple arrays/slices.
 
-## Hypergraph
+### Hypergraph
 ```go
 type HyperGraph struct {
 	Vertices map[int32]Vertex
@@ -51,14 +51,28 @@ func NameRule(g HyperGraph, c map[int32]bool)
 ```
 We take both a HyperGraph g and a *Set* c as arguments and mutate them.
 
-We could also implement these rules as member functions of the HyperGraph struct.
+We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
+
+### Tiny/Small Edge Rule
+> tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
+ 
+> small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
+and $y$ into the hitting set.
+```go
+func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) 
+```
+
+#### $O(|E|)$ Algortihm
+Iterate over all edges of the graph and mark all edges of size $t$. Then put all endpoints of these edges into the partial solution and remove the edges. 
 
 ### Edge Domination Rule
+> (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
+
 ```go
 func EdgeDominationRule(g HyperGraph, c map[int32]bool)
 ```
 
-#### $O(|E|\cdot d^3)$ Algorithm
+#### $O(|E|)$ Algorithm
 
 We partition our set of edges into two disjoint sets $sub$ and $dom$. The set $dom$ will contain edges that could possibly be dominated. The set $sub$ will contain hashes of edges $e$ that could dominate another edge. We compute these hashes as follows.
 
@@ -67,6 +81,7 @@ First we store the ids of the endpoints of $e$ in an array. We then use the buil
 We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the "$\textit{hash of the subset}$" is present in our set $sub$. If it is then $f$ is dominated by another edge. 
 
 The exact time complexity is as follows:
+
 $$
 \begin{align*}
 T &= |E| + (|E| \cdot \left(((d-1) \cdot (d\cdot(d-1))) + \sum_{i=1}^{d-1}{\binom{d}{i}}\right)) \\
@@ -78,17 +93,18 @@ $$
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
 
 ### Approximative Vertex Domination Rule
+> approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 ```go
 func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool)
 ```
 
-#### $O(|E|+ |V|^2)$
-The quadratic exponent $|V|$ looks scary at first, but will only occur in the case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
+#### $O(|E| + |V|^2)$ Algorithm
+The quadratic exponent in $|V|$ looks scary at first, but will only occur in the case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
 
 
-First we want to associate every endpoint of an edge $e$ with the other endpoints in $e$. We do this by iterating over all edges in our graph $G$ and effectively computing all subsets of $e$ with size $|e|-1$. For each of these subsets $e_{sub}$ we associate the vertex $w \in e\setminus e_{sub}$ with the hash of $e_{sub}$. We also keep track of the amount of times other vertices are adjacent to $w$. 
+First we want to associate every endpoint of an edge $e$ with the other endpoints in $e$. We do this by iterating over all edges in our graph $G$ and effectively computing all subsets of $e$ with size $|e|-1$. For each of these subsets $e_{sub}$ we associate the vertex $w \in e\setminus e_{sub}$ with the hash of $e_{sub}$. We also keep track of the amount of times other vertices are vertex-adjacent to $w$. 
 
-By following this procedure we obtain two maps, the first one called $\texttt{vSub}$ associates a vertex $v$ with the hashes of subsets of edges that result in removing $v$ from edges containing $v$. The second map $\texttt{vSubCount}$ associates a vertex $v$ with all other vertices that are adjacent to $v$. Note that $\texttt{vSubCount}$ also keeps track of the number of times a vertex is adjacent to $v$.
+By following this procedure we obtain two maps, the first one called $\texttt{vSub}$ associates a vertex $v$ with the hashes of subsets of edges that result in removing $v$ from edges containing $v$. The second map $\texttt{vSubCount}$ associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. Note that $\texttt{vSubCount}$ also keeps track of the number of times a vertex is vertex-adjacent to $v$.
 
 Example:
 
@@ -137,6 +153,22 @@ $\square$
 We are only interested in one valid solution per entry in $\texttt{vSub[v]}$. We then add the two vertices to our partial solution $c$.
 
 The only problem right now is that we have to call this rule exhaustively, since putting vertices in our partial solution mutates the graphs edges. Instead of calling this rule exhaustively, we should aim to find a way to recalculate the maps $\texttt{vSub}$ and $\texttt{vSubCount}$ efficiently. 
+
+__Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the Domination condition for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a time complexity of $|E|+|V|+|V|^2\cdot|E|$. 
+
+### Small Triangle Rule
+> small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
+```go
+func SmallTriangleRule(g HyperGraph, c map[int32]bool)
+```
+
+#### $O(|E|+|V|^2)$ Algorithm
+Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle.
+
+We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
+
+This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. In randomly generated graphs, a triangle situation occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+
 ## Possible Optimizations
 
 Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 

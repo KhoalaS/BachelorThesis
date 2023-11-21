@@ -422,6 +422,90 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 	}
 }
 
+func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
+	adjList := make(map[int32]map[int32]bool)
+	remVertices := make(map[int32]bool)
+	remEdges := make(map[int32]bool)
+
+	// Time Compelxity: |E|
+	for _, e := range g.Edges {
+		if len(e.v) != 2 {
+			continue
+		}
+		arr := mapToSlice(e.v)
+
+		if _, ex := adjList[arr[0]]; !ex {
+			adjList[arr[0]] = make(map[int32]bool)
+		}
+		adjList[arr[0]][arr[1]] = true
+
+		if _, ex := adjList[arr[1]]; !ex {
+			adjList[arr[1]] = make(map[int32]bool)
+		}
+		adjList[arr[1]][arr[0]] = true
+	}
+
+	// Time Compelxity: |V|^2
+	for x, val := range adjList {
+		if len(val) < 2 {
+			continue
+		}
+		arr := mapToSlice(val)
+		subsets := list.New()
+		s := 2
+		getSubsetsRec(arr, 0, len(arr), s, make([]int32, s), 0, subsets)
+
+		for item := subsets.Front(); item != nil; item = item.Next() {
+			subset := item.Value.([]int32)
+			//y := subset[0] and z := subset[1]
+			// triangle condition
+			if adjList[subset[0]][subset[1]] {
+				remSet := []int32{subset[0], subset[1], x}
+				for _, y := range remSet {
+					c[y] = true
+					remVertices[y] = true
+					for z := range adjList[y] {
+						for _, u := range remSet {
+							delete(adjList[z], u)
+						}
+					} 
+					delete(adjList, y)
+				}
+				break
+			}
+		}
+	}
+
+	for id, e := range g.Edges {
+		for v := range e.v {
+			if remVertices[v] {
+				remEdges[id] = true
+				break
+			}
+		}
+	}
+
+	for eId := range remEdges {
+		delete(g.Edges, eId)
+	}
+
+	for vId := range remVertices {
+		delete(g.Vertices, vId)
+	}
+}
+
+func mapToSlice[K comparable, V any ](m map[K]V) []K {
+	arr := make([]K, len(m))
+
+	i := 0
+	for val := range m {
+		arr[i] = val
+		i++
+	}
+
+	return arr
+}
+
 type IdValueHolder struct {
 	Id    int32
 	Value int32

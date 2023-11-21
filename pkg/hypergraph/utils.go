@@ -17,7 +17,7 @@ func getHash(arr []int32) uint32 {
 		return arr[i] < arr[j]
 	})
 
-	in := ""
+	in := "|"
 
 	for _, j := range arr {
 		in += (strconv.Itoa(int(j)) + "|")
