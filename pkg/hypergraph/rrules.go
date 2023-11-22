@@ -23,7 +23,7 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 		// compute all subsets of edge with id eId
 		subsets := list.New()
 
-		for s := g.Degree - 1; s > 0; s-- {
+		for s := 2; s > 0; s-- {
 			getSubsetsRec(epArr, 0, len(epArr), s, make([]int32, s), 0, subsets)
 		}
 
