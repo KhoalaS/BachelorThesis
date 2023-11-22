@@ -1,6 +1,8 @@
 package hypergraph
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestApproxVertexDominationRule(t *testing.T){
 	var vSize int32 = 8
@@ -117,26 +119,6 @@ func TestRemoveEdgeRule(t *testing.T) {
 	
 }
 
-func TestApproxVertexDominationRule2(t *testing.T) {
-	var vSize int32 = 8
-	g := NewHyperGraph()
-	
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
-	}
-
-	g.AddEdge(0,3,2)
-	g.AddEdge(2,4)
-	g.AddEdge(0,2,7)
-
-	c := make(map[int32]bool)
-	ApproxVertexDominationRule2(g, c)
-
-	t.Fatal(c)
-}
-
 func TestApproxVertexDominationRule3(t *testing.T) {
 	var vSize int32 = 8
 	g := NewHyperGraph()
@@ -154,5 +136,46 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	c := make(map[int32]bool)
 	ApproxVertexDominationRule3(g, c)
 
-	t.Fatal(c)
+	// possible solutions: [2,7], [0,2], [2,3]
+
+	if len(c) != 2 {
+		t.Fatalf("Partial solution is wrong.")
+	}
+
+	if !((c[2] && c[7]) || (c[0] && c[2]) || (c[2] && c[3])) {
+		t.Fatalf("Partial solution is wrong.")
+	}
+}
+
+func TestSmallTriangleRule(t *testing.T) {
+	var vSize int32 = 7
+	g := NewHyperGraph()
+	
+	var i int32 = 0
+
+	for ; i < vSize; i++ {
+		g.AddVertex(i, 0)
+	}
+
+	g.AddEdge(0,1)
+	g.AddEdge(1,2)
+	g.AddEdge(2,0)
+	g.AddEdge(2,4)
+	g.AddEdge(4,5,6)
+
+	c := make(map[int32]bool)
+
+	SmallTriangleRule(g, c)
+
+	if !(c[0] && c[1] && c[2]){
+		t.Fatalf("Partial solution is wrong.")
+	}
+
+	if len(g.Edges) != 1 {
+		t.Fatalf("Graph g has %d edges, the expected number is 1.", len(g.Edges))
+	}
+
+	if _,ex := g.Edges[4]; !ex {
+		t.Fatalf("The wrong edge has been removed.")
+	}
 }
