@@ -22,9 +22,10 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 
 		// compute all subsets of edge with id eId
 		subsets := list.New()
-
+		
 		for s := 2; s > 0; s-- {
-			getSubsetsRec(epArr, 0, len(epArr), s, make([]int32, s), 0, subsets)
+			data := make([]int32, s);
+			getSubsetsRec(&epArr, 0, len(epArr), s, &data, 0, subsets)
 		}
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
@@ -453,7 +454,8 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
 		arr := mapToSlice(val)
 		subsets := list.New()
 		s := 2
-		getSubsetsRec(arr, 0, len(arr), s, make([]int32, s), 0, subsets)
+		data := make([]int32, s)
+		getSubsetsRec(&arr, 0, len(arr), s, &data, 0, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
 			subset := item.Value.([]int32)
