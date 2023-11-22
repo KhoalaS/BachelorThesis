@@ -122,7 +122,7 @@ func (e *Edge) getHash() uint32 {
 		return arr[i2] < arr[j]
 	})
 
-	in := ""
+	in := "|"
 
 	for _, j := range arr {
 		in += (strconv.Itoa(int(j)) + "|")
