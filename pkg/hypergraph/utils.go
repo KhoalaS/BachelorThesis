@@ -28,8 +28,12 @@ func getHash(arr []int32) uint32 {
 	return h.Sum32();
 }	
 
-func GenerateTestGraph(numVertices int32, numEdges int32) HyperGraph {
+func GenerateTestGraph(numVertices int32, numEdges int32, tinyEdges bool) HyperGraph {
 	g := NewHyperGraph()
+	var tinyEdgeProb float32 = 0.0001
+	if !tinyEdges {
+		tinyEdgeProb = 0.0
+	}
 	
 	var i int32 = 0
 
@@ -42,7 +46,7 @@ func GenerateTestGraph(numVertices int32, numEdges int32) HyperGraph {
 	for ; i < numEdges; i++ {
 		d := 1
 		r := rand.Float32()
-		if r > 0.0001 && r < 0.6 {
+		if r > tinyEdgeProb && r < 0.6 {
 			d = 2
 		} else if r >= 0.6 {
 			d = 3
