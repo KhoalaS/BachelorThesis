@@ -1,5 +1,8 @@
 # Self-monitoring Approximation Algorithms | Implementation of a 3-HS Algorithm
 
+## Programming Language
+We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
+
 ## Datastructures
 
 ### Vertex
@@ -37,7 +40,7 @@ type HyperGraph struct {
 ```
 The $\texttt{HyperGraph}$ datatype has four field. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
 
-We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are easier.
+We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type.
 
 The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. 
 
@@ -54,9 +57,8 @@ We take both a HyperGraph g and a *Set* c as arguments and mutate them.
 We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
 
 ### Tiny/Small Edge Rule
-> tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
- 
-> small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
+- tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
+- small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
 and $y$ into the hitting set.
 ```go
 func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) 
@@ -66,7 +68,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int)
 Iterate over all edges of the graph and mark all edges of size $t$. Then put all endpoints of these edges into the partial solution and remove the edges. 
 
 ### Edge Domination Rule
-> (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
+- (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
 
 ```go
 func EdgeDominationRule(g HyperGraph, c map[int32]bool)
@@ -93,7 +95,7 @@ $$
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
 
 ### Approximative Vertex Domination Rule
-> approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
+- approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 ```go
 func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool)
 ```
@@ -126,7 +128,6 @@ $$
  &2: \{ 1: 2, \quad 3:1, \quad 4:1\} \\
  &3: \{ 1: 1, \quad 2:1\} \\
  &4: \{ 1: 1, \quad 2:1\} \quad \}	
-
 \end{align*}
 $$
 
@@ -157,7 +158,7 @@ The only problem right now is that we have to call this rule exhaustively, since
 __Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the Domination condition for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a time complexity of $|E|+|V|+|V|^2\cdot|E|$. 
 
 ### Small Triangle Rule
-> small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
+- small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 ```go
 func SmallTriangleRule(g HyperGraph, c map[int32]bool)
 ```
