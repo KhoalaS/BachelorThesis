@@ -1,6 +1,9 @@
 package hypergraph
 
 import (
+	"fmt"
+	"os"
+	"runtime/pprof"
 	"testing"
 )
 
@@ -183,26 +186,82 @@ func BenchmarkTinyEdgeRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
 	
-	RemoveEdgeRule(g, c, TINY)
-}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		RemoveEdgeRule(g, c, SMALL)
+	}}
 
 func BenchmarkSmallEdgeRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
 	
-	RemoveEdgeRule(g, c, SMALL)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		RemoveEdgeRule(g, c, SMALL)
+	}
+}
+
+func BenchmarkEdgeDominationRule(b *testing.B) {
+	g := GenerateTestGraph(1000000, 2000000, false)
+	c := make(map[int32]bool)
+
+	f, err := makeProfile("edgeDom")
+	if err != nil {
+		b.Fatal("Could not create cpu profile")
+	}
+	defer stopProfiling(f)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		EdgeDominationRule(g, c)
+    }
 }
 
 func BenchmarkSmallTriangleRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, false)
 	c := make(map[int32]bool)
 
-	SmallTriangleRule(g, c)
+	f, err := makeProfile("smallTriangleRule")
+	if err != nil {
+		b.Fatal("Could not create cpu profile")
+	}
+	defer stopProfiling(f)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		SmallTriangleRule(g, c)
+    }
 }
 
 func BenchmarkApproxVertexDominationRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, false)
 	c := make(map[int32]bool)
+	f, err := makeProfile("approxVertexDom")
+	if err != nil {
+		b.Fatal("Could not create cpu profile")
+	}
+	defer stopProfiling(f)
 
-	ApproxVertexDominationRule3(g, c)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ApproxVertexDominationRule3(g, c)
+    }
+}
+
+func makeProfile(name string) (*os.File, error) {
+	f, err := os.Create(fmt.Sprintf("../../profiles/benchmark_%s.prof", name))
+    if err != nil {
+        return nil, err
+    }
+
+    if err := pprof.StartCPUProfile(f); err != nil {
+        return f, err
+    }
+
+	return f, nil
+}
+
+func stopProfiling(f *os.File) {
+	pprof.StopCPUProfile()
+	f.Close()
 }
