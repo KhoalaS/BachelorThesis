@@ -65,7 +65,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int)
 ```
 
 #### $O(|E|)$ Algortihm
-Iterate over all edges of the graph and mark all edges of size $t$. Then put all endpoints of these edges into the partial solution and remove the edges. 
+Iterate over all edges of the graph and mark all edges of size $t$. Then put all endpoints of these edges into the partial solution and remove the marked edges and all edges that are edge-adjacent to marked edges. 
 
 ### Edge Domination Rule
 - (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
@@ -90,6 +90,9 @@ T &= |E| + (|E| \cdot \left(((d-1) \cdot (d\cdot(d-1))) + \sum_{i=1}^{d-1}{\bino
 &< |E| + |E| \cdot \left(d^3 + \sum_{i=1}^{d-1}{\binom{d}{i}}\right)
 \end{align*}
 $$
+
+#### IMPORTANT
+Not final. The the sum of the binomial coeffients is a minimum. Actual complexity is quadratic in $d$.
 
 ##### Remarks
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
@@ -145,7 +148,7 @@ __Case 1:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ exists. Hence the edge
 
 $$\texttt{a.value} + \texttt{b.value} = occur$$
 
-Since we know that the edge $\{ v,a,b \}$ exists, we can conclude that $\texttt{a}$ or $\texttt{b}$ are occuring $occur-2 = |\texttt{vSub[v]}|-1$ times in other edges containing $\texttt{v}$. Under the assumption that we dont have duplicate edges, $\texttt{a}$ or $\texttt{b}$ can't occur in the same edge. Therfore all edges with endpoint $\texttt{v}$ either contain $\texttt{a}$ or $\texttt{b}$.
+Since we know that the edge $\{ v,a,b \}$ exists, we can conclude that $\texttt{a}$ or $\texttt{b}$ are occuring $occur-2 = |\texttt{vSub[v]}|-1$ times in other edges containing $\texttt{v}$. Under the assumption that we dont have duplicate edges, $\texttt{a}$ or $\texttt{b}$ can't occur in the same edge again. Therfore all edges with endpoint $\texttt{v}$ either contain $\texttt{a}$ or $\texttt{b}$.
 
 __Case 2:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ does not exist. The edge $\{ v,a,b \}$ does not exist. The solution is wrong.
 
