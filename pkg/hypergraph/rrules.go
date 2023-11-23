@@ -2,7 +2,6 @@ package hypergraph
 
 import (
 	"container/list"
-	"fmt"
 	"runtime"
 	"sync"
 )
@@ -124,7 +123,6 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
 	}
-	fmt.Println("delete finished")
 }
 
 // Complexity: (|E| * d)^2
