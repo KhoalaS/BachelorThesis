@@ -68,6 +68,12 @@ func BenchmarkGetSubsetsRec(b *testing.B) {
 	}
 	subsetSize := 2
 
+	f, err := makeProfile("subsetRec")
+	if err != nil {
+		b.Fatal("Could not create profile")
+	}
+	defer stopProfiling(f)
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		subsets := list.New()
