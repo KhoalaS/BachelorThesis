@@ -397,7 +397,7 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 									vSubCount[w][u]--
 								}
 								if succ {
-									vSub[w][getHash(subEdge)] = false
+									delete(vSub[w], getHash(subEdge))
 								}
 							}
 							delete(g.Edges, remEdge)

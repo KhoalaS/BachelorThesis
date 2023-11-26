@@ -6,7 +6,7 @@ import (
 )
 
 func main(){
-	g := hypergraph.GenerateTestGraph(1000000, 2000000, true)
+	g := hypergraph.GenerateTestGraph(100000, 200000, true)
 
 	c := make(map[int32]bool)
 	
@@ -23,13 +23,13 @@ func main(){
 	fmt.Println(len(g.Edges))
 
 	*/
-	hypergraph.SmallTriangleRule(g, c)
-	fmt.Println("|After Small Triangle Rule|")
-	fmt.Println(len(c))
-
-	//hypergraph.ApproxVertexDominationRule3(g, c)
-	//fmt.Println("|After Approx Vertex Domination Rule3|")
+	//hypergraph.SmallTriangleRule(g, c)
+	//fmt.Println("|After Small Triangle Rule|")
 	//fmt.Println(len(c))
+
+	hypergraph.ApproxVertexDominationRule3(g, c)
+	fmt.Println("|After Approx Vertex Domination Rule3|")
+	fmt.Println(len(c))
 
 	//for ex := hypergraph.ApproxVertexDominationRule2(g, c); ex; ex = hypergraph.ApproxVertexDominationRule2(g, c){}
 	//fmt.Println("|After Approx Vertex Domination Rule2|")

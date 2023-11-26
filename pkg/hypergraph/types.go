@@ -109,6 +109,7 @@ type Edge struct {
 	v map[int32]bool
 }
 
+// Time Complexity: 2d + d*log(d)
 func (e *Edge) getHash() uint32 {
 	h := xxhash.New32()
 

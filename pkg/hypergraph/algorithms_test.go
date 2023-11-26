@@ -34,11 +34,11 @@ func TestGetSubsetsRec(t *testing.T) {
 	data := make([]int32, size)
 
 	getSubsetsRec(&arr, 0, len(arr), size, &data, 0, subsets)
-	
+
 	if subsets.Len() != 3 {
 		t.Fatalf("Solution has size %d, expected 3.", subsets.Len())
 	}
-	
+
 	for item := subsets.Front().Next(); item != nil; item = item.Next() {
 		if !hashes[getHash(item.Value.([]int32))] {
 			t.Fatalf("Solution %d is not a size two subset of [0,1,2].", item.Value.([]int32))
@@ -61,7 +61,7 @@ func BenchmarkTwoSum(b *testing.B) {
 }
 
 func BenchmarkGetSubsetsRec(b *testing.B) {
-	size := 100
+	size := 1000
 	arr := make([]int32, size)
 	for i := 0; i < size; i++ {
 		arr[i] = int32(i)

@@ -38,7 +38,7 @@ type HyperGraph struct {
 	Degree int32
 }
 ```
-The $\texttt{HyperGraph}$ datatype has four field. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
+The $\texttt{HyperGraph}$ datatype has four fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
 
 We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type.
 
@@ -46,6 +46,82 @@ The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to ad
 
 The field $\texttt{Degree}$ specifies the maximum degree of the graph. 
 
+## Misc. Algorithms/Utilities
+
+### IdValueHolder Struct
+```go
+type IdValueHolder struct {
+	Id    int32
+	Value int32
+}
+```
+The struct has two fields. The field $\texttt{Id}$ is an id and the field $\texttt{Value}$ holds a $\texttt{int32}$ value. We use this struct in out custom $\textnormal{Two-Sum}$ implementation, we will elaborate further in the $\textnormal{Two-Sum}$ section.
+
+### getHash
+
+```go
+func getHash(arr []int32) uint32
+```
+Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
+
+We start by sorting $\texttt{arr}$ with a $\textnormal{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", producing a string of the form $|id_0|id_1|\dots|id_n|$. We then hash this string using the pure Go implementation of the [xxHash](https://github.com/Cyan4973/xxHash) hashing algorithm. It is probably the fastest non-cryptographic hash function to date. This will yield a $\texttt{uint32}$ hashsum that we return.
+
+Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
+
+### getSubsetsRec
+```go
+func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, subsets *list.List)
+```
+Time Complexity: $\binom{n}{r}$
+
+Let us explain all the arguments first. 
+- $\texttt{arr}$ is a pointer to an array. This array is basically the input set whose subsets we want to compute. 
+- $\texttt{i}$ is used to keep track of the recursion depth
+- $\texttt{n}$ is the size of $\texttt{arr}$. 
+- $\texttt{s}$ is the size of the computed subsets
+- $\texttt{data}$ 
+- $\texttt{index}$ is the current position, on which we want to insert a value into $\texttt{data}$
+- $\texttt{subsets}$ is a list that will store all the subsets of size $\texttt{s}$ we find
+
+The implementation looks as follows.
+
+```go
+func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, subsets *list.List){
+    if index ==  s{
+        subset := make([]int32, s)    
+        for j:= 0; j < index; j++ {
+            subset[j] = *data[j]
+        }
+        subsets.PushBack(subset)
+        return
+    }
+
+    if i >= n {
+        return
+    }
+
+    (*data)[index] = (*arr)[i]
+    
+    getSubsetsRec(arr, i+1, n, s, data, index+1, subsets)
+    getSubsetsRec(arr, i+1, n, s, data, index, subsets)
+}
+```
+The algorithm is pretty simple. 
+
+1. We either put the $i^{th}$ element of $\texttt{arr}$ into our temporary array $\texttt{data}$ and increment $\texttt{index}$ and $\texttt{i}$.
+2. Or we only increment $\texttt{i}$.
+
+We have two base conditions.
+
+1. If $\texttt{index}$ is equal to $\texttt{s}$, then we copy the contents of $\texttt{data[0:s]}$ into an array and push it onto $\texttt{subsets}$.
+2. If $\texttt{i}$ is greater than or equal $\texttt{n}$. 
+
+Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists.
+
+### Two-Sum
+#### $\mathcal{O}(n)$ Algorithm
+
+## Possible Optimizations
 
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
@@ -86,13 +162,11 @@ The exact time complexity is as follows:
 
 $$
 \begin{align*}
-T &= |E| + (|E| \cdot \left(((d-1) \cdot (d\cdot(d-1))) + \sum_{i=1}^{d-1}{\binom{d}{i}}\right)) \\
-&< |E| + |E| \cdot \left(d^3 + \sum_{i=1}^{d-1}{\binom{d}{i}}\right)
+T &= |E| \cdot d\cdot \log (d) + (|E| \cdot (d + 2^d + (2^d \cdot d \cdot \log(d)))) \\
 \end{align*}
 $$
 
-#### IMPORTANT
-Not final. The the sum of the binomial coeffients is a minimum. Actual complexity is quadratic in $d$.
+where $d$ denotes the degree of the graph.
 
 ##### Remarks
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
@@ -105,7 +179,6 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool)
 
 #### $O(|E| + |V|^2)$ Algorithm
 The quadratic exponent in $|V|$ looks scary at first, but will only occur in the case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
-
 
 First we want to associate every endpoint of an edge $e$ with the other endpoints in $e$. We do this by iterating over all edges in our graph $G$ and effectively computing all subsets of $e$ with size $|e|-1$. For each of these subsets $e_{sub}$ we associate the vertex $w \in e\setminus e_{sub}$ with the hash of $e_{sub}$. We also keep track of the amount of times other vertices are vertex-adjacent to $w$. 
 
