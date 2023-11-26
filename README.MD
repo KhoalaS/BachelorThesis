@@ -121,8 +121,6 @@ Lists in Go are not very memory efficient, but since we exclusively call this fu
 ### Two-Sum
 #### $\mathcal{O}(n)$ Algorithm
 
-## Possible Optimizations
-
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
 ```go
@@ -131,6 +129,9 @@ func NameRule(g HyperGraph, c map[int32]bool)
 We take both a HyperGraph g and a *Set* c as arguments and mutate them.
 
 We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
+
+### Notation
+We usually use the $\texttt{terminal typeface}$ to refer to variable names or code. We will often refer to the $\texttt{id}$ field of a vertex struct as $\texttt{v}$ and will use the notion of a vertex $v$ and the $\texttt{id}$ of a vertex interchangebly. We use $d$ to refer to the degree of the graph.
 
 ### Tiny/Small Edge Rule
 - tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
@@ -180,9 +181,12 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool)
 #### $O(|E| + |V|^2)$ Algorithm
 The quadratic exponent in $|V|$ looks scary at first, but will only occur in the case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
 
-First we want to associate every endpoint of an edge $e$ with the other endpoints in $e$. We do this by iterating over all edges in our graph $G$ and effectively computing all subsets of $e$ with size $|e|-1$. For each of these subsets $e_{sub}$ we associate the vertex $w \in e\setminus e_{sub}$ with the hash of $e_{sub}$. We also keep track of the amount of times other vertices are vertex-adjacent to $w$. 
+We first construct two maps:
 
-By following this procedure we obtain two maps, the first one called $\texttt{vSub}$ associates a vertex $v$ with the hashes of subsets of edges that result in removing $v$ from edges containing $v$. The second map $\texttt{vSubCount}$ associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. Note that $\texttt{vSubCount}$ also keeps track of the number of times a vertex is vertex-adjacent to $v$.
+- $\texttt{vSub map[int32]int32}:$ this map associates a vertex $v$ with the amount of edges containing the $v$.
+- $\texttt{vSubCount make(map[int32]map[int32]int32)}:$ this map associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. 
+
+Both maps can be computed in time $|E|\cdot d^2$.
 
 Example:
 
@@ -191,47 +195,40 @@ Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $\texttt{vSub}$ and $\texttt{vSubCo
 $$
 \begin{align*}
 \texttt{vSub} = \{\quad
- &1: h(2,3), h(2,4)\\
- &2: h(1,3), h(1,4) \\
- &3: h(1,2) \\	
- &4: h(1,2) \quad \}
+ &1: 2,\\
+ &2: 2, \\
+ &3: 1, \\	
+ &4: 1 \quad \}
 \end{align*}
 \newline
 
 \begin{align*}
 \texttt{vSubCount} = \{\quad
- &1: \{ 2: 2, \quad 3:1, \quad 4:1\}\\
- &2: \{ 1: 2, \quad 3:1, \quad 4:1\} \\
- &3: \{ 1: 1, \quad 2:1\} \\
+ &1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
+ &2: \{ 1: 2, \quad 3:1, \quad 4:1\}, \\
+ &3: \{ 1: 1, \quad 2:1\}, \\
  &4: \{ 1: 1, \quad 2:1\} \quad \}	
 \end{align*}
 $$
 
-where $h(x,y)$ denotes the hash of an edge with endpoints $x,y.$
-
-We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. Using the $\texttt{IdValueHolder}$ struct (a simple struct that holds an id and a value field) we store all entries of our current value $\texttt{vSubCount[v]}$, in an array $\texttt{arr}$. We then use a $\textnormal{Two-Sum}$-Algorithm to compute all pairs in $\texttt{arr}$, s.t. for each pair $(\texttt{a},\texttt{b})$ holds, $\texttt{a.value} + \texttt{b.value} = \texttt{len(vSub[v])}+1$. We then check for each of these pairs if $\texttt{vSub[v]}\texttt{\lbrack}h(\texttt{a.id},\texttt{b.id})\texttt{\rbrack}$ exists. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a.id}\in f$ or $\texttt{b.id}\in f$.
+We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. We then use a $\textnormal{Two-Sum}$-Algorithm to compute and return the first pair in $\texttt{vSubCount[v]}$, s.t. for the pair $\texttt{[a,b]}$ holds, $\texttt{a} + \texttt{b} = \texttt{vSub[v]}+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a}\in f$ or $\texttt{b}\in f$.
 
 **Lemma.** The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_ and eliminate any duplicate edges. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n$ be the length of $\texttt{vSub[v]}$. Now let $\texttt{solutions}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on the array version of $\texttt{vSubCount[v]}$. For every solution $sol \in \texttt{solutions}, sol = (\texttt{a},\texttt{b})$ we can consider two possible cases:
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_ and eliminate any duplicate edges. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vSub[v]}+1$. 
 
-Let $hash$ be $h(\texttt{a}, \texttt{b})$.
+_Proposition._ If $\texttt{sol}$ is non-empty, then the edge $\{ \texttt{v,a,b} \}$ exists. 
 
-__Case 1:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ exists. Hence the edge $\{ v,a,b \}$ does exist. Let $occur$ be $\texttt{|vSub[v]|}+1$, the amount of edges which contain $\texttt{v}$ plus one. Since we used this $occur$ value as our target sum in the $\textnormal{Two-Sum}$ call, the following holds for $\texttt{a}$ and $\texttt{b}$, 
+Let $\texttt{sol=[a,b]}$ be the solution obtained by calling our $\textnormal{Two-Sum}$ algorithm on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vSub[v]}+1$. For the sake of contradiction let us assume that the edge $\{ \texttt{v,a,b} \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ \texttt{v,a,b} \}$, there exist $\texttt{vSub[v]}+1$ many edges that contain either $\texttt{a,v}$ or $\texttt{b,v}$. This however contradicts that there only exist $\texttt{vSub[v]}$ many edges containing $\texttt{v}$. Therefore it must be, that the assumption that $\{ \texttt{v,a,b} \}$ does not exist, is false.
 
-$$\texttt{a.value} + \texttt{b.value} = occur$$
+Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occur $n-2 = \texttt{vSubCount[v]} - 1$ times in other edges containing $\texttt{v}$. Since duplicate edges of  $\{ \texttt{v,a,b} \}$ can not exist, we know that every other edge containing $\texttt{v}$ also contains $\texttt{a}$ or $\texttt{b}$, but not both simultaniously. $\square$
 
-Since we know that the edge $\{ v,a,b \}$ exists, we can conclude that $\texttt{a}$ or $\texttt{b}$ are occuring $occur-2 = |\texttt{vSub[v]}|-1$ times in other edges containing $\texttt{v}$. Under the assumption that we dont have duplicate edges, $\texttt{a}$ or $\texttt{b}$ can't occur in the same edge again. Therfore all edges with endpoint $\texttt{v}$ either contain $\texttt{a}$ or $\texttt{b}$.
+We then add the two vertices in the solution to our partial solution $c$.
 
-__Case 2:__ $\texttt{vSub[v]\lbrack}hash\texttt{\rbrack}$ does not exist. The edge $\{ v,a,b \}$ does not exist. The solution is wrong.
-
-$\square$
-
-We are only interested in one valid solution per entry in $\texttt{vSub[v]}$. We then add the two vertices to our partial solution $c$.
-
-The only problem right now is that we have to call this rule exhaustively, since putting vertices in our partial solution mutates the graphs edges. Instead of calling this rule exhaustively, we should aim to find a way to recalculate the maps $\texttt{vSub}$ and $\texttt{vSubCount}$ efficiently. 
+[__MULTI PASS LOOP__]
 
 __Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the Domination condition for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a time complexity of $|E|+|V|+|V|^2\cdot|E|$. 
+
 
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.

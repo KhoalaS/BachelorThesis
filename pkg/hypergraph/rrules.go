@@ -21,9 +21,9 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 
 		// compute all subsets of edge with id eId
 		subsets := list.New()
-		
+
 		for s := 2; s > 0; s-- {
-			data := make([]int32, s);
+			data := make([]int32, s)
 			getSubsetsRec(&epArr, 0, len(epArr), s, &data, 0, subsets)
 		}
 
@@ -62,14 +62,14 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 	numCPU := runtime.NumCPU()
 	lDom := len(domEdges)
 	batchSize := lDom / numCPU
-	
+
 	if lDom < numCPU {
 		numCPU = 1
 		batchSize = lDom
 	}
-	
+
 	channel := make(chan map[int32]bool, numCPU)
-	
+
 	wg.Add(numCPU)
 
 	for i := 0; i < numCPU; i++ {
@@ -254,9 +254,9 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 		for _, sol := range solutions {
 			hash := getHash(sol)
 			if vSub[vId][hash] {
-				
+
 				isNew := true
-				
+
 				for _, v := range sol {
 					if c[v] {
 						isNew = false
@@ -265,7 +265,7 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 				}
 
 				if !isNew {
-					continue					
+					continue
 				}
 
 				for _, v := range sol {
@@ -308,7 +308,7 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 }
 
 func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
-	vSub := make(map[int32]map[uint32]bool)
+	vSub := make(map[int32]int)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
 	adjList := make(map[int32]map[int32]bool)
@@ -324,7 +324,6 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 
 			if _, ex := vSubCount[vId0]; !ex {
 				vSubCount[vId0] = make(map[int32]int32)
-				vSub[vId0] = make(map[uint32]bool)
 			}
 
 			for vId1 := range e.v {
@@ -333,82 +332,47 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 					vSubCount[vId0][vId1]++
 				}
 			}
-
-			subHash := getHash(sub)
-			vSub[vId0][subHash] = true
+			vSub[vId0]++
 		}
 	}
 
-
 	// Time Complexity: |V| * (|V| + 4c)
-	for ; true; {
+	for true {
 		solFound := false
 		for vId, count := range vSubCount {
 			if c[vId] {
 				continue
 			}
-			
-			arr := make([]IdValueHolder, len(count))
-			i := 0
-			for id, val := range count {
-				if val == 0 {
-					continue
-				}
-				arr[i] = IdValueHolder{Id: id, Value: val}
-				i++
-			}
-			arr = arr[0:i]
 
-			target := 0
-			for _, m := range vSub[vId] {
-				if m {
-					target++
-				}
+			target := vSub[vId]
+			solution, ex := twoSumSingleSolution(count, target+1)
+			if !ex {
+				continue
 			}
-			solutions := twoSum(arr, target+1)
-	
-			for _, sol := range solutions {
-				hash := getHash(sol)
-				if vSub[vId][hash] {
-					
-					isNew := true
-					
-					for _, v := range sol {
-						if c[v] {
-							isNew = false
-							break
+
+			solFound = true
+
+			for _, v := range solution {
+				c[v] = true
+				remVertices[v] = true
+				for remEdge := range adjList[v] {
+					for w := range g.Edges[remEdge].v {
+						if w == v {
+							continue
+						}
+						subEdge, succ := SetMinus(g.Edges[remEdge], w)
+						for _, u := range subEdge {
+							vSubCount[w][u]--
+						}
+						if succ {
+							vSub[w]--
 						}
 					}
-	
-					if !isNew {
-						continue					
-					}
-	
-					for _, v := range sol {
-						c[v] = true
-						remVertices[v] = true
-						for remEdge := range adjList[v] {
-							for w := range g.Edges[remEdge].v {
-								if w == v {
-									continue
-								}
-								subEdge, succ := SetMinus(g.Edges[remEdge], w)
-								for _, u := range subEdge {
-									vSubCount[w][u]--
-								}
-								if succ {
-									delete(vSub[w], getHash(subEdge))
-								}
-							}
-							delete(g.Edges, remEdge)
-						}
-						delete(adjList, v)
-						delete(vSub, v)
-						delete(vSubCount, v)
-					}
-					solFound = true
-					break
+					delete(g.Edges, remEdge)
 				}
+				delete(adjList, v)
+				delete(vSub, v)
+				delete(vSubCount, v)
 			}
 		}
 		if !solFound {
@@ -468,7 +432,7 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
 						for _, u := range remSet {
 							delete(adjList[z], u)
 						}
-					} 
+					}
 					delete(adjList, y)
 				}
 				break
@@ -494,7 +458,7 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
 	}
 }
 
-func mapToSlice[K comparable, V any ](m map[K]V) []K {
+func mapToSlice[K comparable, V any](m map[K]V) []K {
 	arr := make([]K, len(m))
 
 	i := 0

@@ -44,3 +44,25 @@ func twoSum(arr []IdValueHolder, t int) ([][]int32) {
     }
     return solutions
 }
+
+// Time Complexity: n
+func twoSumSingleSolution(items map[int32]int32, t int) ([]int32, bool) { 
+    N := int32(t)
+    lookup := make(map[int32]int32)
+
+    for id, val := range items {
+        if _, ex := lookup[N - val]; ex {
+            return []int32{id, lookup[N - val]}, true
+        } else {
+            lookup[val] = id
+        }
+
+    }
+    return nil, false
+}
+
+type TwoSumSolution struct {
+    a int32
+    b int32
+
+}
