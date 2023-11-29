@@ -7,20 +7,14 @@ import (
 )
 
 func TestTwoSum(t *testing.T) {
-	val0 := IdValueHolder{Id: 0, Value: 2}
-	val1 := IdValueHolder{Id: 1, Value: 4}
-	val2 := IdValueHolder{Id: 2, Value: 4}
-	val3 := IdValueHolder{Id: 3, Value: 6}
+	values := map[int32]int32{0:2, 1:4, 2:4, 3:6}
 
-	arr := []IdValueHolder{val0, val1, val2, val3}
+	solution, _ := twoSum(values, int32(10))
+	sol := map[int32]bool{1: true, 3: true}
 
-	solutions := twoSum(arr, 10)
-	sol := map[int32]bool{2: true, 1: true, 3: true}
-	for _, val := range solutions {
-		for _, id := range val {
-			if !sol[id] {
-				t.Fatalf("ID %d is not part of the solution", id)
-			}
+	for _, val := range solution {
+		if !sol[val] {
+			t.Fatalf("ID %d is not part of the solution", val)
 		}
 	}
 }
@@ -49,9 +43,9 @@ func TestGetSubsetsRec(t *testing.T) {
 func BenchmarkTwoSum(b *testing.B) {
 	size := 100000
 	r := 1000
-	arr := make([]IdValueHolder, size)
+	arr := make(map[int32]int32)
 	for i := 0; i < size; i++ {
-		arr[i] = IdValueHolder{int32(i), int32(rand.Intn(r))}
+		arr[int32(i)] = int32(rand.Intn(r))
 	}
 	b.ResetTimer()
 
