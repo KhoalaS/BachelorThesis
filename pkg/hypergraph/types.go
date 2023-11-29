@@ -74,7 +74,7 @@ func NewHyperGraph() HyperGraph {
 	return HyperGraph{Vertices: vertices, Edges: edges, Degree: 3}
 }
 
-func (g HyperGraph) IsSimple() bool {
+func (g *HyperGraph) IsSimple() bool {
 	// Time Complexity |E|*|d|
 	degMap := make(map[int32]int32)
 	simple := true
@@ -95,6 +95,17 @@ func (g HyperGraph) IsSimple() bool {
 	}
 	
 	return simple
+}
+
+func (g *HyperGraph) RemoveDuplicate() {
+	hashes := make(map[uint32]bool)
+
+	for eId, e := range g.Edges {
+		hash := e.getHash()
+		if hashes[hash] {
+			delete(g.Edges, eId)
+		}
+	}
 }
 
 // TODO: Dont use New[Vertex/Edge] functions but methods on the graph 
