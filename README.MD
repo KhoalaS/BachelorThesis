@@ -48,15 +48,6 @@ The field $\texttt{Degree}$ specifies the maximum degree of the graph.
 
 ## Misc. Algorithms/Utilities
 
-### IdValueHolder Struct
-```go
-type IdValueHolder struct {
-	Id    int32
-	Value int32
-}
-```
-The struct has two fields. The field $\texttt{Id}$ is an id and the field $\texttt{Value}$ holds a $\texttt{int32}$ value. We use this struct in out custom $\textnormal{Two-Sum}$ implementation, we will elaborate further in the $\textnormal{Two-Sum}$ section.
-
 ### getHash
 
 ```go
@@ -72,15 +63,16 @@ Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of th
 ```go
 func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, subsets *list.List)
 ```
-Time Complexity: $\binom{n}{r}$
+Time Complexity: $\binom{n}{s}$
 
 Let us explain all the arguments first. 
+
 - $\texttt{arr}$ is a pointer to an array. This array is basically the input set whose subsets we want to compute. 
-- $\texttt{i}$ is used to keep track of the recursion depth
+- $\texttt{i}$ is an index over $\texttt{arr}$
 - $\texttt{n}$ is the size of $\texttt{arr}$. 
 - $\texttt{s}$ is the size of the computed subsets
-- $\texttt{data}$ 
-- $\texttt{index}$ is the current position, on which we want to insert a value into $\texttt{data}$
+- $\texttt{data}$ is a temporary array
+- $\texttt{index}$ is an index over $\texttt{data}$
 - $\texttt{subsets}$ is a list that will store all the subsets of size $\texttt{s}$ we find
 
 The implementation looks as follows.
@@ -90,7 +82,7 @@ func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, 
     if index ==  s{
         subset := make([]int32, s)    
         for j:= 0; j < index; j++ {
-            subset[j] = *data[j]
+            subset[j] = (*data)[j]
         }
         subsets.PushBack(subset)
         return
@@ -119,7 +111,36 @@ We have two base conditions.
 Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists.
 
 ### Two-Sum
-#### $\mathcal{O}(n)$ Algorithm
+```go
+func twoSum(items map[int32]int32, t int32) ([]int32, bool)
+```
+Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
+
+Let us again explain the arguments:
+
+- $\texttt{items}$ is a map that associates an integer with another integer
+- $\texttt{t}$ is the target value
+- $\texttt{return}$ values are a $\texttt{int32}$ array containing two keys $\texttt{a,b}$ of $\texttt{items}$, s.t. the sum of $\texttt{items[a]+items[b]}$ is equal to the target $\texttt{t}$ and a bool that indicates if such a pair was found.
+
+The implementation looks as follows:
+```go
+func twoSum(items map[int32]int32, t int32) ([]int32, bool) { 
+    lookup := make(map[int32]int32)
+
+    for key, val := range items {
+        if _, ex := lookup[t - val]; ex {
+            return []int32{key, lookup[t - val]}, true
+        } else {
+            lookup[val] = key
+        }
+    }
+    return nil, false
+}
+```
+We start by creating a map called $\texttt{lookup}$. We then iterate other our entries $\texttt{items}$, each entry destructuring to a $\texttt{key,val}$ pair. We check if the entry $\texttt{lookup[t-val]}$ exists. 
+
+- If the entry exist, we return an array containing $\texttt{val}$ and $\texttt{lookup[t-val]}$ 
+- If the entry does not exist, we add a new entry to the lookup map with $\texttt{lookup[val] = key}$.
 
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
@@ -130,8 +151,17 @@ We take both a HyperGraph g and a *Set* c as arguments and mutate them.
 
 We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
 
-### Notation
+#### Notation
 We usually use the $\texttt{terminal typeface}$ to refer to variable names or code. We will often refer to the $\texttt{id}$ field of a vertex struct as $\texttt{v}$ and will use the notion of a vertex $v$ and the $\texttt{id}$ of a vertex interchangebly. We use $d$ to refer to the degree of the graph.
+
+#### Executions
+
+Reduction rules are usually meant to be applied exhaustively. We actually do not want to do that, because the algorithms for the rules rely on building up auxialliary data strucutures. Since rebuilding these structures takes a not negligeble amount of time, we want to reuse them as much as possible. 
+
+Trying to apply a rule exhaustively in a single execution will introduce some difficulties:
+
+- Some rules will mutate the graph, especially the set of edges. This can potentially create or eliminate a structure in the graph that a rule is targeting.
+- Can the auxialliary datastructure be mutated to reflect these changes in linear time?
 
 ### Tiny/Small Edge Rule
 - tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
@@ -167,7 +197,18 @@ T &= |E| \cdot d\cdot \log (d) + (|E| \cdot (d + 2^d + (2^d \cdot d \cdot \log(d
 \end{align*}
 $$
 
-where $d$ denotes the degree of the graph.
+Specifically applied to $d=3$, this results in a time complexity of:
+
+$$
+\begin{align*}
+T &= |E| \cdot 3\cdot \log (3) + (|E| \cdot (11 + 24 \cdot \log(3))) \\
+&=|E| \cdot(3\cdot\log(3) + (11 + 24 \cdot \log(3)))
+\end{align*}
+$$
+
+__Lemma.__ _We can either call this algorithm exhaustively until there are no more edge domination situations, or find all domination situations in a single execution of the algorithm._
+
+_Proof._ Assume that our algorithm finds an edge domination situation. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
 
 ##### Remarks
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
@@ -183,7 +224,7 @@ The quadratic exponent in $|V|$ looks scary at first, but will only occur in the
 
 We first construct two maps:
 
-- $\texttt{vSub map[int32]int32}:$ this map associates a vertex $v$ with the amount of edges containing the $v$.
+- $\texttt{vDeg map[int32]int32}:$ this map associates a vertex $v$ with $deg(v)$.
 - $\texttt{vSubCount make(map[int32]map[int32]int32)}:$ this map associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. 
 
 Both maps can be computed in time $|E|\cdot d^2$.
@@ -194,7 +235,7 @@ Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $\texttt{vSub}$ and $\texttt{vSubCo
 
 $$
 \begin{align*}
-\texttt{vSub} = \{\quad
+\texttt{vDeg} = \{\quad
  &1: 2,\\
  &2: 2, \\
  &3: 1, \\	
@@ -211,17 +252,17 @@ $$
 \end{align*}
 $$
 
-We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. We then use a $\textnormal{Two-Sum}$-Algorithm to compute and return the first pair in $\texttt{vSubCount[v]}$, s.t. for the pair $\texttt{[a,b]}$ holds, $\texttt{a} + \texttt{b} = \texttt{vSub[v]}+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a}\in f$ or $\texttt{b}\in f$.
+We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. We then use a $\textnormal{Two-Sum}$-Algorithm to compute and return the first pair in $\texttt{vSubCount[v]}$, s.t. for the pair $\texttt{[a,b]}$ holds, $\texttt{vSubCount[v][a]} + \texttt{vSubCount[v][b]} = \texttt{vDeg[v]}+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a}\in f$ or $\texttt{b}\in f$.
 
-**Lemma.** The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
+**Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_ and eliminate any duplicate edges. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vSub[v]}+1$. 
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_ and eliminate any duplicate edges. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
 
 _Proposition._ If $\texttt{sol}$ is non-empty, then the edge $\{ \texttt{v,a,b} \}$ exists. 
 
-Let $\texttt{sol=[a,b]}$ be the solution obtained by calling our $\textnormal{Two-Sum}$ algorithm on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vSub[v]}+1$. For the sake of contradiction let us assume that the edge $\{ \texttt{v,a,b} \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ \texttt{v,a,b} \}$, there exist $\texttt{vSub[v]}+1$ many edges that contain either $\texttt{a,v}$ or $\texttt{b,v}$. This however contradicts that there only exist $\texttt{vSub[v]}$ many edges containing $\texttt{v}$. Therefore it must be, that the assumption that $\{ \texttt{v,a,b} \}$ does not exist, is false.
+Let $\texttt{sol=[a,b]}$ be the solution obtained by calling our $\textnormal{Two-Sum}$ algorithm on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. For the sake of contradiction let us assume that the edge $\{ \texttt{v,a,b} \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ \texttt{v,a,b} \}$, there exist $\texttt{vDeg[v]}+1$ many edges that contain either $\texttt{a,v}$ or $\texttt{b,v}$. This however contradicts that there only exist $\texttt{vDeg[v]}$ many edges containing $\texttt{v}$. Therefore it must be, that the assumption that $\{ \texttt{v,a,b} \}$ does not exist, is false.
 
-Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occur $n-2 = \texttt{vSubCount[v]} - 1$ times in other edges containing $\texttt{v}$. Since duplicate edges of  $\{ \texttt{v,a,b} \}$ can not exist, we know that every other edge containing $\texttt{v}$ also contains $\texttt{a}$ or $\texttt{b}$, but not both simultaniously. $\square$
+Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occur $n-2 = \texttt{vDeg[v]} - 1$ times in other edges containing $\texttt{v}$. Since duplicate edges of  $\{ \texttt{v,a,b} \}$ can not exist, we know that every other edge containing $\texttt{v}$ also contains $\texttt{a}$ or $\texttt{b}$, but not both simultaniously. $\square$
 
 We then add the two vertices in the solution to our partial solution $c$.
 
@@ -242,6 +283,12 @@ Again the quadratic exponent in $|V|$ looks scarier than it is. This happens bea
 We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. In randomly generated graphs, a triangle situation occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+
+## Testing
+
+Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
+
+We additionally conduct benchmarks for the rules. We aim for a sub 30 second execution time on a pseudo-random graph with one million vertices and two million edges.
 
 ## Possible Optimizations
 

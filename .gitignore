@@ -2,3 +2,5 @@ out
 **/*.test
 **/*.prof
 profiles
+qs.md
+

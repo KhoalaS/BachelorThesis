@@ -134,6 +134,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	g.AddEdge(0, 3, 2)
 	g.AddEdge(2, 4)
 	g.AddEdge(0, 2, 7)
+	g.AddEdge(1,4)
 
 	c := make(map[int32]bool)
 	ApproxVertexDominationRule3(g, c)
@@ -147,6 +148,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	if !((c[2] && c[7]) || (c[0] && c[2]) || (c[2] && c[3])) {
 		t.Fatalf("Partial solution is wrong.")
 	}
+	g.Print()
 }
 
 func TestSmallTriangleRule(t *testing.T) {
@@ -235,6 +237,8 @@ func BenchmarkSmallTriangleRule(b *testing.B) {
 
 func BenchmarkApproxVertexDominationRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, false)
+	g.RemoveDuplicate()
+
 	c := make(map[int32]bool)
 	f, err := makeProfile("approxVertexDom")
 	if err != nil {

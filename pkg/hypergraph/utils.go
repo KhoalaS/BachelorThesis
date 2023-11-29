@@ -30,7 +30,7 @@ func getHash(arr []int32) uint32 {
 
 func GenerateTestGraph(numVertices int32, numEdges int32, tinyEdges bool) HyperGraph {
 	g := NewHyperGraph()
-	var tinyEdgeProb float32 = 0.0001
+	var tinyEdgeProb float32 = 0.01
 	if !tinyEdges {
 		tinyEdgeProb = 0.0
 	}

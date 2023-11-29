@@ -94,35 +94,38 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 
 // Time Complexity: |E| * d
 
-func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) {
+func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) int32{
 	remEdges := make(map[int32]bool)
-	remVertices := make(map[int32]bool)
+	adjList := make(map[int32]map[int32]bool)
+	var exec int32 = 0
 
-	for _, e := range g.Edges {
+	for eId, e := range g.Edges {
 		if len(e.v) == t {
-			for v := range e.v {
-				remVertices[v] = true
-				c[v] = true
-			}
+			remEdges[eId] = true
 		}
-	}
-
-	for id, e := range g.Edges {
 		for v := range e.v {
-			if remVertices[v] {
-				remEdges[id] = true
-				break
+			if _, ex := adjList[v]; !ex {
+				adjList[v] = make(map[int32]bool)
 			}
+			adjList[v][eId] = true
 		}
 	}
 
-	for eId := range remEdges {
-		delete(g.Edges, eId)
+	for e := range remEdges {
+		exec++
+		for v := range g.Edges[e].v {
+			c[v] = true
+			delete(g.Vertices, v)
+			for f := range adjList[v] {
+				if e != f {
+					delete(remEdges, f)
+					delete(g.Edges, f)
+				}
+			}
+		}
+		delete(g.Edges, e)
 	}
-
-	for vId := range remVertices {
-		delete(g.Vertices, vId)
-	}
+	return exec
 }
 
 // Complexity: (|E| * d)^2
@@ -248,7 +251,7 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 			arr[i] = IdValueHolder{Id: id, Value: val}
 			i++
 		}
-		solutions := twoSum(arr, len(vSub[vId])+1)
+		solutions := twoSumOld(arr, len(vSub[vId])+1)
 		solFound := false
 
 		for _, sol := range solutions {
@@ -277,7 +280,6 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 				break
 			}
 		}
-
 		if solFound {
 			break
 		}
@@ -307,16 +309,17 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 	return true
 }
 
-func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
-	vSub := make(map[int32]int)
+func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
+	vDeg := make(map[int32]int)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
 	adjList := make(map[int32]map[int32]bool)
 
+	var exec int32 = 0 
+
 	// Time Complexity: |E| * d^2
 	for eId, e := range g.Edges {
 		for vId0 := range e.v {
-			sub := []int32{}
 			if _, ex := adjList[vId0]; !ex {
 				adjList[vId0] = make(map[int32]bool)
 			}
@@ -328,11 +331,10 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 
 			for vId1 := range e.v {
 				if vId0 != vId1 {
-					sub = append(sub, vId1)
 					vSubCount[vId0][vId1]++
 				}
 			}
-			vSub[vId0]++
+			vDeg[vId0]++
 		}
 	}
 
@@ -344,13 +346,17 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 				continue
 			}
 
-			target := vSub[vId]
-			solution, ex := twoSumSingleSolution(count, target+1)
+			if vDeg[vId] == 1 {
+				continue
+			}
+
+			solution, ex := twoSum(count, int32(vDeg[vId]+1))
 			if !ex {
 				continue
 			}
 
 			solFound = true
+			exec++
 
 			for _, v := range solution {
 				c[v] = true
@@ -365,13 +371,13 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 							vSubCount[w][u]--
 						}
 						if succ {
-							vSub[w]--
+							vDeg[w]--
 						}
 					}
 					delete(g.Edges, remEdge)
 				}
 				delete(adjList, v)
-				delete(vSub, v)
+				delete(vDeg, v)
 				delete(vSubCount, v)
 			}
 		}
@@ -383,12 +389,15 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) {
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
 	}
+
+	return exec
 }
 
-func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
+func SmallTriangleRule(g HyperGraph, c map[int32]bool) int32 {
 	adjList := make(map[int32]map[int32]bool)
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
+	var exec int32 = 0 
 
 	// Time Compelxity: |E|
 	for _, e := range g.Edges {
@@ -424,6 +433,7 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
 			//y := subset[0] and z := subset[1]
 			// triangle condition
 			if adjList[subset[0]][subset[1]] {
+				exec++
 				remSet := []int32{subset[0], subset[1], x}
 				for _, y := range remSet {
 					c[y] = true
@@ -456,6 +466,8 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool) {
 	for vId := range remVertices {
 		delete(g.Vertices, vId)
 	}
+
+	return exec
 }
 
 func mapToSlice[K comparable, V any](m map[K]V) []K {
