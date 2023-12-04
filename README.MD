@@ -48,7 +48,7 @@ The field $\texttt{Degree}$ specifies the maximum degree of the graph.
 
 ## Misc. Algorithms/Utilities
 
-### getHash
+### Edge Hashing
 
 ```go
 func getHash(arr []int32) uint32
@@ -59,7 +59,8 @@ We start by sorting $\texttt{arr}$ with a $\textnormal{Quick-Sort}$-Algorithm. W
 
 Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
 
-### getSubsetsRec
+### Compute Subsets of Size $s$
+
 ```go
 func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, subsets *list.List)
 ```
@@ -111,6 +112,9 @@ We have two base conditions.
 Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists.
 
 ### Two-Sum
+
+Given an array of integers and an integer target $t$, return indices of the two numbers such that they add up to $t$.
+
 ```go
 func twoSum(items map[int32]int32, t int32) ([]int32, bool)
 ```
@@ -145,14 +149,14 @@ We start by creating a map called $\texttt{lookup}$. We then iterate other our e
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
 ```go
-func NameRule(g HyperGraph, c map[int32]bool)
+func NameRule(g HyperGraph, c map[int32]bool) int32
 ```
-We take both a HyperGraph g and a *Set* c as arguments and mutate them.
+We take both a HyperGraph g and a *Set* c as arguments and mutate them. We then return the number of rule executions.
 
 We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
 
 #### Notation
-We usually use the $\texttt{terminal typeface}$ to refer to variable names or code. We will often refer to the $\texttt{id}$ field of a vertex struct as $\texttt{v}$ and will use the notion of a vertex $v$ and the $\texttt{id}$ of a vertex interchangebly. We use $d$ to refer to the degree of the graph.
+We usually use the $\texttt{teletype font}$ to refer to variable names or code. We will often refer to the $\texttt{id}$ field of a vertex struct as $\texttt{v}$ and will use the notion of a vertex $v$ and the $\texttt{id}$ of a vertex interchangebly. We use $d$ to refer to the degree of the graph.
 
 #### Executions
 
@@ -163,6 +167,11 @@ Trying to apply a rule exhaustively in a single execution will introduce some di
 - Some rules will mutate the graph, especially the set of edges. This can potentially create or eliminate a structure in the graph that a rule is targeting.
 - Can the auxialliary datastructure be mutated to reflect these changes in linear time?
 
+Luckily for us, most of these problems can be solved using Go. We usually have two possible ways of implementing a rule:
+
+1. __Outer Loop:__ We wrap our main algorithm in an outer loop. We then apply the rule one time per loop iteration. The outer loop will break when the rule can't be applied anymore. This way we can reuse our auxialliary data structures.
+2. __Pseudo Single Loop:__ We find all structures a rule is targeting in a single loop. We do this by iterating over the data structures and simultaniously deleting the targets, mutating the structure we are iterating over. This can possibly eliminate targets which we did not reach yet, or create new targets which we already passed. This requires the use of an outer loop. Since we can't decouple the deletion of the targets from the main algorithm, we inevitably introduce a quadratic time complexity in a worst case scenario. 
+
 ### Tiny/Small Edge Rule
 - tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
 - small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
@@ -172,7 +181,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int)
 ```
 
 #### $O(|E|)$ Algortihm
-Iterate over all edges of the graph and mark all edges of size $t$. Then put all endpoints of these edges into the partial solution and remove the marked edges and all edges that are edge-adjacent to marked edges. 
+Iterate over all edges of the graph and mark all edges of size $t$ in a set $\texttt{remEdges}$. We then iterate over all edges $\texttt{remEdges}$. We put the endpoints of the current edge $e$ in our partial solution. We then delete all edges that are edge adjacent to $e$ from $\texttt{remEdges}$ and our graph.
 
 ### Edge Domination Rule
 - (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
@@ -209,6 +218,8 @@ $$
 __Lemma.__ _We can either call this algorithm exhaustively until there are no more edge domination situations, or find all domination situations in a single execution of the algorithm._
 
 _Proof._ Assume that our algorithm finds an edge domination situation. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
+
+This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
 
 ##### Remarks
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
@@ -266,10 +277,23 @@ Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occu
 
 We then add the two vertices in the solution to our partial solution $c$.
 
-[__MULTI PASS LOOP__]
-
 __Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the Domination condition for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a time complexity of $|E|+|V|+|V|^2\cdot|E|$. 
 
+
+### Approximative Double Vertex Domination Rule
+
+- approximative double vertex domination: Assume there is a hyperedge $e =
+\{x, y, a\}$ and another vertex $b$ such that, whenever $x$ or $y$ belong to some
+hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
+into the hitting set that we produce.
+
+#### $\mathcal{O}(|E| + |V|\cdot |E|^2)$ Algorithm
+
+We start by iterating over the edges of our graph and building an incidence list.
+
+We then iterate over the edges again. If the current edge $e$ is not of size 3 we continue with the iteration. If $|e| = 3$ we iterate over the endpoints of $e$. We assign the variable $\texttt{a}$ to $v$ and create a map $\texttt{vCount map[int32]int32}$. For each vertex $w \in e\setminus v$ we look at the the edges incident to $w$, we then for each vertex $u$ of these edges, increment $\texttt{vCount[u]}$. We ignore edges that are incident to $\texttt{a}$ and do not care about vertices that are in $e$. We keep track of the amount of edges we considered with the variable $\texttt{xyCount}$.
+
+If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
@@ -280,15 +304,16 @@ func SmallTriangleRule(g HyperGraph, c map[int32]bool)
 #### $O(|E|+|V|^2)$ Algorithm
 Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle.
 
-We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
+We start by constructing an edge-adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
 
-This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. In randomly generated graphs, a triangle situation occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+
+## Self-Monitoring
+Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We can then use these values to calculate the local ratio.
 
 ## Testing
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
-
-We additionally conduct benchmarks for the rules. We aim for a sub 30 second execution time on a pseudo-random graph with one million vertices and two million edges.
 
 ## Possible Optimizations
 
