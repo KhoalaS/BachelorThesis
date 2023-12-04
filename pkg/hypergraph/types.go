@@ -68,29 +68,23 @@ func (g HyperGraph) Print() {
 	fmt.Println("--------------------------")
 } 
 
-func NewHyperGraph() HyperGraph {
+func NewHyperGraph() *HyperGraph {
 	vertices := make(map[int32]Vertex)
 	edges := make(map[int32]Edge)
-	return HyperGraph{Vertices: vertices, Edges: edges, Degree: 3}
+	return &HyperGraph{Vertices: vertices, Edges: edges, Degree: 3}
 }
 
 func (g *HyperGraph) IsSimple() bool {
 	// Time Complexity |E|*|d|
 	degMap := make(map[int32]int32)
 	simple := true
-	outerBreak := false
 
 	for _, e := range g.Edges {
 		for id := range e.v {
 			degMap[id] = degMap[id]+1
 			if degMap[id] == 3 {
-				simple = false
-				outerBreak = true
-				break
+				return false
 			}
-		}
-		if outerBreak {
-			break
 		}
 	}
 	
