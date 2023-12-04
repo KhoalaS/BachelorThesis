@@ -58,9 +58,3 @@ func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
     }
     return nil, false
 }
-
-type TwoSumSolution struct {
-    a int32
-    b int32
-
-}
