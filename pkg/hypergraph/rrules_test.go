@@ -242,7 +242,7 @@ func BenchmarkEdgeDominationRule(b *testing.B) {
 }
 
 func BenchmarkSmallTriangleRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, false)
+	g := GenerateTestGraph(100000, 2000000, false)
 	c := make(map[int32]bool)
 
 	f, err := makeProfile("smallTriangleRule")

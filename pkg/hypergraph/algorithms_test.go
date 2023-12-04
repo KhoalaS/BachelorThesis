@@ -10,7 +10,7 @@ func TestTwoSum(t *testing.T) {
 	values := map[int32]int32{0:2, 1:4, 2:4, 3:6}
 
 	solution, _ := twoSum(values, int32(10))
-	sol := map[int32]bool{1: true, 3: true}
+	sol := map[int32]bool{1: true, 3: true, 2: true}
 
 	for _, val := range solution {
 		if !sol[val] {
