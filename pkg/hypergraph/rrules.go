@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, domEdges []int32, done chan<- map[int32]bool) {
+func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[uint32]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
 
@@ -44,11 +44,12 @@ func batchSubComp(wg *sync.WaitGroup, g HyperGraph, subEdges map[uint32]bool, do
 
 // Time Complexity: |E| * d^3
 
-func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
+func EdgeDominationRule(g *HyperGraph, c map[int32]bool) int {
 	var wg sync.WaitGroup
 
 	subEdges := make(map[uint32]bool)
 	domEdges := []int32{}
+	exec := 0
 
 	for eId, e := range g.Edges {
 		if len(e.v) == 2 {
@@ -86,18 +87,19 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool) {
 
 	for msg := range channel {
 		for eId := range msg {
+			exec++
 			delete(g.Edges, eId)
 		}
 	}
-
+	return exec
 }
 
 // Time Complexity: |E| * d
 
-func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) int32{
+func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	remEdges := make(map[int32]bool)
 	adjList := make(map[int32]map[int32]bool)
-	var exec int32 = 0
+	exec := 0
 
 	for eId, e := range g.Edges {
 		if len(e.v) == t {
@@ -144,7 +146,7 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) int32{
 // Complexity:
 // |E| + |E| + d
 
-func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) bool {
+func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
 
@@ -212,7 +214,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool) bool {
 	return false
 }
 
-func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
+func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 	vSub := make(map[int32]map[uint32]bool)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
@@ -309,13 +311,12 @@ func ApproxVertexDominationRule2(g HyperGraph, c map[int32]bool) bool {
 	return true
 }
 
-func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
+func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 	vDeg := make(map[int32]int)
 	vSubCount := make(map[int32]map[int32]int32)
-	remVertices := make(map[int32]bool)
 	adjList := make(map[int32]map[int32]bool)
 
-	var exec int32 = 0 
+	exec := 0
 
 	// Time Complexity: |E| * d^2
 	for eId, e := range g.Edges {
@@ -339,7 +340,7 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
 	}
 
 	// Time Complexity: |V| * (|V| + 4c)
-	for true {
+	for {
 		solFound := false
 		for vId, count := range vSubCount {
 			if c[vId] {
@@ -360,7 +361,6 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
 
 			for _, v := range solution {
 				c[v] = true
-				remVertices[v] = true
 				for remEdge := range adjList[v] {
 					for w := range g.Edges[remEdge].v {
 						if w == v {
@@ -376,6 +376,7 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
 					}
 					delete(g.Edges, remEdge)
 				}
+				delete(g.Vertices, v)
 				delete(adjList, v)
 				delete(vDeg, v)
 				delete(vSubCount, v)
@@ -386,18 +387,103 @@ func ApproxVertexDominationRule3(g HyperGraph, c map[int32]bool) int32 {
 		}
 	}
 
-	for vId := range remVertices {
-		delete(g.Vertices, vId)
+	return exec
+}
+
+func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
+	incList := make(map[int32]map[int32]bool)
+	exec := 0
+
+	// |E| * d
+	for eId, e := range g.Edges {
+		for v := range e.v {
+			if _, ex := incList[v]; !ex {
+				incList[v] = make(map[int32]bool)
+			}
+			incList[v][eId] = true
+		}
+	}
+
+	for {
+		foundSol := false
+		for _, e := range g.Edges {
+			if len(e.v) != 3 {
+				continue
+			}
+	
+			var a int32 = -1
+			var b int32 = -1
+	
+			for v := range e.v {
+				a = v
+				vCount := make(map[int32]int32)
+				var xyCount int32 = 0
+				for w := range e.v {
+					if a == w {
+						continue
+					}
+					for eInc := range incList[w] {
+						if incList[a][eInc] {
+							continue
+						}
+						for x := range g.Edges[eInc].v {
+							if !e.v[x] {
+								vCount[x]++
+							}
+						}
+						xyCount++
+					}
+				}
+				//log.Default().Println(len(vCount))
+				for pb, occur := range vCount {
+					if xyCount == occur {
+						b = pb
+						foundSol = true
+						break
+					}
+				}
+				if foundSol {
+					break
+				}
+			}
+	
+			if foundSol {
+				exec++
+				c[a] = true
+				c[b] = true
+				for vId := range incList {
+					for f := range incList[a] {
+						if incList[vId][f] {
+							delete(incList[vId], f)
+						}
+						delete(g.Edges, f)
+					}
+					
+					for f := range incList[b] {
+						if incList[vId][f] {
+							delete(incList[vId], f)
+						}
+						delete(g.Edges, f)
+					}
+				}
+				delete(incList, a)
+				delete(incList, b)
+	
+			}
+		}
+		if !foundSol {
+			break
+		}
 	}
 
 	return exec
 }
 
-func SmallTriangleRule(g HyperGraph, c map[int32]bool) int32 {
+func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	adjList := make(map[int32]map[int32]bool)
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
-	var exec int32 = 0 
+	exec := 0
 
 	// Time Compelxity: |E|
 	for _, e := range g.Edges {

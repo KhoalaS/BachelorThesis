@@ -134,7 +134,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	g.AddEdge(0, 3, 2)
 	g.AddEdge(2, 4)
 	g.AddEdge(0, 2, 7)
-	g.AddEdge(1,4)
+	g.AddEdge(1, 4)
 
 	c := make(map[int32]bool)
 	ApproxVertexDominationRule3(g, c)
@@ -149,6 +149,27 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 		t.Fatalf("Partial solution is wrong.")
 	}
 	g.Print()
+}
+
+func TestApproxDoubleVertexDominationRule(t *testing.T) {
+	g := NewHyperGraph()
+	g.AddEdge(1, 2, 3)
+	g.AddEdge(2, 3, 4)
+	g.AddEdge(2, 5, 6)
+	g.AddEdge(1, 6)
+
+	// possible solutions [1,2], [2,6], [3,5], [3,6]
+
+	c := make(map[int32]bool)
+
+	ApproxDoubleVertexDominationRule(g, c)
+	if len(c) != 2 {
+		t.Fatalf("Partial solution is wrong.")
+	}
+
+	if !((c[1] && c[2]) || (c[2] && c[6]) || (c[3] && (c[5] || c[6]))) {
+		t.Fatalf("Partial solution is wrong.")
+	}
 }
 
 func TestSmallTriangleRule(t *testing.T) {
@@ -187,16 +208,17 @@ func TestSmallTriangleRule(t *testing.T) {
 func BenchmarkTinyEdgeRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		RemoveEdgeRule(g, c, SMALL)
-	}}
+	}
+}
 
 func BenchmarkSmallEdgeRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		RemoveEdgeRule(g, c, SMALL)
@@ -216,7 +238,7 @@ func BenchmarkEdgeDominationRule(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		EdgeDominationRule(g, c)
-    }
+	}
 }
 
 func BenchmarkSmallTriangleRule(b *testing.B) {
@@ -232,7 +254,7 @@ func BenchmarkSmallTriangleRule(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		SmallTriangleRule(g, c)
-    }
+	}
 }
 
 func BenchmarkApproxVertexDominationRule(b *testing.B) {
@@ -249,18 +271,37 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ApproxVertexDominationRule3(g, c)
-    }
+	}
+}
+
+func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
+	g := GenerateTestGraph(1000000, 2000000, false)
+	g.RemoveDuplicate()
+	c := make(map[int32]bool)
+
+	RemoveEdgeRule(g, c, SMALL)
+
+	f, err := makeProfile("approxDoubleVertexDom")
+	if err != nil {
+		b.Fatal("Could not create cpu profile")
+	}
+	defer stopProfiling(f)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ApproxDoubleVertexDominationRule(g, c)
+	}
 }
 
 func makeProfile(name string) (*os.File, error) {
 	f, err := os.Create(fmt.Sprintf("../../profiles/benchmark_%s.prof", name))
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    if err := pprof.StartCPUProfile(f); err != nil {
-        return f, err
-    }
+	if err := pprof.StartCPUProfile(f); err != nil {
+		return f, err
+	}
 
 	return f, nil
 }
