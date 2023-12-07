@@ -58,3 +58,38 @@ func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
     }
     return nil, false
 }
+
+func edgeCover(g *HyperGraph, k int) bool {
+    sol := make(map[int32]bool)
+    V := make(map[int32]bool)
+    E := make(map[int32]*Edge)
+
+    incList := make(map[int32]map[int32]bool)
+
+    for eId, e := range g.Edges {
+        for v := range e.v {
+            if _, ex := incList[v]; !ex {
+                incList[v] = make(map[int32]bool)
+            }
+            incList[v][eId] = true
+        }
+    }
+
+    for v, val := range incList {
+        if len(val) != 2 {
+            continue
+        }
+
+        for e := range val {
+            V[e] = true
+        }
+
+        f := NewEdge(val)
+        E[v] = f
+    }
+
+    
+
+
+    return len(sol) < k
+}
