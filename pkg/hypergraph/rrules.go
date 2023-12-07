@@ -347,10 +347,6 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 				continue
 			}
 
-			if vDeg[vId] == 1 {
-				continue
-			}
-
 			solution, ex := twoSum(count, int32(vDeg[vId]+1))
 			if !ex {
 				continue
