@@ -10,16 +10,6 @@ import (
 	"github.com/OneOfOne/xxhash"
 )
 
-// Simple Hypergraph structure
-// We use maps for vertices and edges.
-// An earlier approach utilized slices for both edges and vertices and an additional
-// incidence matrix. While some operations are faster on the incidence matrix,
-// the algorithms for the reduction rules often rely on iterating through all pairs of edges.
-// Or checking if a vertex is an element of an edge.
-
-// Since the use cases of the incidence matrix was so low, we decided to remove it from the
-// data structure and only use maps for both vertices and edges.
-
 type HyperGraph struct {
 	Vertices map[int32]Vertex
 	Edges map[int32]Edge
@@ -87,7 +77,6 @@ func (g *HyperGraph) IsSimple() bool {
 			}
 		}
 	}
-	
 	return simple
 }
 
@@ -102,9 +91,6 @@ func (g *HyperGraph) RemoveDuplicate() {
 	}
 }
 
-// TODO: Dont use New[Vertex/Edge] functions but methods on the graph 
-// itself like addVertex(). 
-
 type Vertex struct {
 	id int32
 	data any
@@ -113,6 +99,17 @@ type Vertex struct {
 type Edge struct {
 	v map[int32]bool
 }
+
+func NewEdge(eps map[int32]bool) *Edge {
+	e := Edge{v: make(map[int32]bool)}
+	
+	for ep := range eps {
+		e.v[ep] = true
+	}
+
+	return &e
+}
+
 
 // Time Complexity: 2d + d*log(d)
 func (e *Edge) getHash() uint32 {

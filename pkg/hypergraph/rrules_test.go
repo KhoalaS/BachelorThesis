@@ -262,16 +262,18 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 	g.RemoveDuplicate()
 
 	c := make(map[int32]bool)
-	f, err := makeProfile("approxVertexDom")
+	name := "approxVertexDom"
+	f, err := makeProfile(name)
 	if err != nil {
 		b.Fatal("Could not create cpu profile")
 	}
 	defer stopProfiling(f)
-
+	
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxVertexDominationRule3(g, c)
+		ApproxVertexDominationRule3(g, c)		
 	}
+
 }
 
 func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
@@ -279,9 +281,9 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 	g.RemoveDuplicate()
 	c := make(map[int32]bool)
 
-	RemoveEdgeRule(g, c, SMALL)
+	name := "approxDoubleVertexDom"
 
-	f, err := makeProfile("approxDoubleVertexDom")
+	f, err := makeProfile(name)
 	if err != nil {
 		b.Fatal("Could not create cpu profile")
 	}
@@ -291,6 +293,16 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ApproxDoubleVertexDominationRule(g, c)
 	}
+
+    m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
+    if err != nil {
+        b.Fatal("could not create memory profile: ", err)
+    }
+    defer m.Close() // error handling omitted for example
+    if err := pprof.WriteHeapProfile(m); err != nil {
+        b.Fatal("could not write memory profile: ", err)
+    }
+    
 }
 
 func makeProfile(name string) (*os.File, error) {
