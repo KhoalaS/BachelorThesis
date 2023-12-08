@@ -161,7 +161,7 @@ We use a very naive approach for generating (pseudo-)random graphs.
 
 We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. 
 
-We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $\lbrack 0.0, 1.0 \rparen$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
+We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
 
 $$
 size(\texttt{r})=
@@ -172,7 +172,7 @@ size(\texttt{r})=
 \end{cases}
 $$
 
-We then store the result of $size(\texttt{r})$ in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $\lbrack 0, \texttt{n} \rparen$, until we have picked $\texttt{d}$ many distinct vertices. We then check if an edge containing these vertices already exists. If it does not exist we add it to our graph. 
+We then store the result of $size(\texttt{r})$ in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. We then check if an edge containing these vertices already exists. If it does not exist we add it to our graph. 
 
 That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. 
 
@@ -328,7 +328,7 @@ We then iterate over the edges again. If the current edge $e$ is not of size 3 w
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
-__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a quadratic execution time. A CPU-Profile showed a large amount of Map-lookup operations. This strengthens the former assumption, or could show a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disporving the bottleneck theory. Further testing is required.
+__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a quadratic execution time. A CPU-Profile showed a large amount of Map-lookup operations. This strengthens the former assumption, or could indicate a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. Further testing is required.
 
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
