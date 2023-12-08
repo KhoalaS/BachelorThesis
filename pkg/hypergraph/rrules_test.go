@@ -330,6 +330,35 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
     
 }
 
+func BenchmarkApproxDoubleVertexDominationRule2(b *testing.B) {
+	g := GenerateTestGraph(10000, 100000, false)
+	g.RemoveDuplicate()
+	c := make(map[int32]bool)
+
+	name := "approxDoubleVertexDom2"
+
+	f, err := makeProfile(name)
+	if err != nil {
+		b.Fatal("Could not create cpu profile")
+	}
+	defer stopProfiling(f)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ApproxDoubleVertexDominationRule2(g, c)
+	}
+
+    m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
+    if err != nil {
+        b.Fatal("could not create memory profile: ", err)
+    }
+    defer m.Close() // error handling omitted for example
+    if err := pprof.WriteHeapProfile(m); err != nil {
+        b.Fatal("could not write memory profile: ", err)
+    }
+    
+}
+
 func makeProfile(name string) (*os.File, error) {
 	f, err := os.Create(fmt.Sprintf("../../profiles/benchmark_%s.prof", name))
 	if err != nil {
