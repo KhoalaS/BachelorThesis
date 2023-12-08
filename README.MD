@@ -286,8 +286,9 @@ $$
  &3: 1, \\	
  &4: 1 \quad \}
 \end{align*}
-\newline
+$$
 
+$$
 \begin{align*}
 \texttt{vSubCount} = \{\quad
  &1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
