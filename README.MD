@@ -146,6 +146,40 @@ We start by creating a map called $\texttt{lookup}$. We then iterate other our e
 - If the entry exist, we return an array containing $\texttt{val}$ and $\texttt{lookup[t-val]}$ 
 - If the entry does not exist, we add a new entry to the lookup map with $\texttt{lookup[val] = key}$.
 
+### Generating Test Graphs
+
+```go
+func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph
+```
+Let us explain the arguments first:
+
+- $\texttt{n}$ are the number of vertices the graph will have
+- $\texttt{m}$ is the amount of edges the graph will at most have
+- $\texttt{tinyEdges}$ when $\texttt{false}$ indicates that we do not want to generate edges of size 1.
+
+We use a very naive approach for generating (pseudo-)random graphs.
+
+We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. 
+
+We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $\lbrack 0.0, 1.0 \rparen$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
+
+$$
+size(\texttt{r})=
+\begin{cases}
+    1 & \quad \texttt{r} < 0.01\\
+    2 & \quad 0.01 \leq \texttt{r} < 0.60\\
+    3 & \quad \text{else}
+\end{cases}
+$$
+
+We then store the result of $size(\texttt{r})$ in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $\lbrack 0, \texttt{n} \rparen$, until we have picked $\texttt{d}$ many distinct vertices. We then check if an edge containing these vertices already exists. If it does not exist we add it to our graph. 
+
+That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. 
+
+Using an established model like the [Erdős–Rényi Model](https://www.semanticscholar.org/paper/On-random-graphs.-I.-Erdos-R%C3%A9nyi/e77e986f717b353329e2202c384c5499191a0646) would be more favourable. But since we just needed something tangible to start testing, this "model" will suffice for the time being.
+
+
+
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
 ```go
@@ -196,7 +230,7 @@ We partition our set of edges into two disjoint sets $sub$ and $dom$. The set $d
 
 First we store the ids of the endpoints of $e$ in an array. We then use the built-in $\texttt{sort}$ package to sort the array with a ${\textit{Quick-Sort}}$ algorithm. We then compute a string $\texttt{in}$ by joining the ids with a non-numerical delimiter like "|". We then use a [hash function](https://github.com/OneOfOne/xxhash) to obtain a hashsum of type $\texttt{uint32}$.
 
-We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the "$\textit{hash of the subset}$" is present in our set $sub$. If it is then $f$ is dominated by another edge. 
+We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the $\textit{hash of the subset}$ is present in our set $sub$. If it is then $f$ is dominated by another edge. 
 
 The exact time complexity is as follows:
 
@@ -215,9 +249,9 @@ T &= |E| \cdot 3\cdot \log (3) + (|E| \cdot (11 + 24 \cdot \log(3))) \\
 \end{align*}
 $$
 
-__Lemma.__ _We can either call this algorithm exhaustively until there are no more edge domination situations, or find all domination situations in a single execution of the algorithm._
+__Lemma.__ _We can either call this algorithm exhaustively until there are no more edge domination situations, or find all domination situations in a single execution of the algorithm, iff there are no size one edges._
 
-_Proof._ Assume that our algorithm finds an edge domination situation. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
+_Proof._ Assume that our algorithm finds an edge domination situation. Since there are no size one edges, edges with size two cannot be dominated. Thus a dominated edge has to be of size three. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
 
 This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
 
@@ -231,7 +265,7 @@ func ApproxVertexDominationRule(g HyperGraph, c map[int32]bool)
 ```
 
 #### $O(|E| + |V|^2)$ Algorithm
-The quadratic exponent in $|V|$ looks scary at first, but will only occur in the case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
+The quadratic exponent in $|V|$ looks scary at first, but will only occur in the worst case if there exists a vertex $v$ s.t. for every other vertex $w$ there exists an edge $e$ with $\{ v,w \} \subset e$.
 
 We first construct two maps:
 
@@ -267,7 +301,7 @@ We then iterate other $\texttt{vSubCount}$, we will refer to the current value i
 
 **Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_ and eliminate any duplicate edges. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
 
 _Proposition._ If $\texttt{sol}$ is non-empty, then the edge $\{ \texttt{v,a,b} \}$ exists. 
 
@@ -277,8 +311,7 @@ Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occu
 
 We then add the two vertices in the solution to our partial solution $c$.
 
-__Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the Domination condition for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a time complexity of $|E|+|V|+|V|^2\cdot|E|$. 
-
+__Idea__: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the _Domination Condition_ for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a worse time complexity of $|V|+|V|^2\cdot|E|$, and a high memory complexity of $|V|\cdot|E|$.
 
 ### Approximative Double Vertex Domination Rule
 
@@ -295,6 +328,8 @@ We then iterate over the edges again. If the current edge $e$ is not of size 3 w
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
+__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a quadratic execution time. A CPU-Profile showed a large amount of Map-lookup operations. This strengthens the former assumption, or could show a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disporving the bottleneck theory. Further testing is required.
+
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 ```go
@@ -309,7 +344,32 @@ We start by constructing an edge-adjacency list $\texttt{adjList}$ for all edges
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
 
 ## Self-Monitoring
-Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We can then use these values to calculate the local ratio.
+Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. 
+
+We store the ratios for each rule in a map of the form:
+```go
+var ratios = map[string]pkg.IntTuple{
+	"kRulename": {A:1, B:1},
+}
+```
+
+Where $\texttt{A}$ denotes the amount of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the amount of vertices present in an optimal solution. These values are relative to the structure the rule is targeting. 
+
+For example let $\texttt{A}=2$ and $\texttt{B}=1$ for a rule $R$. That means that we put 2 vertices of the structure $R$ is targeting in our partial solution. A optimal solution would only contain 1 vertex of the target structure.
+
+We can then use these values to calculate the estimated approximation factor as follows:
+
+```go
+execs := ApplyRules(g, c)
+
+var nom float64 = 0
+var denom float64 = 0
+
+for key, val := range execs {
+	nom += float64(ratios[key].A * val)
+	denom += float64(ratios[key].B * val)
+}
+```
 
 ## Testing
 
