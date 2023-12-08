@@ -403,13 +403,14 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	for {
 		foundSol := false
 		for _, e := range g.Edges {
+			foundLocalSol := false
 			if len(e.v) != 3 {
 				continue
 			}
-	
+
 			var a int32 = -1
 			var b int32 = -1
-	
+
 			for v := range e.v {
 				a = v
 				vCount := make(map[int32]int32)
@@ -435,15 +436,17 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 					if xyCount == occur {
 						b = pb
 						foundSol = true
+						foundLocalSol = true
 						break
 					}
 				}
-				if foundSol {
+				if foundLocalSol {
 					break
 				}
 			}
-	
-			if foundSol {
+
+			if foundLocalSol {
+				foundLocalSol = false
 				exec++
 				c[a] = true
 				c[b] = true
@@ -454,7 +457,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 						}
 						delete(g.Edges, f)
 					}
-					
+
 					for f := range incList[b] {
 						if incList[vId][f] {
 							delete(incList[vId], f)
@@ -464,13 +467,143 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				}
 				delete(incList, a)
 				delete(incList, b)
-	
+				delete(g.Vertices, a)
+				delete(g.Vertices, b)
 			}
 		}
 		if !foundSol {
 			break
 		}
 	}
+	return exec
+}
+
+func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
+	n := len(g.Vertices)
+	m := len(g.Edges)
+	incMatrix := make([][]int32, n)
+
+	for i := range incMatrix {
+		incMatrix[i] = make([]int32, m)
+	}
+
+	exec := 0
+
+	// |E| * d
+	for eId, e := range g.Edges {
+		for v := range e.v {
+			incMatrix[v][eId] = 1
+		}
+	}
+
+	//for id, row := range incMatrix {
+	//	fmt.Println(id,":", row)
+	//}
+	//fmt.Println("--------------before")
+
+	for {
+		foundSol := false
+		for _, e := range g.Edges {
+			foundLocalSol := false
+
+			if len(e.v) != 3 {
+				continue
+			}
+
+			var a int32 = -1
+			var b int32 = -1
+
+			//fmt.Println("curr Edge:", e)
+
+			for v := range e.v {
+				a = v
+				vCount := make(map[int32]int32)
+				var xyCount int32 = 0
+				for w := range e.v {
+					if a == w {
+						continue
+					}
+					for eId, eInc := range incMatrix[w] {
+						if eInc == 0 {
+							continue
+						}
+
+						if incMatrix[a][eId] == 1 {
+							continue
+						}
+
+						for x := range g.Edges[int32(eId)].v {
+							//fmt.Println("(w,a,x,eId)",w, a, x, eId)
+							if !e.v[x] {
+								vCount[x]++
+							}
+						}
+						//fmt.Println("after")
+						xyCount++
+					}
+				}
+				//log.Default().Println(len(vCount))
+				//fmt.Println(vCount)
+				for pb, occur := range vCount {
+					if xyCount == occur {
+						b = pb
+						foundSol = true
+						foundLocalSol = true
+						break
+					}
+				}
+				if foundLocalSol {
+					break
+				}
+			}
+
+			if foundLocalSol {
+
+				exec++
+				c[a] = true
+				c[b] = true
+				
+				//fmt.Println("removing (a,b):", a, b)
+
+				remEdges := make(map[int]bool)
+				for eId, f := range incMatrix[a] {
+					if f == 1 {
+						remEdges[eId] = true
+						delete(g.Edges, int32(eId))
+					}
+				}
+
+				for eId, f := range incMatrix[b] {
+					if f == 1 {
+						remEdges[eId] = true
+						delete(g.Edges, int32(eId))
+					}
+				}
+
+				for rem := range remEdges {
+					for vId := range incMatrix {
+						incMatrix[vId][rem] = 0
+					}
+				}
+
+				for i := range incMatrix[a] {
+					incMatrix[a][i] = 0
+					incMatrix[b][i] = 0
+
+				}
+				foundLocalSol = false
+			}
+		}
+		if !foundSol {
+			break
+		}
+	}
+
+	//for id, row := range incMatrix {
+	//	fmt.Println(id,":", row)
+	//}
+	//fmt.Println("--------------after")
+
 
 	return exec
 }
