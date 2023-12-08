@@ -280,8 +280,7 @@ Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $\texttt{vSub}$ and $\texttt{vSubCo
 
 $$
 \begin{align*}
-\texttt{vDeg} = \{\quad
- &1: 2,\\
+\texttt{vDeg} = \{\quad&1: 2,\\
  &2: 2, \\
  &3: 1, \\	
  &4: 1 \quad \}
@@ -290,8 +289,7 @@ $$
 
 $$
 \begin{align*}
-\texttt{vSubCount} = \{\quad
- &1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
+\texttt{vSubCount} = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
  &2: \{ 1: 2, \quad 3:1, \quad 4:1\}, \\
  &3: \{ 1: 1, \quad 2:1\}, \\
  &4: \{ 1: 1, \quad 2:1\} \quad \}	
