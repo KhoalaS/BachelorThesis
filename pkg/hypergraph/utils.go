@@ -55,8 +55,10 @@ func GenerateTestGraph(numVertices int32, numEdges int32, tinyEdges bool) *Hyper
 		eps := make(map[int32]bool)
 		for j := 0; j < d; j++ {
 			val := rand.Int31n(numVertices)
-			for eps[val] {
+			_, ex := eps[val]
+			for ex {
 				val = rand.Int31n(numVertices)
+				_, ex = eps[val]
 			}
 			eps[val] = true
 		}
