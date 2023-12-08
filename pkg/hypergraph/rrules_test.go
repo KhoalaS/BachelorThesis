@@ -172,6 +172,31 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 	}
 }
 
+func TestApproxDoubleVertexDominationRule2(t *testing.T) {
+	g := NewHyperGraph()
+	for i:=0 ; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
+	}
+
+	g.AddEdge(0, 1, 2)
+	g.AddEdge(1, 2, 3)
+	g.AddEdge(1, 4, 5)
+	g.AddEdge(0, 5)
+
+	// possible solutions [0,1], [1,5], [2,4], [2,5]
+
+	c := make(map[int32]bool)
+
+	ApproxDoubleVertexDominationRule2(g, c)
+	if len(c) != 2 {
+		t.Fatalf("Partial solution is wrong.")
+	}
+
+	if !((c[0] && c[1]) || (c[1] && c[5]) || (c[2] && (c[4] || c[5]))) {
+		t.Fatalf("Partial solution is wrong.")
+	}
+}
+
 func TestSmallTriangleRule(t *testing.T) {
 	var vSize int32 = 7
 	g := NewHyperGraph()
