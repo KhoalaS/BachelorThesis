@@ -13,9 +13,17 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[pkg.IntTuple]int {
+var ratios = map[string]pkg.IntTuple{
+	"kTiny": {A:1, B:1},
+	"kSmall": {A:2, B:1},
+	"kTri": {A:3, B:2},
+	"kApVertDom": {A:2, B:1},
+	"kApDoubleVertDom": {A:2, B:1},
+}
 
-	execs := make(map[pkg.IntTuple]int)
+func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
+
+	execs := make(map[string]int)
 
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
@@ -26,11 +34,11 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[pkg.IntTuple]int
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		//kApDoubleVertDom := 0
 
-		execs[pkg.IntTuple{A: 1, B: 1}] += kTiny
-		execs[pkg.IntTuple{A: 3, B: 2}] += kTri
-		execs[pkg.IntTuple{A: 2, B: 1}] += kSmall
-		execs[pkg.IntTuple{A: 2, B: 1}] += kApVertDom
-		execs[pkg.IntTuple{A: 2, B: 1}] += kApDoubleVertDom
+		execs["kTiny"] += kTiny
+		execs["kTri"] += kTri
+		execs["kSmall"] += kSmall
+		execs["kApVertDom"] += kApVertDom
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
 
 		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdom == 0 {
 			break
@@ -57,12 +65,12 @@ func makeChart() {
 	labels := make([]int, 20)
 	lineSeries := make(map[int32][]opts.LineData)
 
-	//g.RemoveDuplicate()
 	for baseSize <= 10000 {
 		lineSeries[baseSize] = []opts.LineData{}
 		for i := 1; i <= 20; i++ {
 			labels[i-1] = i
 			g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, false)
+			g.RemoveDuplicate()
 			c := make(map[int32]bool)
 
 			execs := ApplyRules(g, c)
@@ -71,8 +79,8 @@ func makeChart() {
 			var denom float64 = 0
 
 			for key, val := range execs {
-				nom += float64(key.A * val)
-				denom += float64(key.B * val)
+				nom += float64(ratios[key].A * val)
+				denom += float64(ratios[key].B * val)
 			}
 
 			lineSeries[baseSize] = append(lineSeries[baseSize], opts.LineData{Value: nom / denom})
