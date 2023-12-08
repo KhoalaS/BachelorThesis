@@ -10,10 +10,9 @@ import (
 	"github.com/OneOfOne/xxhash"
 )
 
-
 func getHash(arr []int32) uint32 {
 	h := xxhash.New32()
-    
+
 	sort.Slice(arr, func(i, j int) bool {
 		return arr[i] < arr[j]
 	})
@@ -26,25 +25,28 @@ func getHash(arr []int32) uint32 {
 	r := strings.NewReader(in)
 	io.Copy(h, r)
 
-	return h.Sum32();
-}	
+	return h.Sum32()
+}
 
-func GenerateTestGraph(numVertices int32, numEdges int32, tinyEdges bool) *HyperGraph {
+func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 	g := NewHyperGraph()
+
+	edgeHashes := make(map[uint32]bool)
+
 	var tinyEdgeProb float32 = 0.01
 	if !tinyEdges {
 		tinyEdgeProb = 0.0
 	}
-	
+
 	var i int32 = 0
 
-	for ; i < numVertices; i++ {
+	for ; i < n; i++ {
 		g.AddVertex(i, 0)
 	}
 
 	i = 0
 
-	for ; i < numEdges; i++ {
+	for ; i < m; i++ {
 		d := 1
 		r := rand.Float32()
 		if r > tinyEdgeProb && r < 0.6 {
@@ -52,17 +54,33 @@ func GenerateTestGraph(numVertices int32, numEdges int32, tinyEdges bool) *Hyper
 		} else if r >= 0.6 {
 			d = 3
 		}
+
 		eps := make(map[int32]bool)
+		epsArr := make([]int32, d)
 		for j := 0; j < d; j++ {
-			val := rand.Int31n(numVertices)
+			val := rand.Int31n(n)
 			_, ex := eps[val]
-			for ex {
-				val = rand.Int31n(numVertices)
+			epsArr[j] = val
+
+			vertReroll := 0
+			for ex && vertReroll < 50 {
+				val = rand.Int31n(n)
+				epsArr[j] = val
 				_, ex = eps[val]
+				vertReroll++
 			}
 			eps[val] = true
 		}
-		g.AddEdgeMap(eps)
+
+		if len(eps) != d {
+			break
+		}
+
+		hash := getHash(epsArr)
+		if !edgeHashes[hash] {
+			edgeHashes[hash] = true
+			g.AddEdgeMap(eps)
+		}
 	}
 
 	return g
