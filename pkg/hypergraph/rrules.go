@@ -613,9 +613,14 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
 	exec := 0
+	degThree := []int32{}
 
 	// Time Compelxity: |E|
-	for _, e := range g.Edges {
+	for eId, e := range g.Edges {
+		if len(e.v) == 3 {
+			degThree = append(degThree, eId)
+			continue
+		}
 		if len(e.v) != 2 {
 			continue
 		}
@@ -650,6 +655,13 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			if adjList[subset[0]][subset[1]] {
 				exec++
 				remSet := []int32{subset[0], subset[1], x}
+				if len(degThree) > 0 {
+					wEdge := degThree[len(degThree)-1]
+					for v := range g.Edges[wEdge].v {
+						remSet = append(remSet, v)
+					}
+					degThree = degThree[:len(degThree)-1]
+				}
 				for _, y := range remSet {
 					c[y] = true
 					remVertices[y] = true

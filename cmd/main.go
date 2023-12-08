@@ -16,7 +16,7 @@ import (
 var ratios = map[string]pkg.IntTuple{
 	"kTiny": {A:1, B:1},
 	"kSmall": {A:2, B:1},
-	"kTri": {A:3, B:2},
+	"kTri": {A:6, B:3},
 	"kApVertDom": {A:2, B:1},
 	"kApDoubleVertDom": {A:2, B:1},
 }
@@ -115,5 +115,5 @@ func makeChart() {
 }
 
 func main() {
-	makeChart()
+	makeChart()	
 }
