@@ -60,7 +60,6 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 		for j := 0; j < d; j++ {
 			val := rand.Int31n(n)
 			_, ex := eps[val]
-			epsArr[j] = val
 
 			vertReroll := 0
 			for ex && vertReroll < 50 {
@@ -69,6 +68,7 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 				_, ex = eps[val]
 				vertReroll++
 			}
+			epsArr[j] = val
 			eps[val] = true
 		}
 

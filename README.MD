@@ -178,7 +178,7 @@ That results in the graph having at most $\texttt{m}$ edges and not exactly $\te
 
 Using an established model like the [Erdős–Rényi Model](https://www.semanticscholar.org/paper/On-random-graphs.-I.-Erdos-R%C3%A9nyi/e77e986f717b353329e2202c384c5499191a0646) would be more favourable. But since we just needed something tangible to start testing, this "model" will suffice for the time being.
 
-
+One could also look into generating random bipartite grpahs that translate back to a hypergraph with the desired vertex and edge numbers.
 
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
@@ -352,9 +352,7 @@ var ratios = map[string]pkg.IntTuple{
 }
 ```
 
-Where $\texttt{A}$ denotes the amount of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the amount of vertices present in an optimal solution. These values are relative to the structure the rule is targeting. 
-
-For example let $\texttt{A}=2$ and $\texttt{B}=1$ for a rule $R$. That means that we put 2 vertices of the structure $R$ is targeting in our partial solution. A optimal solution would only contain 1 vertex of the target structure.
+Where $\texttt{A}$ denotes the amount of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the amount of vertices present in an optimal solution.
 
 We can then use these values to calculate the estimated approximation factor as follows:
 
@@ -370,9 +368,23 @@ for key, val := range execs {
 }
 ```
 
+We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 vertices. We calculateted the estimated approximation factor for these graphs. We did this for ratios $r = \frac{|E|}{|V|}$ of 1 to 20.
+
+
+![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](./img/line_fac.png)
+
+We also looked at the number of rule executions for $r=1$ and $r=10$.
+
+![Number of Rule Executions, $r=1$](./img/bar_ex_1.png)
+![Number of Rule Executions, $r=10$](./img/bar_ex_10.png)
+
+
 ## Testing
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
+
+## Branching Algorithm
+
 
 ## Possible Optimizations
 

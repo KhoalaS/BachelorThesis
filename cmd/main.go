@@ -10,15 +10,16 @@ import (
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 var ratios = map[string]pkg.IntTuple{
-	"kTiny": {A:1, B:1},
-	"kSmall": {A:2, B:1},
-	"kTri": {A:6, B:3},
-	"kApVertDom": {A:2, B:1},
-	"kApDoubleVertDom": {A:2, B:1},
+	"kTiny":            {A: 1, B: 1},
+	"kSmall":           {A: 2, B: 1},
+	"kTri":             {A: 3, B: 2},
+	"kApVertDom":       {A: 2, B: 1},
+	"kApDoubleVertDom": {A: 2, B: 1},
 }
 
 func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
@@ -29,8 +30,8 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kEdom := hypergraph.EdgeDominationRule(g, c)
-		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
 		kApVertDom := hypergraph.ApproxVertexDominationRule3(g, c)
+		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		//kApDoubleVertDom := 0
 
@@ -60,17 +61,23 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 
 func makeChart() {
 	var baseSize int32 = 10
+	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
+	var maxVert int32 = 10000
 
 	labels := make([]int, 20)
 	lineSeries := make(map[int32][]opts.LineData)
+	barLabels := []string{"kTiny", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom"}
 
-	for baseSize <= 10000 {
+	barSeries1 := make(map[int32][]opts.BarData)
+	barSeries10 := make(map[int32][]opts.BarData)
+
+	for baseSize <= maxVert {
+		baseSizes = append(baseSizes, baseSize)
 		lineSeries[baseSize] = []opts.LineData{}
 		for i := 1; i <= 20; i++ {
 			labels[i-1] = i
-			g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, false)
-			g.RemoveDuplicate()
+			g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
 			c := make(map[int32]bool)
 
 			execs := ApplyRules(g, c)
@@ -83,37 +90,130 @@ func makeChart() {
 				denom += float64(ratios[key].B * val)
 			}
 
-			lineSeries[baseSize] = append(lineSeries[baseSize], opts.LineData{Value: nom / denom})
+			lineSeries[baseSize] = append(lineSeries[baseSize], opts.LineData{Value: fmt.Sprintf("%.2f",(nom / denom))})
 
+			if _, ex := barSeries10[baseSize]; !ex {
+				barSeries10[baseSize] = []opts.BarData{}
+				barSeries1[baseSize] = []opts.BarData{}
+			}
+			if i == 10 {
+				for _, v := range barLabels {
+					barSeries10[baseSize] = append(barSeries10[baseSize], opts.BarData{Value: execs[v]})
+				}
+			} else if i == 1 {
+				for _, v := range barLabels {
+					barSeries1[baseSize] = append(barSeries1[baseSize], opts.BarData{Value: execs[v]})
+				}
+			}
 			fmt.Println("Edges/Vertices Factor:", i, "|", "Approximation Factor:", nom/denom)
 		}
 		baseSize = baseSize * 10
 	}
 
+	page := components.NewPage()
 	line := charts.NewLine()
 	line.SetGlobalOptions(
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:  true,
+			Right: "20%",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show:  true,
+					Type:  "png",
+					Title: "Save",
+				},
+			}},
+		),
 		charts.WithYAxisOpts(opts.YAxis{Min: 1, Max: 2, Name: "est. Approximation Factor"}),
 		charts.WithXAxisOpts(opts.XAxis{Name: "#Edges\\#Vertices"}),
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
 		charts.WithLegendOpts(opts.Legend{Show: true, Right: "80px"}),
+		charts.WithTooltipOpts(opts.Tooltip{Show: true, Trigger: "axis"}),
 	)
 	line.SetXAxis(labels)
 
-	for key, val := range lineSeries {
-		l := fmt.Sprintf("%dK Vertices", key/1000)
-		if key < 1000 {
-			l = fmt.Sprintf("%d Vertices", key)
+
+
+	for _, val := range baseSizes {
+		l := fmt.Sprintf("%dK Vertices", val/1000)
+		if val < 1000 {
+			l = fmt.Sprintf("%d Vertices", val)
 		}
-		line.AddSeries(l, val).SetSeriesOptions(
+		line.AddSeries(l, lineSeries[val]).SetSeriesOptions(
 			charts.WithLineChartOpts(opts.LineChart{
 				ShowSymbol: true,
 			}),
 		)
 	}
+
+	bar1 := charts.NewBar()
+	bar10 := charts.NewBar()
+
+	bar1.SetGlobalOptions(
+		charts.WithTitleOpts(opts.Title{
+			Title: "#Rule Executions",
+			Subtitle: "[#Edges/#Vertices = 1]",
+		}),
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:  true,
+			Right: "20%",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show:  true,
+					Type:  "png",
+					Title: "save",
+				},
+			}},
+		),
+	)
+
+	bar10.SetGlobalOptions(
+		charts.WithTitleOpts(opts.Title{
+			Title: "#Rule Executions",
+			Subtitle: "[#Edges/#Vertices = 10]",
+		}),
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:  true,
+			Right: "20%",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show:  true,
+					Type:  "png",
+					Title: "save",
+				},
+			}},
+		),
+	)
+
+	bar1.SetXAxis(barLabels).
+		AddSeries("10 Vertices", barSeries1[10]).
+		AddSeries("100 Vertices", barSeries1[100]).
+		AddSeries("1K Vertices", barSeries1[1000]).
+		AddSeries("10K Vertices", barSeries1[10000]).
+		SetSeriesOptions(
+			charts.WithLabelOpts(opts.Label{
+				Show:     true,
+				Position: "top",
+			}),
+		)
+
+	bar10.SetXAxis(barLabels).
+		AddSeries("10 Vertices", barSeries10[10]).
+		AddSeries("100 Vertices", barSeries10[100]).
+		AddSeries("1K Vertices", barSeries10[1000]).
+		AddSeries("10K Vertices", barSeries10[10000]).
+		SetSeriesOptions(
+			charts.WithLabelOpts(opts.Label{
+				Show:     true,
+				Position: "top",
+			}),
+		)
+
+	page.AddCharts(line, bar1, bar10)
 	f, _ := os.Create("approx_factor_chart.html")
-	line.Render(f)
+	page.Render(f)
 }
 
 func main() {
-	makeChart()	
+	makeChart()
 }
