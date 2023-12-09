@@ -655,13 +655,13 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			if adjList[subset[0]][subset[1]] {
 				exec++
 				remSet := []int32{subset[0], subset[1], x}
-				if len(degThree) > 0 {
-					wEdge := degThree[len(degThree)-1]
-					for v := range g.Edges[wEdge].v {
-						remSet = append(remSet, v)
-					}
-					degThree = degThree[:len(degThree)-1]
-				}
+				//if len(degThree) > 0 {
+				//	wEdge := degThree[len(degThree)-1]
+				//	for v := range g.Edges[wEdge].v {
+				//		remSet = append(remSet, v)
+				//	}
+				//	degThree = degThree[:len(degThree)-1]
+				//}
 				for _, y := range remSet {
 					c[y] = true
 					remVertices[y] = true
