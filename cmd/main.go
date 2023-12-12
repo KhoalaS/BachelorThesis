@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"runtime/pprof"
 
-	"github.com/KhoalaS/BachelorThesis/pkg"
+	"github.com/KhoalaS/BachelorThesis/pkg/alg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
@@ -14,50 +12,8 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-var ratios = map[string]pkg.IntTuple{
-	"kTiny":            {A: 1, B: 1},
-	"kSmall":           {A: 2, B: 1},
-	"kTri":             {A: 3, B: 2},
-	"kApVertDom":       {A: 2, B: 1},
-	"kApDoubleVertDom": {A: 2, B: 1},
-}
 
-func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 
-	execs := make(map[string]int)
-
-	for {
-		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		kTri := hypergraph.SmallTriangleRule(g, c)
-		kEdom := hypergraph.EdgeDominationRule(g, c)
-		kApVertDom := hypergraph.ApproxVertexDominationRule3(g, c)
-		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
-		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		//kApDoubleVertDom := 0
-
-		execs["kTiny"] += kTiny
-		execs["kTri"] += kTri
-		execs["kSmall"] += kSmall
-		execs["kApVertDom"] += kApVertDom
-		execs["kApDoubleVertDom"] += kApDoubleVertDom
-
-		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdom == 0 {
-			break
-		}
-	}
-
-	m, err := os.Create("mem_main.prof")
-	if err != nil {
-		log.Fatal("could not create memory profile: ", err)
-	}
-	defer m.Close() // error handling omitted for example
-	//runtime.GC() // get up-to-date statistics
-	if err := pprof.WriteHeapProfile(m); err != nil {
-		log.Fatal("could not write memory profile: ", err)
-	}
-
-	return execs
-}
 
 func makeChart() {
 	var baseSize int32 = 10
@@ -67,7 +23,8 @@ func makeChart() {
 
 	labels := make([]int, 20)
 	lineSeries := make(map[int32][]opts.LineData)
-	barLabels := []string{"kTiny", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom"}
+	barLabels := []string{"kTiny", "kEdgeDom", "kVertDom", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom"}
+	barLabelsShort := []string{"Tiny", "EDom", "VDom", "Tri", "ApVDom", "Small", "ApDVDom"}
 
 	barSeries1 := make(map[int32][]opts.BarData)
 	barSeries10 := make(map[int32][]opts.BarData)
@@ -80,15 +37,22 @@ func makeChart() {
 			g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
 			c := make(map[int32]bool)
 
-			execs := ApplyRules(g, c)
+			execs, _ := alg.ApplyRules(g, c, 1000000)
 
 			var nom float64 = 0
 			var denom float64 = 0
 
 			for key, val := range execs {
-				nom += float64(ratios[key].A * val)
-				denom += float64(ratios[key].B * val)
+				if key == "kEdgeDom" || key == "kVertDom"{
+					continue
+				}
+				nom += float64(alg.Ratios[key].A * val)
+				denom += float64(alg.Ratios[key].B * val)
 			}
+			fmt.Println("Nom: " ,nom)
+			fmt.Println("Denom: " ,denom)
+
+
 
 			lineSeries[baseSize] = append(lineSeries[baseSize], opts.LineData{Value: fmt.Sprintf("%.2f",(nom / denom))})
 
@@ -185,7 +149,7 @@ func makeChart() {
 		),
 	)
 
-	bar1.SetXAxis(barLabels).
+	bar1.SetXAxis(barLabelsShort).
 		AddSeries("10 Vertices", barSeries1[10]).
 		AddSeries("100 Vertices", barSeries1[100]).
 		AddSeries("1K Vertices", barSeries1[1000]).
@@ -197,7 +161,7 @@ func makeChart() {
 			}),
 		)
 
-	bar10.SetXAxis(barLabels).
+	bar10.SetXAxis(barLabelsShort).
 		AddSeries("10 Vertices", barSeries10[10]).
 		AddSeries("100 Vertices", barSeries10[100]).
 		AddSeries("1K Vertices", barSeries10[1000]).
@@ -215,5 +179,11 @@ func makeChart() {
 }
 
 func main() {
-	makeChart()
+	g := hypergraph.NewHyperGraph()
+	g.AddEdge(1,2,3)
+	g.AddEdge(3,4)
+
+	sol := alg.MinEdgeCover(g)
+	fmt.Println(sol)
+
 }
