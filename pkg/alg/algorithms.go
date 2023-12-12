@@ -1,10 +1,20 @@
 package alg
 
 import (
+	_ "embed"
+	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
+
 	"github.com/KhoalaS/BachelorThesis/pkg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
+
+//go:embed minedgecover.py
+var scriptCode string
 
 var Ratios = map[string]pkg.IntTuple{
 	"kTiny":            {A: 1, B: 1},
@@ -80,4 +90,73 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 
 	return execs, K
 }
+
+func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
+	sol := []int32{}
+	incList := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			if _, ex := incList[v]; !ex {
+				incList[v] = make(map[int32]bool)
+			}
+			incList[v][eId] = true
+		}
+	}
+
+	f, err := os.CreateTemp("", "SimpleGraph_*.txt")
+	if err != nil {
+		log.Fatal("Could not create temp graph file:", f.Name())
+	}
+	defer os.Remove(f.Name())
+
+	for v, val := range incList {
+		if len(val) == 2 {
+			
+			
+			e := []int32{}
+			for eId := range incList[v]{
+				e = append(e, eId)
+			}
+			f.WriteString(fmt.Sprintf("%d,%d,%d\n", v, e[0], e[1]))
+		}
+	}	
+	f.Close()
+
+	script, err := os.CreateTemp("", "minedgecover_*.py") 
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(script.Name())
+
+	_, err = script.WriteString(scriptCode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pyCmd := exec.Command("python3", script.Name(), f.Name())
+
+	out, err := pyCmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := string(out)
+	output = strings.Trim(output, "\n")
+	output = output[1:len(output)-1]
+	edgesStr := strings.Split(output, ",")
+
+
+	for _, e := range edgesStr {
+		if len(e) == 0 {
+			continue
+		}
+		eInt, err := strconv.Atoi(e) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		sol = append(sol, int32(eInt))
+	}
+
+	return sol
 }
