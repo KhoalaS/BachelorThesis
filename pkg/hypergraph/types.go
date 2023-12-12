@@ -11,31 +11,31 @@ import (
 )
 
 type HyperGraph struct {
-	Vertices map[int32]Vertex
-	Edges map[int32]Edge
+	Vertices    map[int32]Vertex
+	Edges       map[int32]Edge
 	edgeCounter int32
-	Degree int
+	Degree      int
 }
 
 func (g *HyperGraph) AddVertex(id int32, data any) {
 	g.Vertices[id] = Vertex{id, data}
 }
 
-func (g *HyperGraph) AddEdge(eps... int32) {
-	e := Edge{v: make(map[int32]bool)}
-	
+func (g *HyperGraph) AddEdge(eps ...int32) {
+	e := Edge{V: make(map[int32]bool)}
+
 	for _, ep := range eps {
-		e.v[ep] = true
+		e.V[ep] = true
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
 }
 
 func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
-	e := Edge{v: make(map[int32]bool)}
-	
+	e := Edge{V: make(map[int32]bool)}
+
 	for ep := range eps {
-		e.v[ep] = true
+		e.V[ep] = true
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
@@ -50,13 +50,16 @@ func (g HyperGraph) Print() {
 	fmt.Println("\nEdges:")
 	for eId, e := range g.Edges {
 		ids := []int32{}
-		for id := range e.v {
+		for id, val := range e.V {
+			if !val {
+				continue
+			}
 			ids = append(ids, id)
 		}
-		fmt.Printf("\t%d:%d\n",eId, ids)
+		fmt.Printf("\t%d:%d\n", eId, ids)
 	}
 	fmt.Println("--------------------------")
-} 
+}
 
 func NewHyperGraph() *HyperGraph {
 	vertices := make(map[int32]Vertex)
@@ -70,8 +73,8 @@ func (g *HyperGraph) IsSimple() bool {
 	simple := true
 
 	for _, e := range g.Edges {
-		for id := range e.v {
-			degMap[id] = degMap[id]+1
+		for id := range e.V {
+			degMap[id]++
 			if degMap[id] == 3 {
 				return false
 			}
@@ -87,37 +90,38 @@ func (g *HyperGraph) RemoveDuplicate() {
 		hash := e.getHash()
 		if hashes[hash] {
 			delete(g.Edges, eId)
+		} else {
+			hashes[hash] = true
 		}
 	}
 }
 
 type Vertex struct {
-	id int32
+	id   int32
 	data any
 }
 
 type Edge struct {
-	v map[int32]bool
+	V map[int32]bool
 }
 
 func NewEdge(eps map[int32]bool) *Edge {
-	e := Edge{v: make(map[int32]bool)}
-	
+	e := Edge{V: make(map[int32]bool)}
+
 	for ep := range eps {
-		e.v[ep] = true
+		e.V[ep] = true
 	}
 
 	return &e
 }
 
-
 // Time Complexity: 2d + d*log(d)
 func (e *Edge) getHash() uint32 {
 	h := xxhash.New32()
 
-	arr := make([]int32, len(e.v))
+	arr := make([]int32, len(e.V))
 	var i int32 = 0
-	for ep := range e.v {
+	for ep := range e.V {
 		arr[i] = ep
 		i++
 	}
@@ -133,10 +137,10 @@ func (e *Edge) getHash() uint32 {
 	r := strings.NewReader(in)
 	io.Copy(h, r)
 
-	return h.Sum32();
-}	
+	return h.Sum32()
+}
 
 const (
-	TINY = 1
+	TINY  = 1
 	SMALL = 2
 )

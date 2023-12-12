@@ -88,9 +88,9 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 
 func SetMinus(e Edge, elem int32) ([]int32, bool) {
 	arr := []int32{}
-	lenBefore := len(e.v)
+	lenBefore := len(e.V)
 
-	for v := range e.v {
+	for v := range e.V {
 		if v == elem {
 			continue
 		}

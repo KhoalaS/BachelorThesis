@@ -15,7 +15,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[uint32]bool, d
 	epArr := []int32{}
 
 	for _, eId := range domEdges {
-		for ep := range g.Edges[eId].v {
+		for ep := range g.Edges[eId].V {
 			epArr = append(epArr, ep)
 		}
 
@@ -52,7 +52,7 @@ func EdgeDominationRule(g *HyperGraph, c map[int32]bool) int {
 	exec := 0
 
 	for eId, e := range g.Edges {
-		if len(e.v) == 2 {
+		if len(e.V) == 2 {
 			eHash := e.getHash()
 			subEdges[eHash] = true
 		} else {
@@ -102,10 +102,10 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	exec := 0
 
 	for eId, e := range g.Edges {
-		if len(e.v) == t {
+		if len(e.V) == t {
 			remEdges[eId] = true
 		}
-		for v := range e.v {
+		for v := range e.V {
 			if _, ex := adjList[v]; !ex {
 				adjList[v] = make(map[int32]bool)
 			}
@@ -115,7 +115,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 
 	for e := range remEdges {
 		exec++
-		for v := range g.Edges[e].v {
+		for v := range g.Edges[e].V {
 			c[v] = true
 			delete(g.Vertices, v)
 			for f := range adjList[v] {
@@ -130,22 +130,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	return exec
 }
 
-// Complexity: (|E| * d)^2
-// What can be done fast:
-// - Extract size-3 edges
-// - compute subsets
-// -
-
-// New Algorithm
-// Iterate over all edges, extracting all edges degree 3
-// associate every vertex with its other vertices in an edge
-// vSub := map[int32]map[int32][]int32
-// sum the occurences of these size two sets up in a map
-// if the map contains at least two values a,b such that a+b=len(vSub)+1 then we know, that there
-// exists two vertices that are part of every edge that x is an element of
-// Complexity:
-// |E| + |E| + d
-
+//Deprecated:
 func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
@@ -154,11 +139,11 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 	var xDom int32 = -1
 
 	for id, edge := range g.Edges {
-		if len(edge.v) < 3 {
+		if len(edge.V) < 3 {
 			continue
 		}
 
-		for x := range edge.v {
+		for x := range edge.V {
 
 			cond := true
 
@@ -166,10 +151,10 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 				if id == idComp {
 					continue
 				}
-				if edgeComp.v[x] {
+				if edgeComp.V[x] {
 					sum := 0
-					for vertex := range edge.v {
-						if edgeComp.v[vertex] {
+					for vertex := range edge.V {
+						if edgeComp.V[vertex] {
 							sum += 1
 						}
 					}
@@ -191,12 +176,12 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 	}
 
 	if xDom != -1 {
-		for vertex := range yz.v {
+		for vertex := range yz.V {
 			if vertex != xDom {
 				remVertices[vertex] = true
 				c[vertex] = true
 				for eId, edge := range g.Edges {
-					if edge.v[vertex] {
+					if edge.V[vertex] {
 						remEdges[eId] = true
 					}
 				}
@@ -214,6 +199,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 	return false
 }
 
+//Deprecated:
 func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 	vSub := make(map[int32]map[uint32]bool)
 	vSubCount := make(map[int32]map[int32]int32)
@@ -222,7 +208,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 
 	// Time Complexity: |E| * d^2
 	for _, e := range g.Edges {
-		for vId0 := range e.v {
+		for vId0 := range e.V {
 			sub := []int32{}
 
 			if _, ex := vSubCount[vId0]; !ex {
@@ -230,7 +216,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 				vSub[vId0] = make(map[uint32]bool)
 			}
 
-			for vId1 := range e.v {
+			for vId1 := range e.V {
 				if vId0 != vId1 {
 					sub = append(sub, vId1)
 					vSubCount[vId0][vId1]++
@@ -292,7 +278,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 	}
 
 	for id, e := range g.Edges {
-		for v := range e.v {
+		for v := range e.V {
 			if remVertices[v] {
 				remEdges[id] = true
 				break
@@ -311,7 +297,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 	return true
 }
 
-func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
+func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool, lock bool) int {
 	vDeg := make(map[int32]int)
 	vSubCount := make(map[int32]map[int32]int32)
 	adjList := make(map[int32]map[int32]bool)
@@ -320,7 +306,7 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 
 	// Time Complexity: |E| * d^2
 	for eId, e := range g.Edges {
-		for vId0 := range e.v {
+		for vId0 := range e.V {
 			if _, ex := adjList[vId0]; !ex {
 				adjList[vId0] = make(map[int32]bool)
 			}
@@ -330,7 +316,7 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 				vSubCount[vId0] = make(map[int32]int32)
 			}
 
-			for vId1 := range e.v {
+			for vId1 := range e.V {
 				if vId0 != vId1 {
 					vSubCount[vId0][vId1]++
 				}
@@ -347,6 +333,10 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 				continue
 			}
 
+			if lock && vDeg[vId] == 1 {
+				continue
+			}
+
 			solution, ex := twoSum(count, int32(vDeg[vId]+1))
 			if !ex {
 				continue
@@ -358,7 +348,7 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 			for _, v := range solution {
 				c[v] = true
 				for remEdge := range adjList[v] {
-					for w := range g.Edges[remEdge].v {
+					for w := range g.Edges[remEdge].V {
 						if w == v {
 							continue
 						}
@@ -386,13 +376,67 @@ func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
+	vDeg := make(map[int32]int32)
+	incList := make(map[int32]map[int32]bool)
+	exec := 0
+
+	for eId, e := range g.Edges {
+		for vId := range e.V {
+			vDeg[vId]++
+			if _, ex := incList[vId]; !ex {
+				incList[vId] = make(map[int32]bool)
+			}
+			incList[vId][eId] = true
+		}
+	}
+
+	for v := range g.Vertices {
+		vCount := make(map[int32]int32)
+		for e := range incList[v] {
+			for w := range g.Edges[e].V {
+				vCount[w]++
+			}
+		}
+		delete(vCount, v)
+
+		dom := false
+		//var vDom int32 = -1
+
+		for _, value := range vCount {
+			if value == vDeg[v] {
+				dom = true
+				//	vDom = key
+				break
+			}
+		}
+
+		if dom {
+			//fmt.Println("Vertex ", v, " is dominated by ", vDom)
+			for e := range incList[v] {
+				delete(g.Edges[e].V, v)
+			}
+			delete(g.Vertices, v)
+			delete(incList, v)
+			exec++
+		} else {
+			//fmt.Println("Vertex ", v, " is NOT dominated")
+		}
+	}
+
+	if exec > 0 {
+		g.RemoveDuplicate()
+	}
+	return exec
+}
+
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	incList := make(map[int32]map[int32]bool)
 	exec := 0
 
 	// |E| * d
 	for eId, e := range g.Edges {
-		for v := range e.v {
+		for v := range e.V {
 			if _, ex := incList[v]; !ex {
 				incList[v] = make(map[int32]bool)
 			}
@@ -404,18 +448,18 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		foundSol := false
 		for _, e := range g.Edges {
 			foundLocalSol := false
-			if len(e.v) != 3 {
+			if len(e.V) != 3 {
 				continue
 			}
 
 			var a int32 = -1
 			var b int32 = -1
 
-			for v := range e.v {
+			for v := range e.V {
 				a = v
 				vCount := make(map[int32]int32)
 				var xyCount int32 = 0
-				for w := range e.v {
+				for w := range e.V {
 					if a == w {
 						continue
 					}
@@ -423,8 +467,8 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 						if incList[a][eInc] {
 							continue
 						}
-						for x := range g.Edges[eInc].v {
-							if !e.v[x] {
+						for x := range g.Edges[eInc].V {
+							if !e.V[x] {
 								vCount[x]++
 							}
 						}
@@ -491,7 +535,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 	// |E| * d
 	for eId, e := range g.Edges {
-		for v := range e.v {
+		for v := range e.V {
 			incMatrix[v][eId] = 1
 		}
 	}
@@ -506,7 +550,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 		for _, e := range g.Edges {
 			foundLocalSol := false
 
-			if len(e.v) != 3 {
+			if len(e.V) != 3 {
 				continue
 			}
 
@@ -515,11 +559,11 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 			//fmt.Println("curr Edge:", e)
 
-			for v := range e.v {
+			for v := range e.V {
 				a = v
 				vCount := make(map[int32]int32)
 				var xyCount int32 = 0
-				for w := range e.v {
+				for w := range e.V {
 					if a == w {
 						continue
 					}
@@ -532,9 +576,9 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 							continue
 						}
 
-						for x := range g.Edges[int32(eId)].v {
+						for x := range g.Edges[int32(eId)].V {
 							//fmt.Println("(w,a,x,eId)",w, a, x, eId)
-							if !e.v[x] {
+							if !e.V[x] {
 								vCount[x]++
 							}
 						}
@@ -562,7 +606,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 				exec++
 				c[a] = true
 				c[b] = true
-				
+
 				//fmt.Println("removing (a,b):", a, b)
 
 				remEdges := make(map[int]bool)
@@ -604,7 +648,6 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 	//}
 	//fmt.Println("--------------after")
 
-
 	return exec
 }
 
@@ -617,14 +660,14 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 
 	// Time Compelxity: |E|
 	for eId, e := range g.Edges {
-		if len(e.v) == 3 {
+		if len(e.V) == 3 {
 			degThree = append(degThree, eId)
 			continue
 		}
-		if len(e.v) != 2 {
+		if len(e.V) != 2 {
 			continue
 		}
-		arr := mapToSlice(e.v)
+		arr := mapToSlice(e.V)
 
 		if _, ex := adjList[arr[0]]; !ex {
 			adjList[arr[0]] = make(map[int32]bool)
@@ -678,7 +721,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	for id, e := range g.Edges {
-		for v := range e.v {
+		for v := range e.V {
 			if remVertices[v] {
 				remEdges[id] = true
 				break

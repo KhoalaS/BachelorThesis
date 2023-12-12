@@ -65,7 +65,7 @@ func TestEdgeDominationRule(t *testing.T) {
 	}
 
 	for _, edge := range g.Edges {
-		if len(edge.v) != 2 {
+		if len(edge.V) != 2 {
 			t.Fatalf("The wrong edge has been removed.")
 		}
 	}
@@ -113,7 +113,7 @@ func TestRemoveEdgeRule(t *testing.T) {
 
 	for _, v := range edgeSol {
 		for _, ep := range g.Edges {
-			if !ep.v[v] {
+			if !ep.V[v] {
 				t.Fatalf("Vertex %d should have been part of solution.", v)
 			}
 		}
@@ -137,7 +137,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	g.AddEdge(1, 4)
 
 	c := make(map[int32]bool)
-	ApproxVertexDominationRule3(g, c)
+	ApproxVertexDominationRule3(g, c, false)
 
 	// possible solutions: [2,7], [0,2], [2,3]
 
@@ -174,7 +174,7 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 
 func TestApproxDoubleVertexDominationRule2(t *testing.T) {
 	g := NewHyperGraph()
-	for i:=0 ; i < 6; i++ {
+	for i := 0; i < 6; i++ {
 		g.AddVertex(int32(i), 0)
 	}
 
@@ -293,10 +293,10 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 		b.Fatal("Could not create cpu profile")
 	}
 	defer stopProfiling(f)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxVertexDominationRule3(g, c)		
+		ApproxVertexDominationRule3(g, c, false)
 	}
 
 }
@@ -319,15 +319,15 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 		ApproxDoubleVertexDominationRule(g, c)
 	}
 
-    m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
-    if err != nil {
-        b.Fatal("could not create memory profile: ", err)
-    }
-    defer m.Close() // error handling omitted for example
-    if err := pprof.WriteHeapProfile(m); err != nil {
-        b.Fatal("could not write memory profile: ", err)
-    }
-    
+	m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
+	if err != nil {
+		b.Fatal("could not create memory profile: ", err)
+	}
+	defer m.Close() // error handling omitted for example
+	if err := pprof.WriteHeapProfile(m); err != nil {
+		b.Fatal("could not write memory profile: ", err)
+	}
+
 }
 
 func BenchmarkApproxDoubleVertexDominationRule2(b *testing.B) {
@@ -348,15 +348,15 @@ func BenchmarkApproxDoubleVertexDominationRule2(b *testing.B) {
 		ApproxDoubleVertexDominationRule2(g, c)
 	}
 
-    m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
-    if err != nil {
-        b.Fatal("could not create memory profile: ", err)
-    }
-    defer m.Close() // error handling omitted for example
-    if err := pprof.WriteHeapProfile(m); err != nil {
-        b.Fatal("could not write memory profile: ", err)
-    }
-    
+	m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
+	if err != nil {
+		b.Fatal("could not create memory profile: ", err)
+	}
+	defer m.Close() // error handling omitted for example
+	if err := pprof.WriteHeapProfile(m); err != nil {
+		b.Fatal("could not write memory profile: ", err)
+	}
+
 }
 
 func makeProfile(name string) (*os.File, error) {
