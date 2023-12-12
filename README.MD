@@ -371,12 +371,12 @@ for key, val := range execs {
 We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 vertices. We calculateted the estimated approximation factor for these graphs. We did this for ratios $r = \frac{|E|}{|V|}$ of 1 to 20.
 
 
-![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](./img/line_fac.png)
+![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/exp_edom_lin/img/line_fac.png)
 
 We also looked at the number of rule executions for $r=1$ and $r=10$.
 
-![Number of Rule Executions, $r=1$](./img/bar_ex_1.png)
-![Number of Rule Executions, $r=10$](./img/bar_ex_10.png)
+![Number of Rule Executions, $r=1$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/exp_edom_lin/img/bar_ex_1.png)
+![Number of Rule Executions, $r=10$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/exp_edom_lin/img/bar_ex_10.png)
 
 
 ## Testing
