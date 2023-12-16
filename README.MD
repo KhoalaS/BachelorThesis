@@ -425,3 +425,71 @@ If our problem instance is simple, we can solve it in polynomial time using an e
 Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 
 
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
+
+## Charts
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Awesome go-echarts</title>
+    <script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
+</head>
+
+<body>
+<style> .container {display: flex;justify-content: center;align-items: center;} .item {margin: auto;} </style> 
+<div class="container">
+    <div class="item" id="jhayppCBcYPE" style="width:900px;height:500px;"></div>
+</div>
+
+<script type="text/javascript">
+    "use strict";
+    let goecharts_jhayppCBcYPE = echarts.init(document.getElementById('jhayppCBcYPE'), "white");
+    let option_jhayppCBcYPE = {"animation":true,"color":["#5470c6","#91cc75","#fac858","#ee6666","#73c0de","#3ba272","#fc8452","#9a60b4","#ea7ccc"],"legend":{"show":true,"type":"","right":"80px"},"series":[{"name":"10 Vertices","type":"line","smooth":false,"connectNulls":false,"showSymbol":true,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":true,"data":[{"value":"1.25","XAxisIndex":0,"YAxisIndex":0},{"value":"1.20","XAxisIndex":0,"YAxisIndex":0},{"value":"1.40","XAxisIndex":0,"YAxisIndex":0},{"value":"1.40","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0},{"value":"1.60","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.14","XAxisIndex":0,"YAxisIndex":0},{"value":"1.29","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.43","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.29","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.43","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0},{"value":"1.33","XAxisIndex":0,"YAxisIndex":0}]},{"name":"100 Vertices","type":"line","smooth":false,"connectNulls":false,"showSymbol":true,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":true,"data":[{"value":"1.55","XAxisIndex":0,"YAxisIndex":0},{"value":"1.88","XAxisIndex":0,"YAxisIndex":0},{"value":"1.78","XAxisIndex":0,"YAxisIndex":0},{"value":"1.73","XAxisIndex":0,"YAxisIndex":0},{"value":"1.70","XAxisIndex":0,"YAxisIndex":0},{"value":"1.54","XAxisIndex":0,"YAxisIndex":0},{"value":"1.65","XAxisIndex":0,"YAxisIndex":0},{"value":"1.57","XAxisIndex":0,"YAxisIndex":0},{"value":"1.58","XAxisIndex":0,"YAxisIndex":0},{"value":"1.51","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.45","XAxisIndex":0,"YAxisIndex":0},{"value":"1.44","XAxisIndex":0,"YAxisIndex":0},{"value":"1.38","XAxisIndex":0,"YAxisIndex":0},{"value":"1.41","XAxisIndex":0,"YAxisIndex":0},{"value":"1.41","XAxisIndex":0,"YAxisIndex":0},{"value":"1.40","XAxisIndex":0,"YAxisIndex":0},{"value":"1.37","XAxisIndex":0,"YAxisIndex":0},{"value":"1.37","XAxisIndex":0,"YAxisIndex":0},{"value":"1.38","XAxisIndex":0,"YAxisIndex":0}]},{"name":"1K Vertices","type":"line","smooth":false,"connectNulls":false,"showSymbol":true,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":true,"data":[{"value":"1.62","XAxisIndex":0,"YAxisIndex":0},{"value":"1.88","XAxisIndex":0,"YAxisIndex":0},{"value":"1.87","XAxisIndex":0,"YAxisIndex":0},{"value":"1.88","XAxisIndex":0,"YAxisIndex":0},{"value":"1.85","XAxisIndex":0,"YAxisIndex":0},{"value":"1.76","XAxisIndex":0,"YAxisIndex":0},{"value":"1.79","XAxisIndex":0,"YAxisIndex":0},{"value":"1.72","XAxisIndex":0,"YAxisIndex":0},{"value":"1.69","XAxisIndex":0,"YAxisIndex":0},{"value":"1.63","XAxisIndex":0,"YAxisIndex":0},{"value":"1.62","XAxisIndex":0,"YAxisIndex":0},{"value":"1.60","XAxisIndex":0,"YAxisIndex":0},{"value":"1.58","XAxisIndex":0,"YAxisIndex":0},{"value":"1.55","XAxisIndex":0,"YAxisIndex":0},{"value":"1.51","XAxisIndex":0,"YAxisIndex":0},{"value":"1.53","XAxisIndex":0,"YAxisIndex":0},{"value":"1.49","XAxisIndex":0,"YAxisIndex":0},{"value":"1.50","XAxisIndex":0,"YAxisIndex":0},{"value":"1.46","XAxisIndex":0,"YAxisIndex":0},{"value":"1.46","XAxisIndex":0,"YAxisIndex":0}]},{"name":"10K Vertices","type":"line","smooth":false,"connectNulls":false,"showSymbol":true,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":true,"data":[{"value":"1.61","XAxisIndex":0,"YAxisIndex":0},{"value":"1.87","XAxisIndex":0,"YAxisIndex":0},{"value":"1.90","XAxisIndex":0,"YAxisIndex":0},{"value":"1.89","XAxisIndex":0,"YAxisIndex":0},{"value":"1.89","XAxisIndex":0,"YAxisIndex":0},{"value":"1.86","XAxisIndex":0,"YAxisIndex":0},{"value":"1.84","XAxisIndex":0,"YAxisIndex":0},{"value":"1.82","XAxisIndex":0,"YAxisIndex":0},{"value":"1.80","XAxisIndex":0,"YAxisIndex":0},{"value":"1.78","XAxisIndex":0,"YAxisIndex":0},{"value":"1.75","XAxisIndex":0,"YAxisIndex":0},{"value":"1.73","XAxisIndex":0,"YAxisIndex":0},{"value":"1.72","XAxisIndex":0,"YAxisIndex":0},{"value":"1.69","XAxisIndex":0,"YAxisIndex":0},{"value":"1.67","XAxisIndex":0,"YAxisIndex":0},{"value":"1.65","XAxisIndex":0,"YAxisIndex":0},{"value":"1.63","XAxisIndex":0,"YAxisIndex":0},{"value":"1.62","XAxisIndex":0,"YAxisIndex":0},{"value":"1.59","XAxisIndex":0,"YAxisIndex":0},{"value":"1.59","XAxisIndex":0,"YAxisIndex":0}]}],"title":{},"toolbox":{"show":true,"right":"20%","feature":{"saveAsImage":{"show":true,"type":"png","title":"Save"},"brush":null}},"tooltip":{"show":true,"trigger":"axis"},"xAxis":[{"name":"#Edges\\#Vertices","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]}],"yAxis":[{"name":"est. Approximation Factor","min":1,"max":2}]}
+;
+    
+	let action_jhayppCBcYPE = {"areas":{},"type":""}
+;
+    
+    goecharts_jhayppCBcYPE.setOption(option_jhayppCBcYPE);
+ 	goecharts_jhayppCBcYPE.dispatchAction(action_jhayppCBcYPE);
+</script>
+ 
+<div class="container">
+    <div class="item" id="QaMLxZdoIQnA" style="width:900px;height:500px;"></div>
+</div>
+
+<script type="text/javascript">
+    "use strict";
+    let goecharts_QaMLxZdoIQnA = echarts.init(document.getElementById('QaMLxZdoIQnA'), "white");
+    let option_QaMLxZdoIQnA = {"animation":true,"color":["#5470c6","#91cc75","#fac858","#ee6666","#73c0de","#3ba272","#fc8452","#9a60b4","#ea7ccc"],"legend":{"show":true,"type":""},"series":[{"name":"10 Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":2},{"value":2},{"value":3},{"value":1},{"value":0},{"value":0},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"100 Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":15},{"value":0},{"value":22},{"value":0},{"value":3},{"value":15},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"1K Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":124},{"value":1},{"value":221},{"value":0},{"value":61},{"value":142},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"10K Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":1261},{"value":2},{"value":2239},{"value":2},{"value":607},{"value":1328},{"value":3}],"label":{"show":true,"position":"top"}}],"title":{"text":"#Rule Executions","subtext":"[#Edges/#Vertices = 1]"},"toolbox":{"show":true,"right":"20%","feature":{"saveAsImage":{"show":true,"type":"png","title":"save"},"brush":null}},"tooltip":{"show":false},"xAxis":[{"data":["Tiny","EDom","VDom","Tri","ApVDom","Small","ApDVDom"]}],"yAxis":[{}]}
+;
+    
+	let action_QaMLxZdoIQnA = {"areas":{},"type":""}
+;
+    
+    goecharts_QaMLxZdoIQnA.setOption(option_QaMLxZdoIQnA);
+ 	goecharts_QaMLxZdoIQnA.dispatchAction(action_QaMLxZdoIQnA);
+</script>
+ 
+<div class="container">
+    <div class="item" id="VPYHEalIzQLV" style="width:900px;height:500px;"></div>
+</div>
+
+<script type="text/javascript">
+    "use strict";
+    let goecharts_VPYHEalIzQLV = echarts.init(document.getElementById('VPYHEalIzQLV'), "white");
+    let option_VPYHEalIzQLV = {"animation":true,"color":["#5470c6","#91cc75","#fac858","#ee6666","#73c0de","#3ba272","#fc8452","#9a60b4","#ea7ccc"],"legend":{"show":true,"type":""},"series":[{"name":"10 Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":5},{"value":8},{"value":2},{"value":1},{"value":0},{"value":0},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"100 Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":10},{"value":82},{"value":2},{"value":21},{"value":0},{"value":11},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"1K Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":111},{"value":101},{"value":4},{"value":98},{"value":0},{"value":258},{"value":0}],"label":{"show":true,"position":"top"}},{"name":"10K Vertices","type":"bar","smooth":false,"connectNulls":false,"showSymbol":false,"waveAnimation":false,"renderLabelForZeroData":false,"selectedMode":false,"animation":false,"data":[{"value":977},{"value":112},{"value":32},{"value":177},{"value":0},{"value":3867},{"value":0}],"label":{"show":true,"position":"top"}}],"title":{"text":"#Rule Executions","subtext":"[#Edges/#Vertices = 10]"},"toolbox":{"show":true,"right":"20%","feature":{"saveAsImage":{"show":true,"type":"png","title":"save"},"brush":null}},"tooltip":{"show":false},"xAxis":[{"data":["Tiny","EDom","VDom","Tri","ApVDom","Small","ApDVDom"]}],"yAxis":[{}]}
+;
+    
+	let action_VPYHEalIzQLV = {"areas":{},"type":""}
+;
+    
+    goecharts_VPYHEalIzQLV.setOption(option_VPYHEalIzQLV);
+ 	goecharts_VPYHEalIzQLV.dispatchAction(action_VPYHEalIzQLV);
+</script>
+
+
+
+
+</body>
+</html>
