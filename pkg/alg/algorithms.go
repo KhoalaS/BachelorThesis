@@ -64,7 +64,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		//kApDoubleVertDom := 0
 
-		log.Default().Println("#Edges: ", g.Edges)
+		//log.Default().Println("#Edges: ", g.Edges)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -89,6 +89,77 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 	//}
 
 	return execs, K
+}
+
+func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
+	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
+	// f,g have to share a vertex
+	// fix x 
+	// if there exist at least 3 edges len(e.V)=3 incident to x
+	//	(for) iterate over these edges  
+	//		keep track of the vertices that are vertex-adjacent to y and z
+	//		for an edge containing y, check if w is in the z map
+	//		if true then we found a pot. Triangle Situation
+	//		else add w to the y map
+				
+	incList := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		if len(e.V) != 3 {
+			continue
+		}
+		
+		for v := range e.V {
+			if _, ex := incList[v]; !ex {
+				incList[v] = make(map[int32]bool)
+			}
+			incList[v][eId] = true
+		}
+	}
+
+	for v, incEdges := range incList {
+		if len(incEdges) < 3 {
+			continue
+		}
+		m0 := make(map[int32]bool)
+		m1 := make(map[int32]map[int32]bool)
+
+		for eId := range incEdges {
+			setMinus := make([]int32, 2)
+			
+			var i int32 = 0
+			for w := range g.Edges[eId].V {
+				if v == w {
+					continue
+				}
+				setMinus[i] = w
+				i++
+			}
+			if m0[setMinus[0]] && m0[setMinus[1]] {
+				for x := range m1[setMinus[0]] {
+					if x == setMinus[1] {
+						continue
+					}
+					if m1[setMinus[1]][x] {
+						return v, true
+					}
+				}
+			}else{
+				m0[setMinus[0]] = true
+				m0[setMinus[1]] = true
+				if _, ex := m1[setMinus[0]]; !ex {
+					m1[setMinus[0]] = make(map[int32]bool)
+				}
+				if _, ex := m1[setMinus[1]]; !ex {
+					m1[setMinus[1]] = make(map[int32]bool)
+				}
+				m1[setMinus[0]][setMinus[1]] = true
+				m1[setMinus[1]][setMinus[0]] = true
+			}
+		}
+	}	
+	return -1, false
+
 }
 
 func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
@@ -125,12 +196,14 @@ func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 
 	script, err := os.CreateTemp("", "minedgecover_*.py") 
 	if err != nil {
+		log.Default().Println("Could not create temp python file")
 		log.Fatal(err)
 	}
 	defer os.Remove(script.Name())
 
 	_, err = script.WriteString(scriptCode)
 	if err != nil {
+		log.Default().Println("Could not write embed python code to temp file")
 		log.Fatal(err)
 	}
 
@@ -138,6 +211,7 @@ func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 
 	out, err := pyCmd.CombinedOutput()
 	if err != nil {
+		log.Default().Println("Could not read output")
 		log.Fatal(err)
 	}
 
