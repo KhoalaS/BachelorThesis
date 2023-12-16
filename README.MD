@@ -1,5 +1,29 @@
 # Self-monitoring Approximation Algorithms | Implementation of a 3-HS Algorithm
 
+## Building
+
+### Requirements
+- golang version >= 1.18
+- python3 NetworkX
+
+Clone the repo
+```
+git clone https://github.com/KhoalaS/BachelorThesis.git
+```
+
+In the project directory,
+
+build an executable
+```
+go build cmd/main.go
+```
+
+just run the main.go program
+```
+go run cmd/main.go
+```
+
+
 ## Programming Language
 We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
 
@@ -194,17 +218,17 @@ We usually use the $\texttt{teletype font}$ to refer to variable names or code. 
 
 #### Executions
 
-Reduction rules are usually meant to be applied exhaustively. We actually do not want to do that, because the algorithms for the rules rely on building up auxialliary data strucutures. Since rebuilding these structures takes a not negligeble amount of time, we want to reuse them as much as possible. 
+Reduction rules are usually meant to be applied exhaustively. We actually do not want to do that, because the algorithms for the rules rely on building up auxilliary data strucutures. Since rebuilding these structures takes a not negligeble amount of time, we want to reuse them as much as possible. 
 
 Trying to apply a rule exhaustively in a single execution will introduce some difficulties:
 
 - Some rules will mutate the graph, especially the set of edges. This can potentially create or eliminate a structure in the graph that a rule is targeting.
-- Can the auxialliary datastructure be mutated to reflect these changes in linear time?
+- Can the auxilliary datastructure be mutated to reflect these changes in linear time?
 
 Luckily for us, most of these problems can be solved using Go. We usually have two possible ways of implementing a rule:
 
-1. __Outer Loop:__ We wrap our main algorithm in an outer loop. We then apply the rule one time per loop iteration. The outer loop will break when the rule can't be applied anymore. This way we can reuse our auxialliary data structures.
-2. __Pseudo Single Loop:__ We find all structures a rule is targeting in a single loop. We do this by iterating over the data structures and simultaniously deleting the targets, mutating the structure we are iterating over. This can possibly eliminate targets which we did not reach yet, or create new targets which we already passed. This requires the use of an outer loop. Since we can't decouple the deletion of the targets from the main algorithm, we inevitably introduce a quadratic time complexity in a worst case scenario. 
+1. __Outer Loop:__ We wrap our main algorithm in an outer loop. We then apply the rule one time per loop iteration. The outer loop will break when the rule can't be applied anymore. This way we can reuse our auxilliary data structures.
+2. __Pseudo Single Loop:__ We find all structures a rule is targeting in a single loop. We do this by iterating over the data structures and simultaniously deleting the targets, mutating the structure we are iterating over. This can possibly eliminate targets which we did not reach yet, or create new targets which we already passed. This requires the use of an outer loop. Since we can not decouple the deletion of the targets from the main algorithm. We inevitably introduce a quadratic time complexity in a worst case scenario. 
 
 ### Tiny/Small Edge Rule
 - tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
@@ -327,7 +351,7 @@ We then iterate over the edges again. If the current edge $e$ is not of size 3 w
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
-__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a quadratic execution time. A CPU-Profile showed a large amount of Map-lookup operations. This strengthens the former assumption, or could indicate a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. Further testing is required.
+__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a unexpected slow execution time. A CPU-Profile showed a large amount of Map-lookup operations. This indicated a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. 
 
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
@@ -384,6 +408,16 @@ We also looked at the number of rule executions for $r=1$ and $r=10$.
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
 
 ## Branching Algorithm
+
+### Potential Triangle Siutation
+
+
+
+### Edge-Cover
+If our problem instance is simple, we can solve it in polynomial time using an edge cover algorithm for standard graphs. We transform the hypergraph of our instance to a standard graph as follows:
+
+- Let $v$ be a hypergraph vertex with $\delta(v)=2$ and $e_0, e_1$ be the two edges that $v$ is incident to.
+- We then add two vertices to the auxilliary graph identified by $e_0$ and $e_1$. At last we add an edge $\{e_0, e_1\}$ identified by $v$.
 
 
 ## Possible Optimizations

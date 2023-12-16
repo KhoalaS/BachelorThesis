@@ -12,9 +12,6 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-
-
-
 func makeChart() {
 	var baseSize int32 = 10
 	baseSizes := []int32{}
@@ -49,8 +46,8 @@ func makeChart() {
 				nom += float64(alg.Ratios[key].A * val)
 				denom += float64(alg.Ratios[key].B * val)
 			}
-			fmt.Println("Nom: " ,nom)
-			fmt.Println("Denom: " ,denom)
+			//fmt.Println("Nom: " ,nom)
+			//fmt.Println("Denom: " ,denom)
 
 
 
@@ -179,11 +176,5 @@ func makeChart() {
 }
 
 func main() {
-	g := hypergraph.NewHyperGraph()
-	g.AddEdge(1,2,3)
-	g.AddEdge(3,4)
-
-	sol := alg.MinEdgeCover(g)
-	fmt.Println(sol)
-
+	makeChart()
 }
