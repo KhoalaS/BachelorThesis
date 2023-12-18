@@ -24,27 +24,56 @@ var Ratios = map[string]pkg.IntTuple{
 	"kApDoubleVertDom": {A: 2, B: 1},
 }
 
-func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, k int) bool {
+func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) bool {
 	//_, k := ApplyRules(g, c, K)
 
-	//c := make(map[int32]bool)
-
-	if k < 0 {
+	if K < 0 {
 		return false
 	}
 
-
+	
 
 	return true
 }
 
-func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) bool {
-	_, k := ApplyRules(g, c, K)
+func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) (bool, map[int32]bool) {
+	execs, k := ApplyRules(g, c, K)
+	fmt.Println(execs)
+
 	if k < 0 {
-		return false
+		return false, make(map[int32]bool)
 	}
 
-	return true
+	if len(g.Edges) > 0 {
+		g_n := g.Copy()
+		c_n := make(map[int32]bool)
+		for key, val := range c {
+			c_n[key] = val
+		}
+
+		v, ex := PotentialTriangle(g)
+		if ex {
+			delete(g_n.Vertices, v)
+			for _, e := range g_n.Edges {
+				if e.V[v] {
+					delete(e.V, v)
+				}
+			}			
+			ThreeHS_2ApprGeneral(g_n, c_n, k)
+		} else if g.IsSimple() {
+			cover := MinEdgeCover(g)
+			if k - len(cover) > 0 {
+				for _, w := range cover {
+					c[w] = true					
+				}
+				return true, c
+			}else{
+				return false, make(map[int32]bool)
+			}
+		}
+	}
+
+	return true, c
 }
 
 
@@ -52,6 +81,8 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) boo
 func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]int, int) {
 
 	execs := make(map[string]int)
+
+	k := K
 
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
@@ -79,6 +110,12 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 		}
 	}
 
+	k -= execs["kTiny"] * Ratios["kTiny"].B
+	k -= execs["kTri"] * Ratios["kTri"].B
+	k -= execs["kApVertDom"] * Ratios["kApVertDom"].B
+	k -= execs["kSmall"] * Ratios["kSmall"].B
+	k -= execs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].B
+
 	//m, err := os.Create("mem_main.prof")
 	//if err != nil {
 	//	log.Fatal("could not create memory profile: ", err)
@@ -88,7 +125,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 	//	log.Fatal("could not write memory profile: ", err)
 	//}
 
-	return execs, K
+	return execs, k
 }
 
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
