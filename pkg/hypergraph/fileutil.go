@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	_ "embed"
+	"encoding/xml"
 	"fmt"
 	"log"
 	"os"
@@ -52,4 +53,34 @@ func WriteToFile(g *HyperGraph, filename string) bool {
 	}
 	
 	return true
+}
+
+func ReadFromFile(filename string) *HyperGraph {
+	file, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("Could not read from file '%s'", filename)
+	}
+
+	var graph GraphMl 
+
+	err = xml.Unmarshal(file, &graph)
+	if err != nil {
+		log.Fatalf("Could not unmarshal graph from file '%s'", filename)
+	}
+
+	g := NewHyperGraph()
+
+	for _, v := range graph.Graph.Nodes {
+		g.AddVertex(v.Id, v.Data.Value)
+	}
+	
+	for _, e := range graph.Graph.Edges {
+		edges := make([]int32, len(e.Endpoints))
+		for i, ep := range e.Endpoints {
+			edges[i] = ep.Node			
+		}
+		g.AddEdgeArr(edges)
+	}
+
+	return g
 }
