@@ -179,11 +179,15 @@ func makeChart() {
 }
 
 func main() {
-	K := flag.Int("k", 3000, "The parameter k.")
 	input := flag.String("f", "", "Filepath to graphml file.")
 	n := flag.Int("n", 10000, "Number of vertices if no graph file supplied.")
 	m := flag.Int("m", int(rand.Int31n(10000)) * (1 + int(rand.Int31n(20))), "Number of edges if no graph file supplied.")
+	K := flag.Int("k", 0, "The parameter k.")
 	flag.Parse()
+
+	if *K == 0 {
+		*K = int(float64(0.4)*float64(*m))
+	}
 	
 	var g *hypergraph.HyperGraph
 	if len(strings.Trim(*input, " ")) > 0 {
@@ -197,7 +201,7 @@ func main() {
 
 	ex, hs := alg.ThreeHS_2ApprGeneral(g, c, *K)
 	if ex {
-		fmt.Printf("Found a 3-Hitting-Set of size %d <= 2%d = %d", len(hs), *K, 2*(*K))
+		fmt.Printf("Found a 3-Hitting-Set of size %d <= 2K = %d", len(hs), 2*(*K))
 	}else{
 		fmt.Printf("Did not find a 3-Hitting-Set of size <= 2K = %d", 2*(*K))
 	}
