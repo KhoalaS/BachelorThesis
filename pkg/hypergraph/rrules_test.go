@@ -52,15 +52,11 @@ func TestEdgeDominationRule(t *testing.T) {
 	g.AddEdge(0, 1)
 	g.AddEdge(1, 4)
 
-	c := make(map[int32]bool)
-
-	EdgeDominationRule(g, c)
+	EdgeDominationRule(g)
 
 	// since edge 0 is a strict superset of edge 1, edge 0 will be removed by the rule.
 
-	if len(c) != 0 {
-		t.Fatalf("Partial Solution is not empty.")
-	} else if len(g.Edges) != 2 {
+	if len(g.Edges) != 2 {
 		t.Fatalf("Graph g has %d edges, the expected number is 2.", len(g.Edges))
 	}
 
@@ -252,7 +248,6 @@ func BenchmarkSmallEdgeRule(b *testing.B) {
 
 func BenchmarkEdgeDominationRule(b *testing.B) {
 	g := GenerateTestGraph(1000000, 2000000, false)
-	c := make(map[int32]bool)
 
 	f, err := makeProfile("edgeDom")
 	if err != nil {
@@ -262,7 +257,7 @@ func BenchmarkEdgeDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		EdgeDominationRule(g, c)
+		EdgeDominationRule(g)
 	}
 }
 

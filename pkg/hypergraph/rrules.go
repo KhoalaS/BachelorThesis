@@ -44,7 +44,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[uint32]bool, d
 
 // Time Complexity: |E| * d^3
 
-func EdgeDominationRule(g *HyperGraph, c map[int32]bool) int {
+func EdgeDominationRule(g *HyperGraph) int {
 	var wg sync.WaitGroup
 
 	subEdges := make(map[uint32]bool)
