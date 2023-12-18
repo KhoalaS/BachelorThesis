@@ -41,6 +41,34 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	g.edgeCounter++
 }
 
+func (g *HyperGraph) AddEdgeArr(eps []int32) {
+	e := Edge{V: make(map[int32]bool)}
+
+	for _, ep := range eps {
+		e.V[ep] = true
+	}
+	g.Edges[g.edgeCounter] = e
+	g.edgeCounter++
+}
+
+func (g *HyperGraph) Copy() *HyperGraph {
+	edges := make(map[int32]Edge)
+	vertices := make(map[int32]Vertex)
+
+	for eId, e := range g.Edges {
+		edges[eId] = Edge{V: make(map[int32]bool)}
+		for v := range e.V {
+			edges[eId].V[v] = true
+		}
+	}
+
+	for vId, v := range g.Vertices {
+		vertices[vId] = Vertex{id: vId, data: v.data}
+	}
+
+	return &HyperGraph{edgeCounter: g.edgeCounter, Vertices: vertices, Edges: edges, Degree: g.Degree}
+}
+
 func (g HyperGraph) Print() {
 	fmt.Print("Vertices: \n\t")
 	for _, v := range g.Vertices {
@@ -144,3 +172,4 @@ const (
 	TINY  = 1
 	SMALL = 2
 )
+
