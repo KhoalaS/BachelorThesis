@@ -1,13 +1,16 @@
 package alg
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/KhoalaS/BachelorThesis/pkg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
@@ -31,14 +34,11 @@ func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) 
 		return false
 	}
 
-	
-
 	return true
 }
 
 func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) (bool, map[int32]bool) {
-	execs, k := ApplyRules(g, c, K)
-	fmt.Println(execs)
+	_, k := ApplyRules(g, c, K)
 
 	if k < 0 {
 		return false, make(map[int32]bool)
@@ -58,16 +58,16 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) (bo
 				if e.V[v] {
 					delete(e.V, v)
 				}
-			}			
+			}
 			ThreeHS_2ApprGeneral(g_n, c_n, k)
 		} else if g.IsSimple() {
 			cover := MinEdgeCover(g)
-			if k - len(cover) > 0 {
+			if k-len(cover) > 0 {
 				for _, w := range cover {
-					c[w] = true					
+					c[w] = true
 				}
 				return true, c
-			}else{
+			} else {
 				return false, make(map[int32]bool)
 			}
 		}
@@ -75,8 +75,6 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) (bo
 
 	return true, c
 }
-
-
 
 func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]int, int) {
 
@@ -86,9 +84,9 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		kEdgeDom := hypergraph.EdgeDominationRule(g, c)
+		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		kTri := hypergraph.SmallTriangleRule(g, c)
-		kVertDom := hypergraph.VertexDominationRule(g,c)
+		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule3(g, c, false)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
@@ -131,21 +129,21 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
 	// f,g have to share a vertex
-	// fix x 
+	// fix x
 	// if there exist at least 3 edges len(e.V)=3 incident to x
-	//	(for) iterate over these edges  
+	//	(for) iterate over these edges
 	//		keep track of the vertices that are vertex-adjacent to y and z
 	//		for an edge containing y, check if w is in the z map
 	//		if true then we found a pot. Triangle Situation
 	//		else add w to the y map
-				
+
 	incList := make(map[int32]map[int32]bool)
 
 	for eId, e := range g.Edges {
 		if len(e.V) != 3 {
 			continue
 		}
-		
+
 		for v := range e.V {
 			if _, ex := incList[v]; !ex {
 				incList[v] = make(map[int32]bool)
@@ -163,7 +161,7 @@ func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 
 		for eId := range incEdges {
 			setMinus := make([]int32, 2)
-			
+
 			var i int32 = 0
 			for w := range g.Edges[eId].V {
 				if v == w {
@@ -181,7 +179,7 @@ func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 						return v, true
 					}
 				}
-			}else{
+			} else {
 				m0[setMinus[0]] = true
 				m0[setMinus[1]] = true
 				if _, ex := m1[setMinus[0]]; !ex {
@@ -194,9 +192,133 @@ func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 				m1[setMinus[1]][setMinus[0]] = true
 			}
 		}
-	}	
+	}
 	return -1, false
 
+}
+
+func ParallelPotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
+	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
+	// f,g have to share a vertex
+	// fix x
+	// if there exist at least 3 edges len(e.V)=3 incident to x
+	//	(for) iterate over these edges
+	//		keep track of the vertices that are vertex-adjacent to y and z
+	//		for an edge containing y, check if w is in the z map
+	//		if true then we found a pot. Triangle Situation
+	//		else add w to the y map
+
+	incList := make(map[int32]map[int32]bool)
+	incIndices := []int32{}
+
+	for eId, e := range g.Edges {
+		if len(e.V) != 3 {
+			continue
+		}
+
+		for v := range e.V {
+			if _, ex := incList[v]; !ex {
+				incList[v] = make(map[int32]bool)
+				incIndices = append(incIndices, v)
+			}
+			incList[v][eId] = true
+		}
+	}	
+
+	var wg sync.WaitGroup
+
+	numCPU := runtime.NumCPU()
+	lInc := len(incIndices)
+	batchSize := lInc/numCPU
+
+	if lInc < numCPU {
+		numCPU = 1
+		batchSize = lInc
+	}
+
+	result := make(chan int32)
+	ctx := context.Background()
+	ctx, cancelCtx := context.WithCancel(ctx)
+
+	for i := 0; i < lInc/batchSize; i++ {
+		wg.Add(1)
+		start := i * batchSize
+		end := start + batchSize
+		if lInc-end < batchSize {
+			end = lInc
+		}
+		go findPotentialTriangle(i, ctx, &wg, incIndices[start:end], incList, g, result)
+	}
+
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	resultValue, ok := <-result
+	cancelCtx()
+
+	if ok {
+		return resultValue, true
+	}
+
+	return -1, false
+}
+
+func findPotentialTriangle(id int, ctx context.Context, wg *sync.WaitGroup, 
+	incIndices []int32, incList map[int32]map[int32]bool, g *hypergraph.HyperGraph,
+	result chan<-int32) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	defer wg.Done()
+
+	for _, v := range incIndices {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if len(incList[v]) < 3 {
+				continue
+			}
+			m0 := make(map[int32]bool)
+			m1 := make(map[int32]map[int32]bool)
+
+			for eId := range incList[v] {
+				setMinus := make([]int32, 2)
+
+				var i int32 = 0
+				for w := range g.Edges[eId].V {
+					if v == w {
+						continue
+					}
+					setMinus[i] = w
+					i++
+				}
+				if m0[setMinus[0]] && m0[setMinus[1]] {
+					for x := range m1[setMinus[0]] {
+						if x == setMinus[1] {
+							continue
+						}
+						if m1[setMinus[1]][x] {
+							result <- v
+							return
+						}
+					}
+				} else {
+					m0[setMinus[0]] = true
+					m0[setMinus[1]] = true
+					if _, ex := m1[setMinus[0]]; !ex {
+						m1[setMinus[0]] = make(map[int32]bool)
+					}
+					if _, ex := m1[setMinus[1]]; !ex {
+						m1[setMinus[1]] = make(map[int32]bool)
+					}
+					m1[setMinus[0]][setMinus[1]] = true
+					m1[setMinus[1]][setMinus[0]] = true
+				}
+			}
+		}
+	}
 }
 
 func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
@@ -220,18 +342,17 @@ func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 
 	for v, val := range incList {
 		if len(val) == 2 {
-			
-			
+
 			e := []int32{}
-			for eId := range incList[v]{
+			for eId := range incList[v] {
 				e = append(e, eId)
 			}
 			f.WriteString(fmt.Sprintf("%d,%d,%d\n", v, e[0], e[1]))
 		}
-	}	
+	}
 	f.Close()
 
-	script, err := os.CreateTemp("", "minedgecover_*.py") 
+	script, err := os.CreateTemp("", "minedgecover_*.py")
 	if err != nil {
 		log.Default().Println("Could not create temp python file")
 		log.Fatal(err)
@@ -254,15 +375,14 @@ func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 
 	output := string(out)
 	output = strings.Trim(output, "\n")
-	output = output[1:len(output)-1]
+	output = output[1 : len(output)-1]
 	edgesStr := strings.Split(output, ",")
-
 
 	for _, e := range edgesStr {
 		if len(e) == 0 {
 			continue
 		}
-		eInt, err := strconv.Atoi(e) 
+		eInt, err := strconv.Atoi(e)
 		if err != nil {
 			log.Fatal(err)
 		}
