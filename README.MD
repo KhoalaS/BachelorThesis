@@ -23,6 +23,23 @@ just run the main.go program
 go run cmd/main.go
 ```
 
+## Usage
+
+```bash
+go run cmd/main.go [OPTIONS]
+```
+
+### Options
+```bash
+-f string
+        Filepath to graphml file.
+-k int
+        The parameter k. (default 0.4*m)
+-m int
+        Number of edges if no graph file supplied. (default generated randomly)
+-n int
+        Number of vertices if no graph file supplied. (default 10000)
+```
 
 ## Programming Language
 We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
@@ -410,8 +427,6 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 ## Branching Algorithm
 
 ### Potential Triangle Siutation
-
-
 
 ### Edge-Cover
 If our problem instance is simple, we can solve it in polynomial time using an edge cover algorithm for standard graphs. We transform the hypergraph of our instance to a standard graph as follows:
