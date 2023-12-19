@@ -4,5 +4,6 @@ out
 profiles
 qs.md
 *.html
+!samplegraph.html
 venv
 graphs
