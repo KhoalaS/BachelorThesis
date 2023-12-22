@@ -264,7 +264,7 @@ func main() {
 	}
 
 	if *K == 0 {
-		*K = int(float64(0.4) * float64(*n))
+		*K = int(float64(0.3) * float64(*n))
 	}
 
 	var g *hypergraph.HyperGraph
@@ -305,10 +305,10 @@ func main() {
 
 	pprof.StopCPUProfile()
 
-	if ex || (len(hs) < 2*(*K) && len(g.Edges) == 0) {
-		fmt.Printf("Found a 3-Hitting-Set of size %d <= 2K = %d\n", len(hs), 2*(*K))
+	if ex || (len(hs) < 3*(*K) && len(g.Edges) == 0) {
+		fmt.Printf("Found a 3-Hitting-Set of size %d <= 3K = %d\n", len(hs), 3*(*K))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
 	} else {
-		fmt.Printf("Did not find a 3-Hitting-Set of size <= 2K = %d\n", 2*(*K))
+		fmt.Printf("Did not find a 3-Hitting-Set of size <= 3K = %d\n", 3*(*K))
 	}
 }
