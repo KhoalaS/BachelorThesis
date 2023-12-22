@@ -2,12 +2,8 @@ package hypergraph
 
 import (
 	"fmt"
-	"io"
 	"sort"
 	"strconv"
-	"strings"
-
-	"github.com/OneOfOne/xxhash"
 )
 
 type HyperGraph struct {
@@ -112,7 +108,7 @@ func (g *HyperGraph) IsSimple() bool {
 }
 
 func (g *HyperGraph) RemoveDuplicate() {
-	hashes := make(map[uint32]bool)
+	hashes := make(map[string]bool)
 
 	for eId, e := range g.Edges {
 		hash := e.getHash()
@@ -144,8 +140,7 @@ func NewEdge(eps map[int32]bool) *Edge {
 }
 
 // Time Complexity: 2d + d*log(d)
-func (e *Edge) getHash() uint32 {
-	h := xxhash.New32()
+func (e *Edge) getHash() string {
 
 	arr := make([]int32, len(e.V))
 	var i int32 = 0
@@ -162,10 +157,8 @@ func (e *Edge) getHash() uint32 {
 	for _, j := range arr {
 		in += (strconv.Itoa(int(j)) + "|")
 	}
-	r := strings.NewReader(in)
-	io.Copy(h, r)
 
-	return h.Sum32()
+	return in
 }
 
 const (

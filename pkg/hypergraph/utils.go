@@ -1,18 +1,12 @@
 package hypergraph
 
 import (
-	"io"
 	"math/rand"
 	"sort"
 	"strconv"
-	"strings"
-
-	"github.com/OneOfOne/xxhash"
 )
 
-func getHash(arr []int32) uint32 {
-	h := xxhash.New32()
-
+func getHash(arr []int32) string {
 	sort.Slice(arr, func(i, j int) bool {
 		return arr[i] < arr[j]
 	})
@@ -22,16 +16,15 @@ func getHash(arr []int32) uint32 {
 	for _, j := range arr {
 		in += (strconv.Itoa(int(j)) + "|")
 	}
-	r := strings.NewReader(in)
-	io.Copy(h, r)
 
-	return h.Sum32()
+	return in
+	
 }
 
 func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 	g := NewHyperGraph()
 
-	edgeHashes := make(map[uint32]bool)
+	edgeHashes := make(map[string]bool)
 
 	var tinyEdgeProb float32 = 0.01
 	if !tinyEdges {
@@ -89,7 +82,7 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 func GenerateUniformTestGraph(n int32, m int32, u int) *HyperGraph {
 	g := NewHyperGraph()
 
-	edgeHashes := make(map[uint32]bool)
+	edgeHashes := make(map[string]bool)
 
 	var i int32 = 0
 
@@ -138,7 +131,7 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 		sum += val
 	}
 
-	edgeHashes := make(map[uint32]bool)
+	edgeHashes := make(map[string]bool)
 
 	var tinyProb float32 = float32(dist[0])/float32(sum)
 	var smallProb float32 = float32(dist[1])/float32(sum)

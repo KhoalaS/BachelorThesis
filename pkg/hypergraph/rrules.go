@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[uint32]bool, domEdges []int32, done chan<- map[int32]bool) {
+func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
 
@@ -47,7 +47,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[uint32]bool, d
 func EdgeDominationRule(g *HyperGraph) int {
 	var wg sync.WaitGroup
 
-	subEdges := make(map[uint32]bool)
+	subEdges := make(map[string]bool)
 	domEdges := []int32{}
 	exec := 0
 
@@ -58,6 +58,10 @@ func EdgeDominationRule(g *HyperGraph) int {
 		} else {
 			domEdges = append(domEdges, eId)
 		}
+	}
+	
+	if len(subEdges) == 0 {
+		return 0
 	}
 
 	numCPU := runtime.NumCPU()
@@ -201,7 +205,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
 
 //Deprecated:
 func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
-	vSub := make(map[int32]map[uint32]bool)
+	vSub := make(map[int32]map[string]bool)
 	vSubCount := make(map[int32]map[int32]int32)
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
@@ -213,7 +217,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
 
 			if _, ex := vSubCount[vId0]; !ex {
 				vSubCount[vId0] = make(map[int32]int32)
-				vSub[vId0] = make(map[uint32]bool)
+				vSub[vId0] = make(map[string]bool)
 			}
 
 			for vId1 := range e.V {
