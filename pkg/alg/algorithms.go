@@ -25,6 +25,7 @@ var Ratios = map[string]pkg.IntTuple{
 	"kTri":             {A: 3, B: 2},
 	"kApVertDom":       {A: 2, B: 1},
 	"kApDoubleVertDom": {A: 2, B: 1},
+	"kFallback":        {A: 3, B: 1},
 }
 
 func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) bool {
@@ -37,50 +38,118 @@ func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) 
 	return true
 }
 
-func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int) (bool, map[int32]bool) {
-	_, k := ApplyRules(g, c, K)
+func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int) (bool, map[int32]bool, map[string]int) {
+	nExecs, k := ApplyRules(g, c, K, execs, 0)
+	fmt.Println(nExecs)
+
+	c_n := make(map[int32]bool)
+	execs_n := make(map[string]int)
+
+	for key, val := range nExecs {
+		execs_n[key] = val
+	}
+
+	for key, val := range c {
+		c_n[key] = val
+	}
 
 	if k < 0 {
-		return false, make(map[int32]bool)
+		return false, c, nExecs
 	}
 
 	if len(g.Edges) > 0 {
 		g_n := g.Copy()
-		c_n := make(map[int32]bool)
-		for key, val := range c {
-			c_n[key] = val
-		}
 
 		v, ex := PotentialTriangle(g)
+
+		// TODO General Branching
+		// This is only the Potential Triangle Situation preferred branch
+
 		if ex {
+			fmt.Println("Found potential triangle situation")
 			delete(g_n.Vertices, v)
 			for _, e := range g_n.Edges {
 				if e.V[v] {
 					delete(e.V, v)
 				}
 			}
-			ThreeHS_2ApprGeneral(g_n, c_n, k)
+			return ThreeHS_2ApprGeneral(g_n, c_n, k, execs_n)
 		} else if g.IsSimple() {
+			fmt.Println("Graph is simple")
 			cover := MinEdgeCover(g)
 			if k-len(cover) > 0 {
 				for _, w := range cover {
 					c[w] = true
 				}
-				return true, c
+				return true, c, execs_n
 			} else {
-				return false, make(map[int32]bool)
+				return false, map[int32]bool{}, map[string]int{}
 			}
+		} else {
+			fmt.Printf("Missing Branching, %d Edges are left\n", len(g.Edges))
+			return false, c_n, execs_n
 		}
 	}
 
-	return true, c
+	return true, c_n, execs_n
 }
 
-func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]int, int) {
+func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int) (bool, map[int32]bool, map[string]int) {
+	prio := 0 
+	for len(g.Edges) > 0 {
+		execs, k := ApplyRules(g, c, K, execs, prio)
+		prio = 0
+		if k < 0 {
+			return false, c, execs
+		}
 
-	execs := make(map[string]int)
+		v, ex := PotentialTriangle(g)
+		if ex {
+			fmt.Println("Found pot. Triangle")
+			delete(g.Vertices, v)
+			for _, e := range g.Edges {
+				if e.V[v] {
+					delete(e.V, v)
+				}
+			}
+			prio = 2
+			continue
+		}
+
+		remVertices := make(map[int32]bool)
+		found := false
+		for _, e := range g.Edges {
+			if len(e.V) == 3 {
+				for v := range e.V {
+					remVertices[v] = true
+					delete(g.Vertices, v)
+				}
+				found = true
+				break
+			}
+		}
+
+		if found {
+			execs["kFallback"] += 1
+			for eId, e := range g.Edges {
+				for v := range remVertices {
+					if _, ex := e.V[v]; ex {
+						delete(g.Edges, eId)
+					}
+				}
+			}
+		}
+	}
+	return true, c, execs
+}
+
+func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int, prio int) (map[string]int, int) {
 
 	k := K
+	switch prio {
+	case 2:
+		execs["kTri"] += hypergraph.SmallTriangleRule(g, c)
+	}
 
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
@@ -92,8 +161,6 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int) (map[string]i
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		//kApDoubleVertDom := 0
-
-		//log.Default().Println("#Edges: ", g.Edges)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -176,6 +243,12 @@ func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 						continue
 					}
 					if m1[setMinus[1]][x] {
+						vInc := make([]int32, len(incList[v]))
+						j := 0
+						for e := range incList[v] {
+							vInc[j] = e
+							j++
+						}
 						return v, true
 					}
 				}
@@ -223,13 +296,13 @@ func ParallelPotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 			}
 			incList[v][eId] = true
 		}
-	}	
+	}
 
 	var wg sync.WaitGroup
 
 	numCPU := runtime.NumCPU()
 	lInc := len(incIndices)
-	batchSize := lInc/numCPU
+	batchSize := lInc / numCPU
 
 	if lInc < numCPU {
 		numCPU = 1
@@ -265,9 +338,9 @@ func ParallelPotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 	return -1, false
 }
 
-func findPotentialTriangle(id int, ctx context.Context, wg *sync.WaitGroup, 
+func findPotentialTriangle(id int, ctx context.Context, wg *sync.WaitGroup,
 	incIndices []int32, incList map[int32]map[int32]bool, g *hypergraph.HyperGraph,
-	result chan<-int32) {
+	result chan<- int32) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	defer wg.Done()
