@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/alg"
@@ -14,7 +15,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func makeChart(u int, evr int, maxv int, checkpoint int) {
+func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	var baseSize int32 = 10
 	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
@@ -27,6 +28,10 @@ func makeChart(u int, evr int, maxv int, checkpoint int) {
 
 	if evr > 0 {
 		maxratio = evr
+	}
+
+	if checkpoint > evr {
+		checkpoint = evr
 	}
 
 	labels := make([]int, maxratio)
@@ -44,6 +49,14 @@ func makeChart(u int, evr int, maxv int, checkpoint int) {
 			labels[i-1] = i
 			if u > 0 {
 				g = hypergraph.GenerateUniformTestGraph(baseSize, int32(i)*baseSize, u)
+			} else if len(fixRatio) > 0 {
+				spl := strings.Split(fixRatio, ",")
+				ratios := make([]int, len(spl))
+				for i, val := range spl {
+					valInt, _ := strconv.Atoi(val)
+					ratios[i] = valInt
+				}
+				g = hypergraph.GenerateFixDistTestGraph(baseSize, int32(i)*baseSize, ratios)
 			} else {
 				g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
 			}
@@ -212,6 +225,7 @@ func main() {
 	K := flag.Int("k", 0, "The parameter k.")
 	chart := flag.Bool("c", false, "Make charts.")
 	u := flag.Int("u", 0, "Generate a u-uniform graph.")
+	f := flag.String("f", "", "Generate a random graph with fixed ratios for the edge sizes.")
 	evr := flag.Int("evr", 0, "Maximum ratio |E|\\|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
@@ -219,7 +233,7 @@ func main() {
 	printPreset := list.Bool("p", false, "")
 
 	flag.Parse()
-	
+
 	if os.Args[1] == "list" {
 		list.Parse(os.Args[2:])
 		if *printPreset {
@@ -242,17 +256,17 @@ func main() {
 			*evr = 10
 			*maxv = 10000
 		}
-		makeChart(*u, *evr, *maxv, checkpoint)
+		makeChart(*u, *evr, *maxv, checkpoint, *f)
 		return
 	}
 
 	if *chart {
-		makeChart(*u, *evr, *maxv, 10)
+		makeChart(*u, *evr, *maxv, 10, *f)
 		return
 	}
 
 	if *K == 0 {
-		*K = int(float64(0.4) * float64(*m))
+		*K = int(float64(0.4) * float64(*n))
 	}
 
 	var g *hypergraph.HyperGraph
@@ -262,6 +276,14 @@ func main() {
 		fmt.Printf("Using random graph with: \n\t%d vertices\n\t%d edges\n\tk=%d\n", *n, *m, *K)
 		if *u > 0 {
 			g = hypergraph.GenerateUniformTestGraph(int32(*n), int32(*m), *u)
+		} else if len(*f) > 0 {
+			spl := strings.Split(*f, ",")
+			ratios := make([]int, len(spl))
+			for i, val := range spl {
+				valInt, _ := strconv.Atoi(val)
+				ratios[i] = valInt
+			}
+			g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
 		} else {
 			g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 		}

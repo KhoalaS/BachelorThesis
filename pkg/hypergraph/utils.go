@@ -130,7 +130,7 @@ func GenerateUniformTestGraph(n int32, m int32, u int) *HyperGraph {
 	return g
 }
 
-func GenerateFixDistTestGraph(n int32, m int32, dist ...int) *HyperGraph {
+func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 	g := NewHyperGraph()
 
 	sum := 0
