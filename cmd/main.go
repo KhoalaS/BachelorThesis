@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 
@@ -77,7 +78,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 
 			//fmt.Println("Nom: " ,nom)
 			//fmt.Println("Denom: " ,denom)
-			if nom / denom > maxest {
+			if nom/denom > maxest {
 				maxest = 3
 			}
 
@@ -224,6 +225,7 @@ func main() {
 	f := flag.String("f", "", "Generate a random graph with fixed ratios for the edge sizes.")
 	evr := flag.Int("evr", 0, "Maximum ratio |E|\\|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
+	profile := flag.Bool("prof", false, "Make CPU profile")
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
 	printPreset := list.Bool("p", false, "")
@@ -288,7 +290,21 @@ func main() {
 	c := make(map[int32]bool)
 	execs := make(map[string]int)
 	fmt.Println("Start Algorithm")
-	ex, hs, execs := alg.ThreeHS_2ApprGeneral(g, c, *K, execs)
+
+	if *profile {
+		fmt.Println("Start CPU profile...")
+		f, err := os.Create("profiles/benchmark_main.prof")
+		if err != nil {
+			return
+		}
+
+		pprof.StartCPUProfile(f)
+	}
+
+	ex, hs, execs := alg.ThreeHS_2ApprPoly(g, c, *K, execs)
+
+	pprof.StopCPUProfile()
+
 	if ex || (len(hs) < 2*(*K) && len(g.Edges) == 0) {
 		fmt.Printf("Found a 3-Hitting-Set of size %d <= 2K = %d\n", len(hs), 2*(*K))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
