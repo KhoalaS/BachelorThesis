@@ -93,8 +93,9 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 
 func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int) (bool, map[int32]bool, map[string]int) {
 	prio := 0 
+	k := K
 	for len(g.Edges) > 0 {
-		execs, k := ApplyRules(g, c, K, execs, prio)
+		execs, k = ApplyRules(g, c, k, execs, prio)
 		prio = 0
 		if k < 0 {
 			return false, c, execs
@@ -118,8 +119,10 @@ func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs 
 			if len(e.V) == 3 {
 				for v := range e.V {
 					remVertices[v] = true
+					c[v] = true
 					delete(g.Vertices, v)
 				}
+				k--
 				found = true
 				break
 			}
