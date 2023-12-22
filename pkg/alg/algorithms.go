@@ -40,7 +40,6 @@ func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) 
 
 func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int) (bool, map[int32]bool, map[string]int) {
 	nExecs, k := ApplyRules(g, c, K, execs, 0)
-	fmt.Println(nExecs)
 
 	c_n := make(map[int32]bool)
 	execs_n := make(map[string]int)
@@ -66,7 +65,6 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 		// This is only the Potential Triangle Situation preferred branch
 
 		if ex {
-			fmt.Println("Found potential triangle situation")
 			delete(g_n.Vertices, v)
 			for _, e := range g_n.Edges {
 				if e.V[v] {
@@ -75,7 +73,6 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 			}
 			return ThreeHS_2ApprGeneral(g_n, c_n, k, execs_n)
 		} else if g.IsSimple() {
-			fmt.Println("Graph is simple")
 			cover := MinEdgeCover(g)
 			if k-len(cover) > 0 {
 				for _, w := range cover {
@@ -105,7 +102,6 @@ func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs 
 
 		v, ex := PotentialTriangle(g)
 		if ex {
-			fmt.Println("Found pot. Triangle")
 			delete(g.Vertices, v)
 			for _, e := range g.Edges {
 				if e.V[v] {
@@ -145,10 +141,14 @@ func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs 
 
 func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int, prio int) (map[string]int, int) {
 
+	lexecs := make(map[string]int)
+
 	k := K
 	switch prio {
 	case 2:
-		execs["kTri"] += hypergraph.SmallTriangleRule(g, c)
+		exec := hypergraph.SmallTriangleRule(g, c)
+		lexecs["kTri"] += exec
+		execs["kTri"] += exec
 	}
 
 	for {
@@ -159,8 +159,8 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule3(g, c, false)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
-		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		//kApDoubleVertDom := 0
+		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
+		kApDoubleVertDom := 0
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -170,16 +170,24 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		execs["kApVertDom"] += kApVertDom
 		execs["kApDoubleVertDom"] += kApDoubleVertDom
 
+		lexecs["kTiny"] += kTiny
+		lexecs["kVertDom"] += kVertDom
+		lexecs["kEdgeDom"] += kEdgeDom
+		lexecs["kTri"] += kTri
+		lexecs["kSmall"] += kSmall
+		lexecs["kApVertDom"] += kApVertDom
+		lexecs["kApDoubleVertDom"] += kApDoubleVertDom
+
 		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom == 0 {
 			break
 		}
 	}
 
-	k -= execs["kTiny"] * Ratios["kTiny"].B
-	k -= execs["kTri"] * Ratios["kTri"].B
-	k -= execs["kApVertDom"] * Ratios["kApVertDom"].B
-	k -= execs["kSmall"] * Ratios["kSmall"].B
-	k -= execs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].B
+	k -= lexecs["kTiny"] * Ratios["kTiny"].B
+	k -= lexecs["kTri"] * Ratios["kTri"].B
+	k -= lexecs["kApVertDom"] * Ratios["kApVertDom"].B
+	k -= lexecs["kSmall"] * Ratios["kSmall"].B
+	k -= lexecs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].B
 
 	//m, err := os.Create("mem_main.prof")
 	//if err != nil {
