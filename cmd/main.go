@@ -24,7 +24,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 		maxVert = int32(maxv)
 	}
 	maxratio := 20
-	var maxest float64 = 3
+	var maxest float64 = 2
 
 	if evr > 0 {
 		maxratio = evr
@@ -77,7 +77,9 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 
 			//fmt.Println("Nom: " ,nom)
 			//fmt.Println("Denom: " ,denom)
-			maxest = nom / denom
+			if nom / denom > maxest {
+				maxest = 3
+			}
 
 			lineSeries[baseSize] = append(lineSeries[baseSize], opts.LineData{Value: fmt.Sprintf("%.2f", (nom / denom))})
 
@@ -97,12 +99,6 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 			fmt.Println(len(g.Edges), "Edges/Vertices Factor:", i, "|", "Approximation Factor:", nom/denom)
 		}
 		baseSize = baseSize * 10
-	}
-
-	if maxest <= 2 {
-		maxest = 2.0
-	} else {
-		maxest = 3.0
 	}
 
 	page := components.NewPage()
