@@ -299,6 +299,22 @@ This also allows us to parallelize the main part of the algorithm, where we chec
 ##### Remarks
 We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
 
+### Vertex Domination Rule
+- A vertex $x$ is dominated by a vertex $y$ if, whenever $x$
+belongs to some hyperedge $e$, then $y$ also belongs to $e$. Then, we can simply
+delete $x$ from the vertex set and from all edges it belongs to.
+```go
+func VertexDominationRule(g *HyperGraph, c map[int32]bool)
+```
+
+#### $O(|E| + |V|^2)$ Algorithm
+We first construct two maps:
+
+- $\texttt{vDeg map[int32]int32}:$ this map associates a vertex $v$ with $deg(v)$.
+- $\texttt{incList map[int32]map[int32]int32}:$ this map associates a vertex $v$ with all other edges that are incident to $v$. 
+
+We then iterate over the vertices of the graph. For the current vertex $v$, we compute a map $\texttt{vCount}$. This map keeps track of the amount of times a vertex $w$ is vertex adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $\texttt{vCount}$ is equal to $\texttt{vDeg[v]}$. In that case we remove $v$ from all edges and our vertex set.
+
 ### Approximative Vertex Domination Rule
 - approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 ```go
@@ -311,7 +327,7 @@ The quadratic exponent in $|V|$ looks scary at first, but will only occur in the
 We first construct two maps:
 
 - $\texttt{vDeg map[int32]int32}:$ this map associates a vertex $v$ with $deg(v)$.
-- $\texttt{vSubCount make(map[int32]map[int32]int32)}:$ this map associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. 
+- $\texttt{vSubCount map[int32]map[int32]int32}:$ this map associates a vertex $v$ with all other vertices that are vertex-adjacent to $v$. 
 
 Both maps can be computed in time $|E|\cdot d^2$.
 
@@ -368,6 +384,8 @@ We then iterate over the edges again. If the current edge $e$ is not of size 3 w
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
+__[Probably just |E|*|V|^2 being annoying]__
+
 __Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a unexpected slow execution time. A CPU-Profile showed a large amount of Map-lookup operations. This indicated a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. 
 
 ### Small Triangle Rule
@@ -413,6 +431,8 @@ We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 ver
 
 
 ![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/line_fac.png)
+
+Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.  
 
 We also looked at the number of rule executions for $r=1$ and $r=10$.
 
