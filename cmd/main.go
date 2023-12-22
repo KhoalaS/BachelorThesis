@@ -64,7 +64,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 			c := make(map[int32]bool)
 			execs := make(map[string]int)
 
-			alg.ThreeHS_2ApprPoly(g, c, int(baseSize)*i, execs)
+			alg.ThreeHS_2ApprPoly(g, c, int(baseSize)*i, execs, 0)
 			var nom float64 = 0
 			var denom float64 = 0
 
@@ -223,7 +223,8 @@ func main() {
 	chart := flag.Bool("c", false, "Make charts.")
 	u := flag.Int("u", 0, "Generate a u-uniform graph.")
 	f := flag.String("f", "", "Generate a random graph with fixed ratios for the edge sizes.")
-	evr := flag.Int("evr", 0, "Maximum ratio |E|\\|V| to compute for random graphs.")
+	fr := flag.Bool("fr", false, "Frontload the algorithm with |V|/20 Factor-3 rule executions.")
+	evr := flag.Int("evr", 0, "Maximum ratio |E|/|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	profile := flag.Bool("prof", false, "Make CPU profile")
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
@@ -267,6 +268,8 @@ func main() {
 		*K = int(float64(0.3) * float64(*n))
 	}
 
+	k := *K
+
 	var g *hypergraph.HyperGraph
 	if len(strings.Trim(*input, " ")) > 0 {
 		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
@@ -301,7 +304,15 @@ func main() {
 		pprof.StartCPUProfile(f)
 	}
 
-	ex, hs, execs := alg.ThreeHS_2ApprPoly(g, c, *K, execs)
+	prio := 0
+
+	if *fr {
+		kFront := hypergraph.Frontload(g, c)
+		execs["kFallback"] = kFront
+		k -= kFront
+	}
+
+	ex, hs, execs := alg.ThreeHS_2ApprPoly(g, c, k, execs, prio)
 
 	pprof.StopCPUProfile()
 
