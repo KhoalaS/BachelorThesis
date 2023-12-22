@@ -744,6 +744,47 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+func Frontload(g *HyperGraph, c map[int32]bool) int {
+	// |V| = 1000 |E| = 10000, estimate 185, 90 min
+	n := len(g.Vertices)/50
+	remVertices := make(map[int32]bool)
+
+	i := 0
+	for _, e := range g.Edges {
+		if len(e.V) == 3 {
+			add := true
+			for v := range e.V {
+				if remVertices[v] {
+					add = false
+					break
+				}
+			}
+
+			if add {
+				i++
+				for v := range e.V {
+					remVertices[v] = true
+					c[v] = true
+				}
+			}
+
+		}
+		if i == n {
+			break
+		}
+	}
+
+	for eId, e:= range g.Edges {
+		for v := range e.V {
+			if remVertices[v] {
+				delete(g.Edges, eId)
+				break
+			}
+		}
+	}
+	return n
+}
+
 func mapToSlice[K comparable, V any](m map[K]V) []K {
 	arr := make([]K, len(m))
 

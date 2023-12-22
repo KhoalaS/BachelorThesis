@@ -31,14 +31,29 @@ go run cmd/main.go [OPTIONS]
 
 ### Options
 ```bash
+-c    Make charts.
+-evr int
+        Maximum ratio |E|/|V| to compute for random graphs.
 -f string
-        Filepath to graphml file.
+        Generate a random graph with fixed ratios for the edge sizes.
+-fr
+        Frontload the algorithm with |V|/20 Factor-3 rule executions.
+-i string
+        Filepath to graphml input file.
 -k int
-        The parameter k. (default 0.4*m)
+        The parameter k.
 -m int
-        Number of edges if no graph file supplied. (default generated randomly)
+        Number of edges if no graph file supplied. (default 20000)
+-maxv int
+        Maximum vertices for random graphs used in charts.
 -n int
         Number of vertices if no graph file supplied. (default 10000)
+-p string
+        Use a preconfigured chart preset. For available presets run with 'list -p'.
+-prof
+        Make CPU profile
+-u int
+        Generate a u-uniform graph.
 ```
 
 ## Programming Language
@@ -432,13 +447,23 @@ We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 ver
 
 ![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/line_fac.png)
 
-Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.  
-
 We also looked at the number of rule executions for $r=1$ and $r=10$.
 
 ![Number of Rule Executions, $r=1$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_1.png)
 ![Number of Rule Executions, $r=10$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_10.png)
 
+Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.  
+
+We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
+
+__Factor-3 Rule Frontloading.__ In its current implementation, the algorithm applies all rules and if there are edges left in the graph, adds an edge of size 3 to the solution if possible. We could alternatively apply this factor 3 rule at the beginning of the algorithm. We hope that this will allow for an increase of Vertex Domination Rule executions, which can cascade into Small Edge Rule executions. We kinda open another can of worms by introducing this "technique". For example one could consider:
+
+- Amount executions of the fallback rule
+  - Do we consider both the amount of edges and vertices? Or perhaps only one of those?
+  - Can we predict this with a multiple linear regression?
+- Choosing the edge:
+  - Do we want edges with high degree endpoints?
+  - Do we select them randomly?
 
 ## Testing
 
