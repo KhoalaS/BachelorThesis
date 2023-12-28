@@ -20,19 +20,20 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	var baseSize int32 = 10
 	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
+	var maxest float64 = 2
+	
 	var maxVert int32 = 10000
 	if maxv > 0 {
 		maxVert = int32(maxv)
 	}
-	maxratio := 20
-	var maxest float64 = 2
 
+	maxratio := 20
 	if evr > 0 {
 		maxratio = evr
 	}
 
-	if checkpoint > evr {
-		checkpoint = evr
+	if checkpoint > maxratio {
+		checkpoint = maxratio
 	}
 
 	labels := make([]int, maxratio)
@@ -137,7 +138,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	}
 
 	bar1 := charts.NewBar()
-	bar10 := charts.NewBar()
+	bar2 := charts.NewBar()
 
 	bar1.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
@@ -157,7 +158,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 		),
 	)
 
-	bar10.SetGlobalOptions(
+	bar2.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
 			Title:    "#Rule Executions",
 			Subtitle: fmt.Sprintf("[#Edges/#Vertices = %d]", checkpoint),
@@ -187,7 +188,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 			}),
 		)
 
-	bar10.SetXAxis(barLabelsShort).
+	bar2.SetXAxis(barLabelsShort).
 		AddSeries("10 Vertices", barSeries2[10]).
 		AddSeries("100 Vertices", barSeries2[100]).
 		AddSeries("1K Vertices", barSeries2[1000]).
@@ -199,7 +200,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 			}),
 		)
 
-	page.AddCharts(line, bar1, bar10)
+	page.AddCharts(line, bar1, bar2)
 	f, _ := os.Create("approx_factor_chart.html")
 	page.Render(f)
 }
@@ -223,17 +224,21 @@ func main() {
 	chart := flag.Bool("c", false, "Make charts.")
 	u := flag.Int("u", 0, "Generate a u-uniform graph.")
 	f := flag.String("f", "", "Generate a random graph with fixed ratios for the edge sizes.")
-	fr := flag.Bool("fr", false, "Frontload the algorithm with |V|/20 Factor-3 rule executions.")
+	fr := flag.Int("fr", 0, "Preprocess the graph with fr many Factor-3 rule executions.")
 	evr := flag.Int("evr", 0, "Maximum ratio |E|/|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	profile := flag.Bool("prof", false, "Make CPU profile")
+	export := flag.String("o", "", "")
+
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
 	printPreset := list.Bool("p", false, "")
 
 	flag.Parse()
 
-	if os.Args[1] == "list" {
+	
+
+	if len(os.Args) > 1 && os.Args[1] == "list" {
 		list.Parse(os.Args[2:])
 		if *printPreset {
 			fmt.Println("u3\t 3-uniform graphs, E\\V ratio of 5, 1K maximum vertices")
@@ -265,7 +270,7 @@ func main() {
 	}
 
 	if *K == 0 {
-		*K = int(float64(0.3) * float64(*n))
+		*K = *n
 	}
 
 	k := *K
@@ -290,6 +295,11 @@ func main() {
 		}
 	}
 
+	if len(*export) > 0 {
+		hypergraph.WriteToFile(g, *export)
+		return
+	}
+
 	c := make(map[int32]bool)
 	execs := make(map[string]int)
 	fmt.Println("Start Algorithm")
@@ -306,16 +316,18 @@ func main() {
 
 	prio := 0
 
-	if *fr {
-		kFront := hypergraph.Frontload(g, c)
+	if *fr > 0 {
+		// this might put all edges into the hitting set
+		kFront := hypergraph.F3Prepocess(g, c, *fr)
 		execs["kFallback"] = kFront
 		k -= kFront
 	}
 
 	ex, hs, execs := alg.ThreeHS_2ApprPoly(g, c, k, execs, prio)
 
-	pprof.StopCPUProfile()
+	fmt.Println(execs)
 
+	pprof.StopCPUProfile()
 	if ex || (len(hs) < 3*(*K) && len(g.Edges) == 0) {
 		fmt.Printf("Found a 3-Hitting-Set of size %d <= 3K = %d\n", len(hs), 3*(*K))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
