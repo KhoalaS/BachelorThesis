@@ -184,13 +184,13 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 	return g
 }
 
-func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32){
+func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGraph {
 	var initSize int32 = 10
 	g := GenerateTestGraph(initSize, initSize, false)
 	var vCounter int32 = initSize
 
-	for i:=0; i<n; i++ {
-		size := 1 + rand.Int31n(maxEdgesize)
+	for vCounter < n {
+		size := 2 + rand.Int31n(maxEdgesize-2+1)
 		if rand.Float64() < p {
 			g.AddVertex(vCounter, 0)
 			g.AddEdgeArr(append(selectEndpoints(g, size - 1), vCounter))
@@ -199,10 +199,11 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32){
 			g.AddEdgeArr(selectEndpoints(g ,size))
 		}
 	}
+
+	return g
 }
 
 func selectEndpoints(g *HyperGraph, size int32) []int32 {
-	pSum := make([]int32, len(g.Vertices))
 	endpoints := []int32{}
 	ids := make([]int32, len(g.Vertices))
 
@@ -213,14 +214,16 @@ func selectEndpoints(g *HyperGraph, size int32) []int32 {
 	}
 
 	for i:=0; i<int(size); i++ {
-		
-		pSum[0] = g.VDeg[0]
+		pSum := make([]int32, len(ids))
+		pSum[0] = g.VDeg[ids[0]]
 		
 		for j:=1; j<len(ids); j++{
 			pSum[j] = pSum[j-1] + g.VDeg[ids[j]] 
 		}
 
 		r := rand.Int31n(pSum[len(pSum)-1]+1)
+
+		
 
 		for k:=0; k<len(pSum); k++ {
 			if r <= pSum[k] {
