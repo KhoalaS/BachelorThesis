@@ -11,6 +11,7 @@ type HyperGraph struct {
 	Edges       map[int32]Edge
 	edgeCounter int32
 	Degree      int
+	VDeg 		map[int32]int32
 }
 
 func (g *HyperGraph) AddVertex(id int32, data any) {
@@ -22,6 +23,7 @@ func (g *HyperGraph) AddEdge(eps ...int32) {
 
 	for _, ep := range eps {
 		e.V[ep] = true
+		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
@@ -32,6 +34,7 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 
 	for ep := range eps {
 		e.V[ep] = true
+		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
@@ -42,6 +45,7 @@ func (g *HyperGraph) AddEdgeArr(eps []int32) {
 
 	for _, ep := range eps {
 		e.V[ep] = true
+		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
@@ -50,6 +54,7 @@ func (g *HyperGraph) AddEdgeArr(eps []int32) {
 func (g *HyperGraph) Copy() *HyperGraph {
 	edges := make(map[int32]Edge)
 	vertices := make(map[int32]Vertex)
+	VDeg := make(map[int32]int32)
 
 	for eId, e := range g.Edges {
 		edges[eId] = Edge{V: make(map[int32]bool)}
@@ -62,7 +67,11 @@ func (g *HyperGraph) Copy() *HyperGraph {
 		vertices[vId] = Vertex{id: vId, data: v.data}
 	}
 
-	return &HyperGraph{edgeCounter: g.edgeCounter, Vertices: vertices, Edges: edges, Degree: g.Degree}
+	for vId, degree := range g.VDeg {
+		VDeg[vId] = degree
+	}
+
+	return &HyperGraph{edgeCounter: g.edgeCounter, Vertices: vertices, Edges: edges, Degree: g.Degree, VDeg: VDeg}
 }
 
 func (g HyperGraph) Print() {
@@ -88,23 +97,17 @@ func (g HyperGraph) Print() {
 func NewHyperGraph() *HyperGraph {
 	vertices := make(map[int32]Vertex)
 	edges := make(map[int32]Edge)
-	return &HyperGraph{Vertices: vertices, Edges: edges, Degree: 3}
+	vdeg := make(map[int32]int32)
+	return &HyperGraph{Vertices: vertices, Edges: edges, Degree: 3, VDeg: vdeg}
 }
 
 func (g *HyperGraph) IsSimple() bool {
-	// Time Complexity |E|*|d|
-	degMap := make(map[int32]int32)
-	simple := true
-
-	for _, e := range g.Edges {
-		for id := range e.V {
-			degMap[id]++
-			if degMap[id] == 3 {
-				return false
-			}
+	for _, degree := range g.VDeg {
+		if degree == 3 {
+			return false
 		}
 	}
-	return simple
+	return true
 }
 
 func (g *HyperGraph) RemoveDuplicate() {
@@ -113,6 +116,9 @@ func (g *HyperGraph) RemoveDuplicate() {
 	for eId, e := range g.Edges {
 		hash := e.getHash()
 		if hashes[hash] {
+			for v := range g.Edges[eId].V {
+				g.VDeg[v]--
+			}
 			delete(g.Edges, eId)
 		} else {
 			hashes[hash] = true
