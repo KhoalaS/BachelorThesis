@@ -16,7 +16,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
+func makeChart(pa int, u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	var baseSize int32 = 10
 	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
@@ -30,6 +30,10 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	maxratio := 20
 	if evr > 0 {
 		maxratio = evr
+	}
+
+	if pa > 0 {
+		maxratio = 1
 	}
 
 	if checkpoint > maxratio {
@@ -59,6 +63,8 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 					ratios[i] = valInt
 				}
 				g = hypergraph.GenerateFixDistTestGraph(baseSize, int32(i)*baseSize, ratios)
+			} else if pa > 0 {
+				g = hypergraph.GeneratePrefAttachmentGraph(baseSize, 0.5, 3)
 			} else {
 				g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
 			}
@@ -258,13 +264,16 @@ func main() {
 			*u = 2
 			*evr = 10
 			*maxv = 10000
+		case "pa05":
+			*prefAttach = 1
+			checkpoint = -1
 		}
-		makeChart(*u, *evr, *maxv, checkpoint, *f)
+		makeChart(*prefAttach, *u, *evr, *maxv, checkpoint, *f)
 		return
 	}
 
 	if *chart {
-		makeChart(*u, *evr, *maxv, 10, *f)
+		makeChart(*prefAttach, *u, *evr, *maxv, 10, *f)
 		return
 	}
 
