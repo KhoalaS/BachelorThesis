@@ -100,7 +100,7 @@ func GenerateUniformTestGraph(n int32, m int32, u int) *HyperGraph {
 			_, ex := eps[val]
 
 			vertReroll := 0
-			for ex && vertReroll < 50 {
+			for ex && vertReroll < 1000 {
 				val = rand.Int31n(n)
 				epsArr[j] = val
 				_, ex = eps[val]
@@ -160,7 +160,7 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 			_, ex := eps[val]
 
 			vertReroll := 0
-			for ex && vertReroll < 50 {
+			for ex && vertReroll < 1000 {
 				val = rand.Int31n(n)
 				epsArr[j] = val
 				_, ex = eps[val]
@@ -182,6 +182,56 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 	}
 
 	return g
+}
+
+func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32){
+	var initSize int32 = 10
+	g := GenerateTestGraph(initSize, initSize, false)
+	var vCounter int32 = initSize
+
+	for i:=0; i<n; i++ {
+		size := 1 + rand.Int31n(maxEdgesize)
+		if rand.Float64() < p {
+			g.AddVertex(vCounter, 0)
+			g.AddEdgeArr(append(selectEndpoints(g, size - 1), vCounter))
+			vCounter++
+		}else{
+			g.AddEdgeArr(selectEndpoints(g ,size))
+		}
+	}
+}
+
+func selectEndpoints(g *HyperGraph, size int32) []int32 {
+	pSum := make([]int32, len(g.Vertices))
+	endpoints := []int32{}
+	ids := make([]int32, len(g.Vertices))
+
+	i := 0
+	for vId := range g.Vertices {
+		ids[i] = vId
+		i++
+	}
+
+	for i:=0; i<int(size); i++ {
+		
+		pSum[0] = g.VDeg[0]
+		
+		for j:=1; j<len(ids); j++{
+			pSum[j] = pSum[j-1] + g.VDeg[ids[j]] 
+		}
+
+		r := rand.Int31n(pSum[len(pSum)-1]+1)
+
+		for k:=0; k<len(pSum); k++ {
+			if r <= pSum[k] {
+				endpoints = append(endpoints, int32(k))
+				ids = append(ids[:k], ids[k+1:]...)
+				break
+			}
+		}
+	}
+
+	return endpoints
 }
 
 func SetMinus(e Edge, elem int32) ([]int32, bool) {
