@@ -6,6 +6,9 @@ import (
 	"sync"
 )
 
+// General TODO:
+// Build an interface ontop of the HyperGraph class and inplement the "crud" there
+
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
@@ -59,7 +62,7 @@ func EdgeDominationRule(g *HyperGraph) int {
 			domEdges = append(domEdges, eId)
 		}
 	}
-	
+
 	if len(subEdges) == 0 {
 		return 0
 	}
@@ -701,19 +704,28 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			// triangle condition
 			if adjList[subset[0]][subset[1]] {
 				exec++
-				remSet := []int32{subset[0], subset[1], x}
+				remSet := map[int32]bool{subset[0]:true, subset[1]:true, x:true}
 				//if len(degThree) > 0 {
 				//	wEdge := degThree[len(degThree)-1]
-				//	for v := range g.Edges[wEdge].v {
-				//		remSet = append(remSet, v)
+				//	removed := false
+				//	for v := range g.Edges[wEdge].V {
+				//		if remSet[v] {
+				//			removed = true
+				//			break
+				//		}
+				//	}
+				//	if !removed {
+				//		for v := range g.Edges[wEdge].V {
+				//			remSet[v] = true
+				//		}
 				//	}
 				//	degThree = degThree[:len(degThree)-1]
 				//}
-				for _, y := range remSet {
+				for y := range remSet {
 					c[y] = true
 					remVertices[y] = true
 					for z := range adjList[y] {
-						for _, u := range remSet {
+						for u := range remSet {
 							delete(adjList[z], u)
 						}
 					}
@@ -744,9 +756,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
-func Frontload(g *HyperGraph, c map[int32]bool) int {
-	// |V| = 1000 |E| = 10000, estimate 185, 90 min
-	n := len(g.Vertices)/50
+func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 	remVertices := make(map[int32]bool)
 
 	i := 0
@@ -774,7 +784,7 @@ func Frontload(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	for eId, e:= range g.Edges {
+	for eId, e := range g.Edges {
 		for v := range e.V {
 			if remVertices[v] {
 				delete(g.Edges, eId)
