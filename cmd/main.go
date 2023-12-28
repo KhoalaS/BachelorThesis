@@ -21,7 +21,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
 	var maxest float64 = 2
-	
+
 	var maxVert int32 = 10000
 	if maxv > 0 {
 		maxVert = int32(maxv)
@@ -65,7 +65,7 @@ func makeChart(u int, evr int, maxv int, checkpoint int, fixRatio string) {
 			c := make(map[int32]bool)
 			execs := make(map[string]int)
 
-			alg.ThreeHS_2ApprPoly(g, c, int(baseSize)*i, execs, 0)
+			alg.ThreeHS_F3ApprPoly(g, c, execs, 0)
 			var nom float64 = 0
 			var denom float64 = 0
 
@@ -236,8 +236,6 @@ func main() {
 
 	flag.Parse()
 
-	
-
 	if len(os.Args) > 1 && os.Args[1] == "list" {
 		list.Parse(os.Args[2:])
 		if *printPreset {
@@ -323,7 +321,7 @@ func main() {
 		k -= kFront
 	}
 
-	ex, hs, execs := alg.ThreeHS_2ApprPoly(g, c, k, execs, prio)
+	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio)
 
 	fmt.Println(execs)
 

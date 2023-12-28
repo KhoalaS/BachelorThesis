@@ -91,14 +91,10 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int, prio int) (bool, map[int32]bool, map[string]int) {
-	k := K
+func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) (bool, map[int32]bool, map[string]int) {
 	for len(g.Edges) > 0 {
-		execs, k = ApplyRules(g, c, k, execs, prio)
+		execs, _ = ApplyRules(g, c, 0, execs, prio)
 		prio = 0
-		if k < 0 {
-			return false, c, execs
-		}
 
 		v, ex := PotentialTriangle(g)
 		if ex {
@@ -121,7 +117,6 @@ func ThreeHS_2ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs 
 					c[v] = true
 					delete(g.Vertices, v)
 				}
-				k--
 				found = true
 				break
 			}
@@ -185,11 +180,13 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		}
 	}
 
-	k -= lexecs["kTiny"] * Ratios["kTiny"].B
-	k -= lexecs["kTri"] * Ratios["kTri"].B
-	k -= lexecs["kApVertDom"] * Ratios["kApVertDom"].B
-	k -= lexecs["kSmall"] * Ratios["kSmall"].B
-	k -= lexecs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].B
+	// A/2 is not correct, just a placeholder for now
+	// do not do this inside this function but in the algorithm functions
+	k -= lexecs["kTiny"] * Ratios["kTiny"].A / 2
+	k -= lexecs["kTri"] * Ratios["kTri"].A / 2
+	k -= lexecs["kApVertDom"] * Ratios["kApVertDom"].A / 2
+	k -= lexecs["kSmall"] * Ratios["kSmall"].A / 2
+	k -= lexecs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].A / 2
 
 	//m, err := os.Create("mem_main.prof")
 	//if err != nil {
