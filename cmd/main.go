@@ -223,12 +223,13 @@ func main() {
 	K := flag.Int("k", 0, "The parameter k.")
 	chart := flag.Bool("c", false, "Make charts.")
 	u := flag.Int("u", 0, "Generate a u-uniform graph.")
-	f := flag.String("f", "", "Generate a random graph with fixed ratios for the edge sizes.")
+	f := flag.String("f", "", "Generate a random hypergraph with fixed ratios for the edge sizes.")
 	fr := flag.Int("fr", 0, "Preprocess the graph with fr many Factor-3 rule executions.")
 	evr := flag.Int("evr", 0, "Maximum ratio |E|/|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	profile := flag.Bool("prof", false, "Make CPU profile")
-	export := flag.String("o", "", "")
+	export := flag.String("o", "", "Export the generated graph with the given string as filename. The will create a 'graphs' folder where the file is located.")
+	prefAttach := flag.Int("pa", 0, "Generate a random preferential attachment hypergraph")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
@@ -277,7 +278,7 @@ func main() {
 	if len(strings.Trim(*input, " ")) > 0 {
 		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
 	} else {
-		fmt.Printf("Using random graph with: \n\t%d vertices\n\t%d edges\n\tk=%d\n", *n, *m, *K)
+		fmt.Printf("Using random graph with: \n\t%d vertices\n\t%d edges\n", *n, *m)
 		if *u > 0 {
 			g = hypergraph.GenerateUniformTestGraph(int32(*n), int32(*m), *u)
 		} else if len(*f) > 0 {
@@ -288,7 +289,9 @@ func main() {
 				ratios[i] = valInt
 			}
 			g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
-		} else {
+		} else if *prefAttach > 0 {
+			g = hypergraph.GeneratePrefAttachmentGraph(int32(*prefAttach), 0.5, 3)
+		}else {
 			g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 		}
 	}
@@ -323,13 +326,11 @@ func main() {
 
 	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio)
 
-	fmt.Println(execs)
-
 	pprof.StopCPUProfile()
-	if ex || (len(hs) < 3*(*K) && len(g.Edges) == 0) {
-		fmt.Printf("Found a 3-Hitting-Set of size %d <= 3K = %d\n", len(hs), 3*(*K))
+	if ex {
+		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(hs))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
 	} else {
-		fmt.Printf("Did not find a 3-Hitting-Set of size <= 3K = %d\n", 3*(*K))
+		fmt.Println("Did not find a 3-Hitting-Set")
 	}
 }
