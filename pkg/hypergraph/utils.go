@@ -186,18 +186,18 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 }
 
 func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGraph {
-	var initSize int32 = 10
+	var initSize int32 = 5
 	g := GenerateTestGraph(initSize, initSize, false)
 	var vCounter int32 = initSize
 
 	for vCounter < n {
 		size := 2 + rand.Int31n(maxEdgesize-2+1)
 		if rand.Float64() < p {
+			g.AddEdgeArr(append(selectEndpoints(g ,size-1) , vCounter))
 			g.AddVertex(vCounter, 0)
-			g.AddEdgeArr(append(selectEndpoints(g, size - 1), vCounter))
 			vCounter++
 		}else{
-			g.AddEdgeArr(selectEndpoints(g ,size))
+			g.AddEdgeArr(selectEndpoints(g ,size-1))
 		}
 		fmt.Printf("%d/%d Vertices added\r", vCounter, n)
 	}
@@ -208,7 +208,6 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 func selectEndpoints(g *HyperGraph, size int32) []int32 {
 	endpoints := []int32{}
 	ids := make([]int32, len(g.Vertices))
-
 	i := 0
 	for vId := range g.Vertices {
 		ids[i] = vId
