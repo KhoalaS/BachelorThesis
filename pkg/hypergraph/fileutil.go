@@ -55,6 +55,35 @@ func WriteToFile(g *HyperGraph, filename string) bool {
 	return true
 }
 
+func WriteToFileSimple(g *HyperGraph, filepath string) bool {
+	f, err := os.Create(filepath)
+	
+	if err != nil {
+		log.Default().Println(err)
+		log.Default().Printf("Could not create file %s\n", filepath)
+		return false
+	}
+
+	defer f.Close()
+
+	for _, e := range g.Edges {
+		line := ""
+		i := 0 
+		for v := range e.V {
+			if i == len(e.V)-1 {
+				line += fmt.Sprintf("%d\n", v)
+				break
+			}
+			line += fmt.Sprintf("%d ", v)
+			i++
+		}
+		f.Write([]byte(line))
+	}
+
+	return true
+
+}
+
 func ReadFromFile(filename string) *HyperGraph {
 	file, err := os.ReadFile(filename)
 	if err != nil {

@@ -235,6 +235,7 @@ func main() {
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	profile := flag.Bool("prof", false, "Make CPU profile")
 	export := flag.String("o", "", "Export the generated graph with the given string as filename. The will create a 'graphs' folder where the file is located.")
+	exportSimple := flag.String("os", "", "Export the generated graph to the given filepath.")
 	prefAttach := flag.Int("pa", 0, "Generate a random preferential attachment hypergraph")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
@@ -248,6 +249,7 @@ func main() {
 		if *printPreset {
 			fmt.Println("u3\t 3-uniform graphs, E\\V ratio of 5, 1K maximum vertices")
 			fmt.Println("u2\t 2-uniform graphs, E\\V ratio 10, 10K maximum vertices")
+			fmt.Println("pa05\t preferential attachment graphs, probabilty 0.5 of attaching a new vertex, 10K maximum vertices")
 			return
 		}
 	}
@@ -286,27 +288,29 @@ func main() {
 	var g *hypergraph.HyperGraph
 	if len(strings.Trim(*input, " ")) > 0 {
 		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
-	} else {
-		fmt.Printf("Using random graph with: \n\t%d vertices\n\t%d edges\n", *n, *m)
-		if *u > 0 {
-			g = hypergraph.GenerateUniformTestGraph(int32(*n), int32(*m), *u)
-		} else if len(*f) > 0 {
-			spl := strings.Split(*f, ",")
-			ratios := make([]int, len(spl))
-			for i, val := range spl {
-				valInt, _ := strconv.Atoi(val)
-				ratios[i] = valInt
-			}
-			g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
-		} else if *prefAttach > 0 {
-			g = hypergraph.GeneratePrefAttachmentGraph(int32(*prefAttach), 0.5, 3)
-		}else {
-			g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
+	} else if *u > 0 {
+		g = hypergraph.GenerateUniformTestGraph(int32(*n), int32(*m), *u)
+	} else if len(*f) > 0 {
+		spl := strings.Split(*f, ",")
+		ratios := make([]int, len(spl))
+		for i, val := range spl {
+			valInt, _ := strconv.Atoi(val)
+			ratios[i] = valInt
 		}
+		g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
+	} else if *prefAttach > 0 {
+		g = hypergraph.GeneratePrefAttachmentGraph(int32(*prefAttach), 0.5, 3)
+	} else {
+		g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 	}
 
 	if len(*export) > 0 {
 		hypergraph.WriteToFile(g, *export)
+		return
+	}
+
+	if len(*exportSimple) > 0 {
+		hypergraph.WriteToFileSimple(g, *exportSimple)
 		return
 	}
 
