@@ -199,7 +199,7 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 		}else{
 			g.AddEdgeArr(selectEndpoints(g ,size))
 		}
-		//fmt.Printf("%d/%d Vertices added\r", vCounter, n)
+		fmt.Printf("%d/%d Vertices added\r", vCounter, n)
 	}
 
 	return g
