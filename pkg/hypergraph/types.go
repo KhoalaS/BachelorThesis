@@ -23,10 +23,26 @@ func (g *HyperGraph) AddEdge(eps ...int32) {
 
 	for _, ep := range eps {
 		e.V[ep] = true
+	}
+	for ep := range e.V {
 		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
+}
+
+func (g *HyperGraph) RemoveEdge(id int32) bool {
+	if _, ex := g.Edges[id]; !ex {
+		return false
+	}
+
+	for v := range g.Edges[id].V {
+		g.VDeg[v]--
+	}
+
+	delete(g.Edges, id)
+
+	return true
 }
 
 func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
@@ -34,6 +50,8 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 
 	for ep := range eps {
 		e.V[ep] = true
+	}
+	for ep := range e.V {
 		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
@@ -45,6 +63,8 @@ func (g *HyperGraph) AddEdgeArr(eps []int32) {
 
 	for _, ep := range eps {
 		e.V[ep] = true
+	}
+	for ep := range e.V {
 		g.VDeg[ep]++
 	}
 	g.Edges[g.edgeCounter] = e
@@ -124,6 +144,10 @@ func (g *HyperGraph) RemoveDuplicate() {
 			hashes[hash] = true
 		}
 	}
+}
+
+func (g* HyperGraph) Draw() {
+
 }
 
 type Vertex struct {
