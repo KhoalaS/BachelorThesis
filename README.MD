@@ -30,30 +30,21 @@ go run cmd/main.go [OPTIONS]
 ```
 
 ### Options
-```bash
--c    Make charts.
--evr int
-        Maximum ratio |E|/|V| to compute for random graphs.
--f string
-        Generate a random graph with fixed ratios for the edge sizes.
--fr
-        Frontload the algorithm with |V|/20 Factor-3 rule executions.
--i string
-        Filepath to graphml input file.
--k int
-        The parameter k.
--m int
-        Number of edges if no graph file supplied. (default 20000)
--maxv int
-        Maximum vertices for random graphs used in charts.
--n int
-        Number of vertices if no graph file supplied. (default 10000)
--p string
-        Use a preconfigured chart preset. For available presets run with 'list -p'.
--prof
-        Make CPU profile
--u int
-        Generate a u-uniform graph.
+```
+-c          Make charts.
+-evr int    Maximum ratio |E|/|V| to compute for random graphs.
+-f string   Generate a random hypergraph with fixed ratios for the edge sizes.
+-fr int     Preprocess the graph with fr many Factor-3 rule executions.
+-i string   Filepath to graphml input file.
+-k int      The parameter k.
+-m int      Number of edges if no graph file supplied. (default 20000)
+-maxv int   Maximum vertices for random graphs used in charts.
+-n int      Number of vertices if no graph file supplied. (default 10000)
+-o string   Export the generated graph with the given string as filename. The will create a 'graphs' folder where the file is located.
+-p string   Use a preconfigured chart preset. For available presets run with 'list -p'.
+-pa int     Generate a random preferential attachment hypergraph
+-prof       Make CPU profile
+-u int      Generate a u-uniform graph.
 ```
 
 ## Programming Language
@@ -107,11 +98,11 @@ The field $\texttt{Degree}$ specifies the maximum degree of the graph.
 ### Edge Hashing
 
 ```go
-func getHash(arr []int32) uint32
+func getHash(arr []int32) string
 ```
 Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
 
-We start by sorting $\texttt{arr}$ with a $\textnormal{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", producing a string of the form $|id_0|id_1|\dots|id_n|$. We then hash this string using the pure Go implementation of the [xxHash](https://github.com/Cyan4973/xxHash) hashing algorithm. It is probably the fastest non-cryptographic hash function to date. This will yield a $\texttt{uint32}$ hashsum that we return.
+We start by sorting $\texttt{arr}$ with a $\textnormal{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", returning a string of the form $|id_0|id_1|\dots|id_n|$.
 
 Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
 
@@ -204,6 +195,8 @@ We start by creating a map called $\texttt{lookup}$. We then iterate other our e
 
 ### Generating Test Graphs
 
+#### First Testing Model
+
 ```go
 func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph
 ```
@@ -234,7 +227,23 @@ That results in the graph having at most $\texttt{m}$ edges and not exactly $\te
 
 Using an established model like the [Erdős–Rényi Model](https://www.semanticscholar.org/paper/On-random-graphs.-I.-Erdos-R%C3%A9nyi/e77e986f717b353329e2202c384c5499191a0646) would be more favourable. But since we just needed something tangible to start testing, this "model" will suffice for the time being.
 
-One could also look into generating random bipartite grpahs that translate back to a hypergraph with the desired vertex and edge numbers.
+One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers.
+
+#### Preferential Attachment Hypergraph Model
+
+In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph. 
+
+We will use an implementation by  A. Antelmi et al as reference, which used a model proposed by C. Avin et al.  
+
+```go
+func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
+```
+
+- $\texttt{n}$ is the amount of vertices the graph will have
+- $\texttt{p}$ is the probability of adding a new vertex to the graph
+- $\texttt{maxEdgesize}$ is the maximum size of a generated edge
+
+
 
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
@@ -456,18 +465,22 @@ Note that the reduction rules alone are sufficient to compute a Hitting-Set for 
 
 We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
 
-__Factor-3 Rule Frontloading.__ In its current implementation, the algorithm applies all rules and if there are edges left in the graph, adds an edge of size 3 to the solution if possible. We could alternatively apply this factor 3 rule at the beginning of the algorithm. We hope that this will allow for an increase of Vertex Domination Rule executions, which can cascade into Small Edge Rule executions. We kinda open another can of worms by introducing this "technique". For example one could consider:
+__Factor-3 Rule Preprocessing.__ In its current implementation, the algorithm applies all rules and if there are edges left in the graph, adds an edge of size 3 to the solution if possible. In most of these cases we have to apply the Fallback-Rule $n$ times, before we can apply any other rule. We could alternatively apply this factor 3 rule at the beginning of the algorithm. We hope that this will allow for an increase of Vertex Domination Rule executions, which can cascade into Small Edge Rule executions. We kinda open another can of worms by introducing another form of preprocessing. For example one could consider:
 
 - Amount executions of the fallback rule
   - Do we consider both the amount of edges and vertices? Or perhaps only one of those?
-  - Can we predict this with a multiple linear regression?
+  - Can we predict the amount?
 - Choosing the edge:
-  - Do we want edges with high degree endpoints?
+  - Can we apply heuristics?
   - Do we select them randomly?
+
+__Lemma.__ Assume a run of the current algorithm executes the Fallback Rule at most $n$ times before any other rule is executed. Then prepocessing the instance with the Fallback Rule $m$ times, will not increase this maximum, for $m\leq ? n$.
+
+
 
 ## Testing
 
-Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
+Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the part  ial solution and the amount of edges left in the graph.
 
 ## Branching Algorithm
 
