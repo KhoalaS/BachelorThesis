@@ -187,7 +187,7 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 
 func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGraph {
 	var initSize int32 = 5
-	g := GenerateTestGraph(initSize, initSize, false)
+	g := GenerateTestGraph(initSize, initSize, true)
 	var vCounter int32 = initSize
 
 	for vCounter < n {
@@ -201,6 +201,8 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 		}
 		fmt.Printf("%d/%d Vertices added\r", vCounter, n)
 	}
+	fmt.Println()
+
 
 	return g
 }
