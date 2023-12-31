@@ -16,7 +16,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func makeChart(pa int, u int, evr int, maxv int, checkpoint int, fixRatio string) {
+func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio string) {
 	var baseSize int32 = 10
 	baseSizes := []int32{}
 	var g *hypergraph.HyperGraph
@@ -64,7 +64,7 @@ func makeChart(pa int, u int, evr int, maxv int, checkpoint int, fixRatio string
 				}
 				g = hypergraph.GenerateFixDistTestGraph(baseSize, int32(i)*baseSize, ratios)
 			} else if pa > 0 {
-				g = hypergraph.GeneratePrefAttachmentGraph(baseSize, 0.5, 3)
+				g = hypergraph.GeneratePrefAttachmentGraph(baseSize, pa, 3)
 			} else {
 				g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
 			}
@@ -236,7 +236,7 @@ func main() {
 	profile := flag.Bool("prof", false, "Make CPU profile")
 	export := flag.String("o", "", "Export the generated graph with the given string as filename. The will create a 'graphs' folder where the file is located.")
 	exportSimple := flag.String("os", "", "Export the generated graph to the given filepath.")
-	prefAttach := flag.Int("pa", 0, "Generate a random preferential attachment hypergraph")
+	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
@@ -262,12 +262,14 @@ func main() {
 			*evr = 5
 			*maxv = 1000
 			checkpoint = 5
+			*prefAttach = 0
 		case "u2":
 			*u = 2
 			*evr = 10
 			*maxv = 10000
+			*prefAttach = 0
 		case "pa05":
-			*prefAttach = 1
+			*prefAttach = 0.5
 			checkpoint = -1
 		}
 		makeChart(*prefAttach, *u, *evr, *maxv, checkpoint, *f)
@@ -299,7 +301,7 @@ func main() {
 		}
 		g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
 	} else if *prefAttach > 0 {
-		g = hypergraph.GeneratePrefAttachmentGraph(int32(*prefAttach), 0.5, 3)
+		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), 0.5, 3)
 	} else {
 		g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 	}
