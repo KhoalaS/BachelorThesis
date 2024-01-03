@@ -14,5 +14,5 @@ out = open("./out/out.MD", "w+")
 out.write(new)
 out.close()
 
-code = os.system("pandoc -V geometry:margin=1in out/out.MD -o notes.pdf")
+code = os.system("pandoc -V geometry:margin=1in out/out.MD -o notes.pdf --bibliography=./lit.bib --csl=./ieee.csl")
 exit(code)
