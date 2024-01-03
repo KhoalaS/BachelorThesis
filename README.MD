@@ -233,7 +233,7 @@ One could also look into generating random bipartite graphs that translate back 
 
 In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph. 
 
-We will use an implementation by  A. Antelmi et al as reference, which used a model proposed by C. Avin et al.  
+We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia lanuage. The implementation is based on a preferential attachment model proposed by Avin et al in [@DBLP:journals/corr/AvinLP15].  
 
 ```go
 func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
@@ -242,6 +242,8 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 - $\texttt{n}$ is the amount of vertices the graph will have
 - $\texttt{p}$ is the probability of adding a new vertex to the graph
 - $\texttt{maxEdgesize}$ is the maximum size of a generated edge
+
+#### Preferential Attachment Hypergraph Model with high Modularity
 
 
 
@@ -381,7 +383,7 @@ We then iterate other $\texttt{vSubCount}$, we will refer to the current value i
 
 **Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $n=\texttt{vSub[v]}$. Now let $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
 
 _Proposition._ If $\texttt{sol}$ is non-empty, then the edge $\{ \texttt{v,a,b} \}$ exists. 
 
@@ -408,7 +410,7 @@ We then iterate over the edges again. If the current edge $e$ is not of size 3 w
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
-__[Probably just |E|*|V|^2 being annoying]__
+__[Probably just |V|*|E|^2 being annoying]__
 
 __Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a unexpected slow execution time. A CPU-Profile showed a large amount of Map-lookup operations. This indicated a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. 
 
@@ -476,8 +478,6 @@ __Factor-3 Rule Preprocessing.__ In its current implementation, the algorithm ap
 
 __Lemma.__ Assume a run of the current algorithm executes the Fallback Rule at most $n$ times before any other rule is executed. Then prepocessing the instance with the Fallback Rule $m$ times, will not increase this maximum, for $m\leq ? n$.
 
-
-
 ## Testing
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the part  ial solution and the amount of edges left in the graph.
@@ -498,3 +498,6 @@ If our problem instance is simple, we can solve it in polynomial time using an e
 Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 
 
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
+
+
+# References
