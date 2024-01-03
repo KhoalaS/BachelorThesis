@@ -50,10 +50,9 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 
 	for ep := range eps {
 		e.V[ep] = true
-	}
-	for ep := range e.V {
 		g.VDeg[ep]++
 	}
+
 	g.Edges[g.edgeCounter] = e
 	g.edgeCounter++
 }
@@ -84,7 +83,7 @@ func (g *HyperGraph) Copy() *HyperGraph {
 	}
 
 	for vId, v := range g.Vertices {
-		vertices[vId] = Vertex{id: vId, data: v.data}
+		vertices[vId] = Vertex{Id: vId, Data: v.Data}
 	}
 
 	for vId, degree := range g.VDeg {
@@ -97,7 +96,7 @@ func (g *HyperGraph) Copy() *HyperGraph {
 func (g HyperGraph) Print() {
 	fmt.Print("Vertices: \n\t")
 	for _, v := range g.Vertices {
-		fmt.Printf("%d,", v.id)
+		fmt.Printf("%d,", v.Id)
 	}
 
 	fmt.Println("\nEdges:")
@@ -151,8 +150,8 @@ func (g* HyperGraph) Draw() {
 }
 
 type Vertex struct {
-	id   int32
-	data any
+	Id   int32
+	Data any
 }
 
 type Edge struct {
