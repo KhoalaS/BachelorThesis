@@ -237,6 +237,7 @@ func main() {
 	export := flag.String("o", "", "Export the generated graph with the given string as filename. The will create a 'graphs' folder where the file is located.")
 	exportSimple := flag.String("os", "", "Export the generated graph to the given filepath.")
 	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
+	prefAttachMod := flag.Bool("pamod", false, "")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
@@ -302,6 +303,18 @@ func main() {
 		g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
 	} else if *prefAttach > 0 {
 		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), 0.5, 3)
+	} else if *prefAttachMod {
+		g = hypergraph.GenerateModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
+		g.RemoveDuplicate()
+		for eId, e := range g.Edges {
+			if len(e.V) == 1 {
+				delete(g.Edges, eId)
+				for v := range e.V {
+					g.VDeg[v]--
+				}
+			}
+		}
+		fmt.Println(len(g.Edges) ,"edges left")
 	} else {
 		g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 	}
