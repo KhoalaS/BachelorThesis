@@ -2,6 +2,8 @@ package hypergraph
 
 import (
 	"fmt"
+	"log"
+	"math"
 	"math/rand"
 )
 
@@ -189,6 +191,130 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 	return g
 }
 
+func GenerateModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph {
+	g := NewHyperGraph()
+	c := make([][]int32, r)
+	pcum := generate3PMatrix(r, alpha)
+	vc := 0
+
+	for ; vc < r; vc++{
+		c[vc] = []int32{}
+		g.AddVertex(int32(vc), vc)
+		g.AddEdge(int32(vc))
+		c[vc] = append(c[vc], int32(vc))
+	}
+
+	for vc < n {
+		//fmt.Printf("%d/%d\r", vc, n)
+		if rand.Float64() < p {
+			roll := rand.Intn(r)
+			g.AddVertex(int32(vc), roll)
+			g.AddEdge(int32(vc))
+			c[roll] = append(c[roll], int32(vc))
+			vc++
+		} else {
+			roll := rand.Float64()
+			found := false
+
+			cArr := make([]int, 3)
+
+			for i := 0; i < r; i++ {
+				for j := 0; j < r; j++ {
+					for k := 0; k < r; k++ {
+						if roll <= pcum[i][j][k] {
+							found = true
+							cArr[0] = i
+							cArr[1] = j
+							cArr[2] = k
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
+
+			if !found {
+				log.Panic("This should not be possible")
+			}
+
+			// we ignore the X distribution, resulting in a 3-uniform hypergraph
+			eps := make(map[int32]bool)
+
+			for _, cId := range cArr {
+				dSum := 0
+				for _, v := range c[cId] {
+					dSum += int(g.VDeg[v])
+				}
+
+				roll := rand.Intn(dSum)
+				dCounter := 0
+
+				for _, v := range c[cId] {
+					dCounter += int(g.VDeg[v])
+					if roll <= dCounter {
+						eps[v] = true
+						break
+					}
+				}
+			}
+			g.AddEdgeMap(eps)
+		}
+	}
+
+	return g
+}
+
+func generate3PMatrix(r int, alpha float64) [][][]float64 {
+	p := make([][][]float64, r)
+
+	for i := 0; i < r; i++ {
+		p[i] = make([][]float64, r)
+		for j := 0; j < r; j++ {
+			p[i][j] = make([]float64, r)
+		}
+	}
+
+	single := (1.0 - alpha) / float64(r)
+	u := alpha / (math.Pow(float64(r), 3) - float64(r))
+
+	p[0][0][0] = single
+
+	for i := 0; i < r; i++ {
+		for j := 0; j < r; j++ {
+			for k := 0; k < r; k++ {
+				if i == j && j == k {
+					p[i][j][k] = single
+				} else {
+					p[i][j][k] = u
+				}
+			}
+		}
+	}
+
+	for i := 0; i < r; i++ {
+		for j := 0; j < r; j++ {
+			for k := 0; k < r; k++ {
+				if k == 0 && j == 0 && i == 0 {
+					continue
+				} else if k == 0 && j == 0 {
+					p[i][j][k] = p[i-1][r-1][r-1] + p[i][j][k]
+				} else if k == 0 {
+					p[i][j][k] = p[i][j-1][r-1] + p[i][j][k]
+				} else {
+					p[i][j][k] = p[i][j][k-1] + p[i][j][k]
+				}
+			}
+		}
+	}
+
+	return p
+}
+
 func selectEndpoints(g *HyperGraph, size int32) []int32 {
 	endpoints := []int32{}
 	ids := make([]int32, len(g.Vertices))
@@ -202,11 +328,12 @@ func selectEndpoints(g *HyperGraph, size int32) []int32 {
 		pSum := make([]int32, len(ids))
 		pSum[0] = g.VDeg[ids[0]]
 
+		// recalculate the cumulative probability array
 		for j := 1; j < len(ids); j++ {
 			pSum[j] = pSum[j-1] + g.VDeg[ids[j]]
 		}
 
-		r := rand.Int31n(pSum[len(pSum)-1] + 1)
+		r := rand.Int31n(pSum[len(pSum)-1])
 
 		for k := 0; k < len(pSum); k++ {
 			if r <= pSum[k] {
