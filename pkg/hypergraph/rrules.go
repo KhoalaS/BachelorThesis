@@ -810,43 +810,53 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	for vId, deg := range vDeg {
-		if deg != 2 {
-			continue
-		}
-
-		var s2Edge int32
-		var s3Edge int32
-		small := 0
-
-		for eId := range incMap[vId] {
-			l := len(g.Edges[eId].V) 
-			if  l == 3 {
-				s3Edge = eId
-			} else if l == 2{
-				if small == 1 {
-					s3Edge = eId
-				} else {
-					s2Edge = eId
-				}
-				small++
-			}
-		}
-
-		if small == 2 {
-			found := smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
-			if found {
-				exec++
+	for {
+		outer := false
+		for vId, deg := range vDeg {
+			if deg != 2 {
 				continue
 			}
-			found = smallDegreeTwoSub(g, c, vId, s3Edge, s2Edge, incMap, vDeg)
+	
+			var s2Edge int32
+			var s3Edge int32
+			small := 0
+			found := false
+	
+			for eId := range incMap[vId] {
+				l := len(g.Edges[eId].V) 
+				if  l == 3 {
+					s3Edge = eId
+				} else if l == 2{
+					if small == 1 {
+						s3Edge = eId
+					} else {
+						s2Edge = eId
+					}
+					small++
+				}
+			}
+	
+			if small == 2 {
+				found = smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
+				if found {
+					exec++
+					outer = true
+					continue
+				}
+				found = smallDegreeTwoSub(g, c, vId, s3Edge, s2Edge, incMap, vDeg)
+			} else if small == 1 {
+				found = smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
+				
+			}
+
 			if found {
+				outer = true
 				exec++
 			}
-		} else if small == 1 {
-			if smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg) {
-				exec++
-			}
+		}
+
+		if !outer {
+			break
 		}
 	}
 	return exec
