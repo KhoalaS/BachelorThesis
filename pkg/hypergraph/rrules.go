@@ -704,7 +704,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			// triangle condition
 			if adjList[subset[0]][subset[1]] {
 				exec++
-				remSet := map[int32]bool{subset[0]:true, subset[1]:true, x:true}
+				remSet := map[int32]bool{subset[0]: true, subset[1]: true, x: true}
 				//if len(degThree) > 0 {
 				//	wEdge := degThree[len(degThree)-1]
 				//	removed := false
@@ -793,6 +793,135 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 		}
 	}
 	return n
+}
+
+func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
+	exec := 0
+	vDeg := make(map[int32]int)
+	incMap := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			vDeg[v]++
+			if _, ex := incMap[v]; !ex {
+				incMap[v] = make(map[int32]bool)
+			}
+			incMap[v][eId] = true
+		}
+	}
+
+	for vId, deg := range vDeg {
+		if deg != 2 {
+			continue
+		}
+
+		var s2Edge int32
+		var s3Edge int32
+		small := 0
+
+		for eId := range incMap[vId] {
+			l := len(g.Edges[eId].V) 
+			if  l == 3 {
+				s3Edge = eId
+			} else if l == 2{
+				if small == 1 {
+					s3Edge = eId
+				} else {
+					s2Edge = eId
+				}
+				small++
+			}
+		}
+
+		if small == 2 {
+			found := smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
+			if found {
+				exec++
+				continue
+			}
+			found = smallDegreeTwoSub(g, c, vId, s3Edge, s2Edge, incMap, vDeg)
+			if found {
+				exec++
+			}
+		} else if small == 1 {
+			if smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg) {
+				exec++
+			}
+		}
+	}
+	return exec
+}
+
+func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32, incMap map[int32]map[int32]bool, vDeg map[int32]int) bool {
+	var x int32 = -1
+	var remEdge int32 = -1
+	for w := range g.Edges[s2Edge].V {
+
+		if w == vId {
+			continue
+		}
+		x = w
+	}
+	found := false
+
+	for w := range g.Edges[s3Edge].V {
+		if w == vId {
+			continue
+		}
+
+		for f := range incMap[w] {
+			if g.Edges[f].V[x] || s3Edge == f {
+				continue
+			} else {
+				remEdge = f
+				found = true
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+
+	if found {
+		remEdges := []int32{}
+		for h := range incMap[x] {
+			for b := range g.Edges[h].V {
+				if vDeg[b] > 0{
+					vDeg[b]--
+				} 
+			}
+			g.RemoveEdge(h)
+			remEdges = append(remEdges, h)
+		}
+		c[x] = true
+		delete(vDeg, x)
+		delete(incMap, x)
+		delete(g.Vertices, x)
+
+		for a := range g.Edges[remEdge].V {
+			for h := range incMap[a] {
+				for b := range g.Edges[h].V {
+					if vDeg[b] > 0{
+						vDeg[b]--
+					} 
+				}
+				g.RemoveEdge(h)
+				remEdges = append(remEdges, h)
+			}
+			delete(incMap, a)
+			delete(vDeg, a)
+			delete(g.Vertices, a)
+			c[a] = true
+		}
+
+		for a := range incMap {
+			for _, h := range remEdges {
+				delete(incMap[a], h)
+			} 
+		}
+	}
+	return found
 }
 
 func mapToSlice[K comparable, V any](m map[K]V) []K {

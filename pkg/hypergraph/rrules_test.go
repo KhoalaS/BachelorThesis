@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime/pprof"
 	"testing"
@@ -223,6 +224,40 @@ func TestSmallTriangleRule(t *testing.T) {
 
 	if _, ex := g.Edges[4]; !ex {
 		t.Fatalf("The wrong edge has been removed.")
+	}
+}
+
+func TestSmallEdgeDegreeTwoRule(t *testing.T) {
+	var i int32 = 0
+	g := NewHyperGraph()
+	c := make(map[int32]bool)
+
+	for ; i < 6; i++ {
+		g.AddVertex(i, 0)
+	}
+
+	g.AddEdge(0, 1)
+	g.AddEdge(1, 2, 3)
+	g.AddEdge(3, 4, 5)
+
+
+	exec := SmallEdgeDegreeTwoRule(g, c)
+	if exec != 1 {
+		log.Fatalf("Number of rule executions is wrong. Expected %d, got %d.", 1, exec)
+	}
+
+	if len(g.Vertices) != 2 || !c[0] || !c[3] || !c[4] || !c[5] {
+		t.Fatalf("Partial solution is wrong.")
+	}
+}
+
+func BenchmarkSmallDegreeTwoRule(b *testing.B) {
+	g := GenerateTestGraph(100000, 200000, false)
+	c := make(map[int32]bool)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		SmallEdgeDegreeTwoRule(g, c)
 	}
 }
 
