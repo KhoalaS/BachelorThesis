@@ -242,6 +242,7 @@ func TestSmallEdgeDegreeTwoRule(t *testing.T) {
 
 
 	exec := SmallEdgeDegreeTwoRule(g, c)
+	g.Print()
 	if exec != 1 {
 		log.Fatalf("Number of rule executions is wrong. Expected %d, got %d.", 1, exec)
 	}
