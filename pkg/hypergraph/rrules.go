@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"container/list"
+	"fmt"
 	"runtime"
 	"sync"
 )
@@ -891,7 +892,6 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 					vDeg[b]--
 				} 
 			}
-			g.RemoveEdge(h)
 			remEdges = append(remEdges, h)
 		}
 		c[x] = true
@@ -906,7 +906,6 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 						vDeg[b]--
 					} 
 				}
-				g.RemoveEdge(h)
 				remEdges = append(remEdges, h)
 			}
 			delete(incMap, a)
@@ -915,11 +914,13 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 			c[a] = true
 		}
 
-		for a := range incMap {
-			for _, h := range remEdges {
+		for _, h := range remEdges {
+			for a := range g.Edges[h].V {
 				delete(incMap[a], h)
-			} 
-		}
+			}
+			delete(g.Edges, h)
+		} 
+
 	}
 	return found
 }
