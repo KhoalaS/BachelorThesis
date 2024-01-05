@@ -402,17 +402,13 @@ __Idea__: The initial idea for this algorithm involved the usage of an incidence
 hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
 into the hitting set that we produce.
 
-#### $\mathcal{O}(|E| + |V|\cdot |E|^2)$ Algorithm
+#### $\mathcal{O}(|E| + |E|^2)$ Algorithm
 
 We start by iterating over the edges of our graph and building an incidence list.
 
 We then iterate over the edges again. If the current edge $e$ is not of size 3 we continue with the iteration. If $|e| = 3$ we iterate over the endpoints of $e$. We assign the variable $\texttt{a}$ to $v$ and create a map $\texttt{vCount map[int32]int32}$. For each vertex $w \in e\setminus v$ we look at the the edges incident to $w$, we then for each vertex $u$ of these edges, increment $\texttt{vCount[u]}$. We ignore edges that are incident to $\texttt{a}$ and do not care about vertices that are in $e$. We keep track of the amount of edges we considered with the variable $\texttt{xyCount}$.
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
-
-__[Probably just |V|*|E|^2 being annoying]__
-
-__Remarks.__ This Algorithm should only reach a quadratic time complexity in the worst case. Despite that, preliminary testing indicated a unexpected slow execution time. A CPU-Profile showed a large amount of Map-lookup operations. This indicated a bottleneck due to excessive map usage. We implemented the same algorithm again using an incidence matrix, hoping for a possible speedup. This was sadly not the case, in some way disproving the bottleneck theory. 
 
 ### Small Triangle Rule
 - small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
@@ -426,6 +422,23 @@ Again the quadratic exponent in $|V|$ looks scarier than it is. This happens bea
 We start by constructing an edge-adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+
+### Small Edge Degree 2 Rule
+- small edge degree 2: Let v be a vertex of degree 2, and let the two hyperedges
+containing $v$ be $e = \{x, v\}$ and $f = \{v, y, z\}$. Then we can select a hyperedge $g$
+that contains one of the neighbors of $v$ in $f$ but not $x$, for example $g = \{u, w, z\}
+$(when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
+and $w$ (when existing) into the hitting set.
+
+#### Outline
+- find deg 2 vertex 
+- Check for at least one adjacent size two edge
+- iterate over the size 3 edge neighbors $w$ of $v$, or if both are size 2 try both
+- select a edge adjacent to $w$ that does not contain $x$
+
+data structures:
+degMap
+incMap
 
 ## Self-Monitoring
 Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. 

@@ -499,23 +499,23 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 			if foundLocalSol {
 				foundLocalSol = false
 				exec++
+
+				for f := range incList[a] {
+					for v := range g.Edges[f].V {
+						delete(incList[v], f)
+					}
+					g.RemoveEdge(f)
+				}
+
+				for f := range incList[b] {
+					for v := range g.Edges[f].V {
+						delete(incList[v], f)
+					}
+					g.RemoveEdge(f)
+				}
+
 				c[a] = true
 				c[b] = true
-				for vId := range incList {
-					for f := range incList[a] {
-						if incList[vId][f] {
-							delete(incList[vId], f)
-						}
-						delete(g.Edges, f)
-					}
-
-					for f := range incList[b] {
-						if incList[vId][f] {
-							delete(incList[vId], f)
-						}
-						delete(g.Edges, f)
-					}
-				}
 				delete(incList, a)
 				delete(incList, b)
 				delete(g.Vertices, a)
