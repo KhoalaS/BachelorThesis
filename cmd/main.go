@@ -42,8 +42,8 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 
 	labels := make([]int, maxratio)
 	lineSeries := make(map[int32][]opts.LineData)
-	barLabels := []string{"kTiny", "kEdgeDom", "kVertDom", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom", "kFallback"}
-	barLabelsShort := []string{"Tiny", "EDom", "VDom", "Tri", "ApVDom", "Small", "ApDVDom", "F3"}
+	barLabels := []string{"kTiny", "kEdgeDom", "kVertDom", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
+	barLabelsShort := []string{"Tiny", "EDom", "VDom", "Tri", "ApVDom", "Small", "ApDVDom", "SmED2", "F3"}
 
 	barSeries1 := make(map[int32][]opts.BarData)
 	barSeries2 := make(map[int32][]opts.BarData)
@@ -358,6 +358,7 @@ func main() {
 	if ex {
 		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(hs))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
+		fmt.Println(execs)
 	} else {
 		fmt.Println("Did not find a 3-Hitting-Set")
 	}

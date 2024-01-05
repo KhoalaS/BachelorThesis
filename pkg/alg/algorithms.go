@@ -25,6 +25,7 @@ var Ratios = map[string]pkg.IntTuple{
 	"kTri":             {A: 3, B: 2},
 	"kApVertDom":       {A: 2, B: 1},
 	"kApDoubleVertDom": {A: 2, B: 1},
+	"kSmallEdgeDegTwo": {A: 4, B: 2},
 	"kFallback":        {A: 3, B: 1},
 }
 
@@ -151,13 +152,13 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kEdgeDom := hypergraph.EdgeDominationRule(g)
-		kTri := hypergraph.SmallTriangleRule(g, c)
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule3(g, c, false)
+		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
+		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
+		kTri := hypergraph.SmallTriangleRule(g, c)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
-		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		kApDoubleVertDom := 0
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -166,6 +167,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		execs["kSmall"] += kSmall
 		execs["kApVertDom"] += kApVertDom
 		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
 
 		lexecs["kTiny"] += kTiny
 		lexecs["kVertDom"] += kVertDom
@@ -174,8 +176,9 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		lexecs["kSmall"] += kSmall
 		lexecs["kApVertDom"] += kApVertDom
 		lexecs["kApDoubleVertDom"] += kApDoubleVertDom
+		lexecs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
 
-		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom == 0 {
+		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo == 0 {
 			break
 		}
 	}
