@@ -145,7 +145,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	if !((c[2] && c[7]) || (c[0] && c[2]) || (c[2] && c[3])) {
 		t.Fatalf("Partial solution is wrong.")
 	}
-	g.Print()
+	log.Println(g)
 }
 
 func TestApproxDoubleVertexDominationRule(t *testing.T) {
@@ -242,7 +242,7 @@ func TestSmallEdgeDegreeTwoRule(t *testing.T) {
 
 
 	exec := SmallEdgeDegreeTwoRule(g, c)
-	g.Print()
+	log.Println(g)
 	if exec != 1 {
 		log.Fatalf("Number of rule executions is wrong. Expected %d, got %d.", 1, exec)
 	}
@@ -333,7 +333,7 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 }
 
 func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, false)
+	g := GenerateTestGraph(100000, 200000, false)
 	g.RemoveDuplicate()
 	c := make(map[int32]bool)
 

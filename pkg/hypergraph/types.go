@@ -93,13 +93,13 @@ func (g *HyperGraph) Copy() *HyperGraph {
 	return &HyperGraph{edgeCounter: g.edgeCounter, Vertices: vertices, Edges: edges, Degree: g.Degree, VDeg: VDeg}
 }
 
-func (g HyperGraph) Print() {
-	fmt.Print("Vertices: \n\t")
+func (g HyperGraph) String() string {
+	s := "Vertices: \n\t"
 	for _, v := range g.Vertices {
-		fmt.Printf("%d,", v.Id)
+		s += fmt.Sprintf("%d,", v.Id)
 	}
 
-	fmt.Println("\nEdges:")
+	s += "\nEdges:\n"
 	for eId, e := range g.Edges {
 		ids := []int32{}
 		for id, val := range e.V {
@@ -108,9 +108,10 @@ func (g HyperGraph) Print() {
 			}
 			ids = append(ids, id)
 		}
-		fmt.Printf("\t%d:%d\n", eId, ids)
+		s += fmt.Sprintf("\t%d:%d\n", eId, ids)
 	}
-	fmt.Println("--------------------------")
+	s += "--------------------------\n"
+	return s
 }
 
 func NewHyperGraph() *HyperGraph {
@@ -135,10 +136,7 @@ func (g *HyperGraph) RemoveDuplicate() {
 	for eId, e := range g.Edges {
 		hash := e.getHash()
 		if hashes[hash] {
-			for v := range g.Edges[eId].V {
-				g.VDeg[v]--
-			}
-			delete(g.Edges, eId)
+			g.RemoveEdge(eId)
 		} else {
 			hashes[hash] = true
 		}
