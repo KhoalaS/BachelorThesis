@@ -15,7 +15,9 @@ type HyperGraph struct {
 }
 
 func (g *HyperGraph) AddVertex(id int32, data any) {
-	g.Vertices[id] = Vertex{id, data}
+	if _, ex := g.Vertices[id]; !ex {
+		g.Vertices[id] = Vertex{id, data}
+	}
 }
 
 func (g *HyperGraph) AddEdge(eps ...int32) {
