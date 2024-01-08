@@ -178,11 +178,11 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 	for vCounter < n {
 		size := 2 + rand.Int31n(maxEdgesize-2+1)
 		if rand.Float64() < p {
-			g.AddEdgeArr(append(selectEndpoints(g, size-1), vCounter))
+			g.AddEdge(append(selectEndpoints(g, size-1), vCounter)...)
 			g.AddVertex(vCounter, 0)
 			vCounter++
 		} else {
-			g.AddEdgeArr(selectEndpoints(g, size))
+			g.AddEdge(selectEndpoints(g, size)...)
 		}
 		fmt.Printf("%d/%d Vertices added\r", vCounter, n)
 	}
