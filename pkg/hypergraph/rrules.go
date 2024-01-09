@@ -949,7 +949,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	for {
-		found := true
+		found := false
 
 		for _, e := range g.Edges {
 			if len(e.V) != 2 {
@@ -967,7 +967,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			for i, vert := range eArr {
 				// fix y and z
 				y := vert
-				z := eArr[i+1 % 2]
+				z := eArr[(i+1) % 2]
 	
 				var f_0 int32 = 0	
 
@@ -983,17 +983,19 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 					}
 					
 					for _g := range incMap[z] {
+						cond := true
 						for ep := range g.Edges[_g].V {
 							if ep == z {
 								continue
 							}
 							if !g.Edges[f].V[ep] {
-								found = false
+								cond = false
 								break
 							}				
 						}
 	
-						if found {
+						if cond {
+							found = true
 							break
 						}
 					}
@@ -1006,6 +1008,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 				if found {
 					exec++
 					remEdges := make(map[int32]bool)
+
 					for a := range g.Edges[f_0].V {
 						for h := range incMap[a] {
 							remEdges[h] = true
