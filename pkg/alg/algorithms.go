@@ -101,18 +101,6 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[st
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
 
-		v, ex := PotentialTriangle(g)
-		if ex {
-			delete(g.Vertices, v)
-			for _, e := range g.Edges {
-				if e.V[v] {
-					delete(e.V, v)
-				}
-			}
-			prio = 2
-			continue
-		}
-
 		remVertices := make(map[int32]bool)
 		found := false
 		for _, e := range g.Edges {
@@ -126,13 +114,14 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[st
 				break
 			}
 		}
-
+		
 		if found {
 			execs["kFallback"] += 1
 			for eId, e := range g.Edges {
 				for v := range remVertices {
 					if _, ex := e.V[v]; ex {
-						delete(g.Edges, eId)
+						g.RemoveEdge(eId)
+						break
 					}
 				}
 			}
@@ -155,7 +144,8 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c, false)
-		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
+		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
+		kApDoubleVertDom := 0
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
