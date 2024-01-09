@@ -97,11 +97,13 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 }
 
 func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) (bool, map[int32]bool, map[string]int) {
+	f3 := 0
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-
-		execs["kFallback"] += hypergraph.F3Prepocess(g, c, 1)
+		// int(math.Pow(2, float64(f3)))
+		execs["kFallback"] += hypergraph.F3Prepocess(g, c, f3)
+		f3++
 	}
 	return true, c, execs
 }
@@ -125,7 +127,6 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
-		//kExtTri := 0
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
