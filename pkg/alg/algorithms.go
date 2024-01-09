@@ -96,13 +96,13 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) (bool, map[int32]bool, map[string]int) {
-	f3 := 0
+func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int, f3Func func(x int) int) (bool, map[int32]bool, map[string]int) {
+	f3 := 1
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-		// int(math.Pow(2, float64(f3)))
-		execs["kFallback"] += hypergraph.F3Prepocess(g, c, f3)
+		
+		execs["kFallback"] += hypergraph.F3Prepocess(g, c, f3Func(f3))
 		f3++
 	}
 	return true, c, execs

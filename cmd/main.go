@@ -71,7 +71,7 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 			c := make(map[int32]bool)
 			execs := make(map[string]int)
 
-			alg.ThreeHS_F3ApprPoly(g, c, execs, 0)
+			alg.ThreeHS_F3ApprPoly(g, c, execs, 0, alg.Exp)
 			var nom float64 = 0
 			var denom float64 = 0
 
@@ -343,7 +343,7 @@ func main() {
 		k -= kFront
 	}
 
-	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio)
+	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio, alg.Sqrt)
 
 	pprof.StopCPUProfile()
 	if ex {
