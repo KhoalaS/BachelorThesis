@@ -42,8 +42,8 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 
 	labels := make([]int, maxratio)
 	lineSeries := make(map[int32][]opts.LineData)
-	barLabels := []string{"kTiny", "kEdgeDom", "kVertDom", "kTri", "kApVertDom", "kSmall", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
-	barLabelsShort := []string{"Tiny", "EDom", "VDom", "Tri", "ApVDom", "Small", "ApDVDom", "SmED2", "F3"}
+	barLabels := []string{"kTiny", "kEdgeDom", "kVertDom", "kTri", "kExtTri", "kApVertDom", "kSmall", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
+	barLabelsShort := []string{"Tiny", "EDom", "VDom", "Tri", "ETri", "ApVDom", "Small", "ApDVDom", "SmED2", "F3"}
 
 	barSeries1 := make(map[int32][]opts.BarData)
 	barSeries2 := make(map[int32][]opts.BarData)
