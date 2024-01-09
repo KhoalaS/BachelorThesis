@@ -1,11 +1,13 @@
 package hypergraph
 
 import (
+	"bufio"
 	_ "embed"
 	"encoding/xml"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -84,7 +86,45 @@ func WriteToFileSimple(g *HyperGraph, filepath string) bool {
 
 }
 
+func ReadFromFileSimple(filename string) *HyperGraph{
+	file, err := os.Open(filename)
+	
+	if err != nil {
+		log.Fatalf("Could not open file '%s'", filename)
+	}
+	defer file.Close()
+	
+	g := NewHyperGraph()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	var lines []string
+ 
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+  
+	for _, line := range lines {
+		spl := strings.Split(strings.Trim(line, "\n"), " ")
+		splInt32 := make([]int32, len(spl))
+		for i, v := range spl {
+			id, _ := strconv.Atoi(v)
+			splInt32[i] = int32(id)
+			g.AddVertex(int32(id), 0)
+		}
+		g.AddEdge(splInt32...)
+	}
+
+	return g
+}
+
 func ReadFromFile(filename string) *HyperGraph {
+	extSpl := strings.Split(filename, ".")
+	ext := extSpl[len(extSpl)-1]
+	if ext == "txt" {
+		return ReadFromFileSimple(filename)
+	}
+
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Could not read from file '%s'", filename)
@@ -108,7 +148,7 @@ func ReadFromFile(filename string) *HyperGraph {
 		for i, ep := range e.Endpoints {
 			edges[i] = ep.Node			
 		}
-		g.AddEdgeArr(edges)
+		g.AddEdge(edges...)
 	}
 
 	return g
