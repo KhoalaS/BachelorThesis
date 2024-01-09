@@ -668,6 +668,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	// Time Compelxity: |E|
 	for eId, e := range g.Edges {
 		if len(e.V) == 3 {
+			// potential setup for worsening step, but also possible outside the rule
 			degThree = append(degThree, eId)
 			continue
 		}
@@ -927,11 +928,116 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 			for a := range g.Edges[h].V {
 				delete(incMap[a], h)
 			}
-			delete(g.Edges, h)
+			g.RemoveEdge(h)
 		}
 
 	}
 	return found
+}
+
+func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
+	exec := 0
+	incMap := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			if _, ex := incMap[v]; !ex {
+				incMap[v] = make(map[int32]bool)
+			}
+			incMap[v][eId] = true
+		}
+	}
+
+	for {
+		found := true
+
+		for _, e := range g.Edges {
+			if len(e.V) != 2 {
+				continue
+			}
+			// e has size 2
+			eArr := make([]int32, 2)
+	
+			k := 0
+			for ep := range e.V{
+				eArr[k] = ep
+				k++
+			}	
+	
+			for i, vert := range eArr {
+				// fix y and z
+				y := vert
+				z := eArr[i+1 % 2]
+	
+				var f_0 int32 = 0	
+
+				for f := range incMap[y] {
+					if len(g.Edges[f].V) != 3 {
+						continue
+					}
+					// f has size 3
+
+					// Filter size e\cap f = 1
+					if g.Edges[f].V[z] {
+						continue
+					}
+					
+					for _g := range incMap[z] {
+						for ep := range g.Edges[_g].V {
+							if ep == z {
+								continue
+							}
+							if !g.Edges[f].V[ep] {
+								found = false
+								break
+							}				
+						}
+	
+						if found {
+							break
+						}
+					}
+	
+					if found {
+						break
+					}
+				}
+	
+				if found {
+					exec++
+					remEdges := make(map[int32]bool)
+					for a := range g.Edges[f_0].V {
+						for h := range incMap[a] {
+							remEdges[h] = true
+						}
+						delete(incMap, a)
+						delete(g.Vertices, a)
+						c[a] = true
+					}
+	
+					for h := range incMap[z] {
+						remEdges[h] = true
+					}
+					delete(incMap, z)
+					delete(g.Vertices, z)
+					c[z] = true
+	
+					for h := range remEdges {
+						for a := range g.Edges[h].V {
+							delete(incMap[a], h)
+						}
+						g.RemoveEdge(h)
+					}
+				}
+			} 
+		}
+
+		if !found {
+			break
+		}
+	}
+
+	return exec
 }
 
 func mapToSlice[K comparable, V any](m map[K]V) []K {
