@@ -23,6 +23,7 @@ var Ratios = map[string]pkg.IntTuple{
 	"kTiny":            {A: 1, B: 1},
 	"kSmall":           {A: 2, B: 1},
 	"kTri":             {A: 3, B: 2},
+	"kExtTri":          {A: 4, B: 2},
 	"kApVertDom":       {A: 2, B: 1},
 	"kApDoubleVertDom": {A: 2, B: 1},
 	"kSmallEdgeDegTwo": {A: 4, B: 2},
@@ -40,7 +41,10 @@ func ThreeHS_2ApprBranchOnly(g *hypergraph.HyperGraph, c map[int32]bool, K int) 
 }
 
 func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int) (bool, map[int32]bool, map[string]int) {
-	nExecs, k := ApplyRules(g, c, K, execs, 0)
+	nExecs := ApplyRules(g, c, execs, 0)
+
+	// placeholder
+	k := 0
 
 	c_n := make(map[int32]bool)
 	execs_n := make(map[string]int)
@@ -94,7 +98,7 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 
 func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) (bool, map[int32]bool, map[string]int) {
 	for len(g.Edges) > 0 {
-		execs, _ = ApplyRules(g, c, 0, execs, prio)
+		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
 
 		v, ex := PotentialTriangle(g)
@@ -137,15 +141,11 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[st
 	return true, c, execs
 }
 
-func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[string]int, prio int) (map[string]int, int) {
+func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
 
-	lexecs := make(map[string]int)
-
-	k := K
 	switch prio {
 	case 2:
 		exec := hypergraph.SmallTriangleRule(g, c)
-		lexecs["kTri"] += exec
 		execs["kTri"] += exec
 	}
 
@@ -158,49 +158,25 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, K int, execs map[str
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
+		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
 		execs["kEdgeDom"] += kEdgeDom
 		execs["kTri"] += kTri
+		execs["kExtTri"] += kExtTri
 		execs["kSmall"] += kSmall
 		execs["kApVertDom"] += kApVertDom
 		execs["kApDoubleVertDom"] += kApDoubleVertDom
 		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
 
-		lexecs["kTiny"] += kTiny
-		lexecs["kVertDom"] += kVertDom
-		lexecs["kEdgeDom"] += kEdgeDom
-		lexecs["kTri"] += kTri
-		lexecs["kSmall"] += kSmall
-		lexecs["kApVertDom"] += kApVertDom
-		lexecs["kApDoubleVertDom"] += kApDoubleVertDom
-		lexecs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
-
-		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo == 0 {
+		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
 			break
 		}
 	}
 
-	// A/2 is not correct, just a placeholder for now
-	// do not do this inside this function but in the algorithm functions
-	k -= lexecs["kTiny"] * Ratios["kTiny"].A / 2
-	k -= lexecs["kTri"] * Ratios["kTri"].A / 2
-	k -= lexecs["kApVertDom"] * Ratios["kApVertDom"].A / 2
-	k -= lexecs["kSmall"] * Ratios["kSmall"].A / 2
-	k -= lexecs["kApDoubleVertDom"] * Ratios["kApDoubleVertDom"].A / 2
-
-	//m, err := os.Create("mem_main.prof")
-	//if err != nil {
-	//	log.Fatal("could not create memory profile: ", err)
-	//}
-	//defer m.Close()
-	//if err := pprof.WriteHeapProfile(m); err != nil {
-	//	log.Fatal("could not write memory profile: ", err)
-	//}
-
-	return execs, k
+	return execs
 }
 
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {

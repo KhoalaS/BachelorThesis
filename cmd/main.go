@@ -305,16 +305,6 @@ func main() {
 		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), 0.5, 3)
 	} else if *prefAttachMod {
 		g = hypergraph.GenerateModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
-		g.RemoveDuplicate()
-		for eId, e := range g.Edges {
-			if len(e.V) == 1 {
-				delete(g.Edges, eId)
-				for v := range e.V {
-					g.VDeg[v]--
-				}
-			}
-		}
-		fmt.Println(len(g.Edges) ,"edges left")
 	} else {
 		g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
 	}
