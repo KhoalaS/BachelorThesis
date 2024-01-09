@@ -640,7 +640,7 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 			}
 		}
 	}
-	return n
+	return i
 }
 
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
