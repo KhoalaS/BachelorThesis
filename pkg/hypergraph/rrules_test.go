@@ -8,37 +8,6 @@ import (
 	"testing"
 )
 
-func TestApproxVertexDominationRule(t *testing.T) {
-	var vSize int32 = 8
-
-	g := NewHyperGraph()
-
-	var i int32 = 0
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
-	}
-
-	g.AddEdge(0, 1, 2)
-	g.AddEdge(0, 2, 7)
-
-	c := make(map[int32]bool)
-
-	ApproxVertexDominationRule(g, c)
-
-	// expected outcomes for c:
-	// {2,7}, {1,2}, {0,7}, {0,1}
-	if (c[2] && c[7]) || (c[1] && c[2]) || (c[0] && c[7]) || (c[0] && c[1]) {
-		if len(c) != 2 {
-			t.Fatalf("Partial solution is wrong.")
-		}
-	}
-
-	if len(g.Edges) != 0 {
-		t.Fatalf("Graph g has %d edges, the expected number is 0.", len(g.Edges))
-	}
-
-}
-
 func TestEdgeDominationRule(t *testing.T) {
 	var vSize int32 = 5
 	g := NewHyperGraph()
@@ -134,7 +103,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	g.AddEdge(1, 4)
 
 	c := make(map[int32]bool)
-	ApproxVertexDominationRule3(g, c, false)
+	ApproxVertexDominationRule(g, c, false)
 
 	// possible solutions: [2,7], [0,2], [2,3]
 
@@ -240,7 +209,6 @@ func TestSmallEdgeDegreeTwoRule(t *testing.T) {
 	g.AddEdge(1, 2, 3)
 	g.AddEdge(3, 4, 5)
 
-
 	exec := SmallEdgeDegreeTwoRule(g, c)
 	log.Println(g)
 	if exec != 1 {
@@ -327,7 +295,7 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxVertexDominationRule3(g, c, false)
+		ApproxVertexDominationRule(g, c, false)
 	}
 
 }

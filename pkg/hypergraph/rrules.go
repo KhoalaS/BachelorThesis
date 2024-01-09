@@ -138,174 +138,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	return exec
 }
 
-//Deprecated:
-func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) bool {
-	remVertices := make(map[int32]bool)
-	remEdges := make(map[int32]bool)
-
-	var yz Edge
-	var xDom int32 = -1
-
-	for id, edge := range g.Edges {
-		if len(edge.V) < 3 {
-			continue
-		}
-
-		for x := range edge.V {
-
-			cond := true
-
-			for idComp, edgeComp := range g.Edges {
-				if id == idComp {
-					continue
-				}
-				if edgeComp.V[x] {
-					sum := 0
-					for vertex := range edge.V {
-						if edgeComp.V[vertex] {
-							sum += 1
-						}
-					}
-					if sum < 2 {
-						cond = false
-						break
-					}
-				}
-			}
-			if cond {
-				xDom = x
-				yz = edge
-				break
-			}
-		}
-		if xDom != -1 {
-			break
-		}
-	}
-
-	if xDom != -1 {
-		for vertex := range yz.V {
-			if vertex != xDom {
-				remVertices[vertex] = true
-				c[vertex] = true
-				for eId, edge := range g.Edges {
-					if edge.V[vertex] {
-						remEdges[eId] = true
-					}
-				}
-			}
-		}
-		for eId := range remEdges {
-			delete(g.Edges, eId)
-		}
-
-		for vId := range remVertices {
-			delete(g.Vertices, vId)
-		}
-		return true
-	}
-	return false
-}
-
-//Deprecated:
-func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) bool {
-	vSub := make(map[int32]map[string]bool)
-	vSubCount := make(map[int32]map[int32]int32)
-	remVertices := make(map[int32]bool)
-	remEdges := make(map[int32]bool)
-
-	// Time Complexity: |E| * d^2
-	for _, e := range g.Edges {
-		for vId0 := range e.V {
-			sub := []int32{}
-
-			if _, ex := vSubCount[vId0]; !ex {
-				vSubCount[vId0] = make(map[int32]int32)
-				vSub[vId0] = make(map[string]bool)
-			}
-
-			for vId1 := range e.V {
-				if vId0 != vId1 {
-					sub = append(sub, vId1)
-					vSubCount[vId0][vId1]++
-				}
-			}
-
-			subHash := getHash(sub)
-			vSub[vId0][subHash] = true
-		}
-	}
-
-	// Time Complexity: |V| * (|V| + 4 * c)
-	for vId, count := range vSubCount {
-		if c[vId] {
-			continue
-		}
-		arr := make([]IdValueHolder, len(count))
-		i := 0
-		for id, val := range count {
-			arr[i] = IdValueHolder{Id: id, Value: val}
-			i++
-		}
-		solutions := twoSumOld(arr, len(vSub[vId])+1)
-		solFound := false
-
-		for _, sol := range solutions {
-			hash := getHash(sol)
-			if vSub[vId][hash] {
-
-				isNew := true
-
-				for _, v := range sol {
-					if c[v] {
-						isNew = false
-						break
-					}
-				}
-
-				if !isNew {
-					continue
-				}
-
-				for _, v := range sol {
-					remVertices[v] = true
-					c[v] = true
-				}
-				// delete edge here
-				solFound = true
-				break
-			}
-		}
-		if solFound {
-			break
-		}
-	}
-
-	if len(remVertices) == 0 {
-		return false
-	}
-
-	for id, e := range g.Edges {
-		for v := range e.V {
-			if remVertices[v] {
-				remEdges[id] = true
-				break
-			}
-		}
-	}
-
-	for eId := range remEdges {
-		delete(g.Edges, eId)
-	}
-
-	for vId := range remVertices {
-		delete(g.Vertices, vId)
-	}
-
-	return true
-}
-
-func ApproxVertexDominationRule3(g *HyperGraph, c map[int32]bool, lock bool) int {
+func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int {
 	vDeg := make(map[int32]int)
 	vSubCount := make(map[int32]map[int32]int32)
 	adjList := make(map[int32]map[int32]bool)
@@ -818,17 +651,17 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 			if deg != 2 {
 				continue
 			}
-	
+
 			var s2Edge int32
 			var s3Edge int32
 			small := 0
 			found := false
-	
+
 			for eId := range incMap[vId] {
-				l := len(g.Edges[eId].V) 
-				if  l == 3 {
+				l := len(g.Edges[eId].V)
+				if l == 3 {
 					s3Edge = eId
-				} else if l == 2{
+				} else if l == 2 {
 					if small == 1 {
 						s3Edge = eId
 					} else {
@@ -837,7 +670,7 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 					small++
 				}
 			}
-	
+
 			if small == 2 {
 				found = smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
 				if found {
@@ -848,7 +681,7 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 				found = smallDegreeTwoSub(g, c, vId, s3Edge, s2Edge, incMap, vDeg)
 			} else if small == 1 {
 				found = smallDegreeTwoSub(g, c, vId, s2Edge, s3Edge, incMap, vDeg)
-				
+
 			}
 
 			if found {
@@ -899,9 +732,9 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 		remEdges := make(map[int32]bool)
 		for h := range incMap[x] {
 			for b := range g.Edges[h].V {
-				if vDeg[b] > 0{
+				if vDeg[b] > 0 {
 					vDeg[b]--
-				} 
+				}
 			}
 			remEdges[h] = true
 		}
@@ -913,9 +746,9 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 		for a := range g.Edges[remEdge].V {
 			for h := range incMap[a] {
 				for b := range g.Edges[h].V {
-					if vDeg[b] > 0{
+					if vDeg[b] > 0 {
 						vDeg[b]--
-					} 
+					}
 				}
 				remEdges[h] = true
 			}
@@ -958,18 +791,18 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			}
 			// e has size 2
 			eArr := make([]int32, 2)
-	
+
 			k := 0
-			for ep := range e.V{
+			for ep := range e.V {
 				eArr[k] = ep
 				k++
-			}	
-	
+			}
+
 			for i, vert := range eArr {
 				// fix y and z
 				y := vert
-				z := eArr[(i+1) % 2]
-	
+				z := eArr[(i+1)%2]
+
 				var f_0 int32 = -1
 
 				for f := range incMap[y] {
@@ -982,7 +815,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 					if g.Edges[f].V[z] {
 						continue
 					}
-					
+
 					for _g := range incMap[z] {
 						cond := true
 						for ep := range g.Edges[_g].V {
@@ -992,21 +825,21 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 							if !g.Edges[f].V[ep] {
 								cond = false
 								break
-							}				
+							}
 						}
-	
+
 						if cond {
 							f_0 = f
 							found = true
 							break
 						}
 					}
-	
+
 					if found {
 						break
 					}
 				}
-	
+
 				if found {
 					exec++
 					remEdges := make(map[int32]bool)
@@ -1021,14 +854,14 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 						delete(g.Vertices, a)
 						c[a] = true
 					}
-	
+
 					for h := range incMap[z] {
 						remEdges[h] = true
 					}
 					delete(incMap, z)
 					delete(g.Vertices, z)
 					c[z] = true
-	
+
 					for h := range remEdges {
 						for a := range g.Edges[h].V {
 							delete(incMap[a], h)

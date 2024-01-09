@@ -25,28 +25,6 @@ func getSubsetsRec(arr *[]int32, i int, n int, s int, data *[]int32, index int, 
 }
 
 // Time Complexity: n
-func twoSumOld(arr []IdValueHolder, t int) [][]int32 {
-	N := int32(t)
-	lookup := make(map[int32][]IdValueHolder)
-	solutions := [][]int32{}
-
-	for _, val := range arr {
-		if _, ex := lookup[N-val.Value]; ex {
-			for _, comp := range lookup[N-val.Value] {
-				solutions = append(solutions, []int32{val.Id, comp.Id})
-			}
-		} else {
-			if _, ex := lookup[val.Value]; !ex {
-				lookup[val.Value] = []IdValueHolder{}
-			}
-			lookup[val.Value] = append(lookup[val.Value], val)
-		}
-
-	}
-	return solutions
-}
-
-// Time Complexity: n
 func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
 	lookup := make(map[int32]int32)
 
