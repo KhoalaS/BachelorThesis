@@ -343,7 +343,7 @@ func main() {
 		k -= kFront
 	}
 
-	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio, alg.Sqrt)
+	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio, alg.Exp)
 
 	pprof.StopCPUProfile()
 	if ex {
