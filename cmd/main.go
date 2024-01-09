@@ -147,6 +147,7 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 	bar2 := charts.NewBar()
 
 	bar1.SetGlobalOptions(
+		charts.WithXAxisOpts(opts.XAxis{AxisLabel: &opts.AxisLabel{Rotate: 45, Show: true, ShowMinLabel: true, ShowMaxLabel: true}}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    "#Rule Executions",
 			Subtitle: "[#Edges/#Vertices = 1]",
@@ -163,8 +164,8 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 			}},
 		),
 	)
-
 	bar2.SetGlobalOptions(
+		charts.WithXAxisOpts(opts.XAxis{AxisLabel: &opts.AxisLabel{Rotate: 45, Show: true, ShowMinLabel: true, ShowMaxLabel: true}}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    "#Rule Executions",
 			Subtitle: fmt.Sprintf("[#Edges/#Vertices = %d]", checkpoint),
