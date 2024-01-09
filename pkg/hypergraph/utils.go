@@ -1,8 +1,10 @@
 package hypergraph
 
 import (
+	"log"
 	"sort"
 	"strconv"
+	"time"
 )
 
 func getHash(arr []int32) string {
@@ -35,4 +37,10 @@ func SetMinus(e Edge, elem int32) ([]int32, bool) {
 	lenAfter := len(arr)
 
 	return arr, lenBefore != lenAfter
+}
+
+
+func LogTime(start time.Time, name string){
+	stop := time.Since(start)
+	log.Printf("%s took %s\n", name, stop)
 }
