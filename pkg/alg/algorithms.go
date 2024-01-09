@@ -144,8 +144,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c, false)
-		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		kApDoubleVertDom := 0
+		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
