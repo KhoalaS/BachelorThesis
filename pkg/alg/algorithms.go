@@ -101,31 +101,7 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[st
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
 
-		remVertices := make(map[int32]bool)
-		found := false
-		for _, e := range g.Edges {
-			if len(e.V) == 3 {
-				for v := range e.V {
-					remVertices[v] = true
-					c[v] = true
-					delete(g.Vertices, v)
-				}
-				found = true
-				break
-			}
-		}
-		
-		if found {
-			execs["kFallback"] += 1
-			for eId, e := range g.Edges {
-				for v := range remVertices {
-					if _, ex := e.V[v]; ex {
-						g.RemoveEdge(eId)
-						break
-					}
-				}
-			}
-		}
+		execs["kFallback"] += hypergraph.F3Prepocess(g, c, 1)
 	}
 	return true, c, execs
 }
