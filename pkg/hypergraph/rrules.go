@@ -2,11 +2,9 @@ package hypergraph
 
 import (
 	"container/list"
-	"fmt"
 	"log"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // General TODO:
