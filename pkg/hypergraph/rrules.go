@@ -622,6 +622,7 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 				i++
 				for v := range e.V {
 					remVertices[v] = true
+					delete(g.Vertices, v)
 					c[v] = true
 				}
 			}
