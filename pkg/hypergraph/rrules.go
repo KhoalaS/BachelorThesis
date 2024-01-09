@@ -609,6 +609,9 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 
 	i := 0
 	for _, e := range g.Edges {
+		if i == n {
+			break
+		}
 		if len(e.V) == 3 {
 			add := true
 			for v := range e.V {
@@ -627,9 +630,6 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 				}
 			}
 
-		}
-		if i == n {
-			break
 		}
 	}
 
