@@ -160,6 +160,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
+		//kExtTri := 0
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom

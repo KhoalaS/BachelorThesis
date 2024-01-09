@@ -474,6 +474,7 @@ We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 ver
 We also looked at the number of rule executions for $r=1$ and $r=10$.
 
 ![Number of Rule Executions, $r=1$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_1.png)
+
 ![Number of Rule Executions, $r=10$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_10.png)
 
 Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.  

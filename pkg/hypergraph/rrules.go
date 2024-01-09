@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"container/list"
+	"log"
 	"runtime"
 	"sync"
 )
@@ -949,9 +950,9 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	for {
-		found := false
-
+		outer := false
 		for _, e := range g.Edges {
+			found := false
 			if len(e.V) != 2 {
 				continue
 			}
@@ -969,7 +970,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 				y := vert
 				z := eArr[(i+1) % 2]
 	
-				var f_0 int32 = 0	
+				var f_0 int32 = -1
 
 				for f := range incMap[y] {
 					if len(g.Edges[f].V) != 3 {
@@ -995,6 +996,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 						}
 	
 						if cond {
+							f_0 = f
 							found = true
 							break
 						}
@@ -1008,7 +1010,9 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 				if found {
 					exec++
 					remEdges := make(map[int32]bool)
-
+					if f_0 == -1 {
+						log.Panic("uhhh this should not happen")
+					}
 					for a := range g.Edges[f_0].V {
 						for h := range incMap[a] {
 							remEdges[h] = true
@@ -1031,11 +1035,15 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 						}
 						g.RemoveEdge(h)
 					}
+					break
 				}
-			} 
+			}
+			if found {
+				outer = true
+			}
 		}
 
-		if !found {
+		if !outer {
 			break
 		}
 	}
