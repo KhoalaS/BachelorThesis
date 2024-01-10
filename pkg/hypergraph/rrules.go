@@ -5,6 +5,7 @@ import (
 	"log"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // General TODO:
@@ -279,13 +280,17 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+	defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
 	
 	incList := make(map[int32]map[int32]bool)
 	exec := 0
+	s3Arr := make([]int8, g.edgeCounter)
 
 	// |E| * d
 	for eId, e := range g.Edges {
+		if len(e.V) == 3 {
+			s3Arr[eId] = 1
+		}
 		for v := range e.V {
 			if _, ex := incList[v]; !ex {
 				incList[v] = make(map[int32]bool)
@@ -294,23 +299,31 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
+	eArr := make([]int32, 3)
+
 	for {
 		foundSol := false
-		for _, e := range g.Edges {
-			foundLocalSol := false
-			if len(e.V) != 3 {
+		for eId, val := range s3Arr {
+			if val != 1 {
 				continue
 			}
+			foundLocalSol := false
 
+			var i int32 = 0
+			for v := range g.Edges[int32(eId)].V {
+				eArr[i] = v
+				i++
+			}
+			
 			var a int32 = -1
 			var b int32 = -1
 
-			for v := range e.V {
+			for i, v := range eArr {
 				a = v
 				vCount := make(map[int32]int32)
 				var xyCount int32 = 0
-				for w := range e.V {
-					if a == w {
+				for j, w := range eArr {
+					if i == j {
 						continue
 					}
 					for eInc := range incList[w] {
@@ -318,7 +331,14 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 							continue
 						}
 						for x := range g.Edges[eInc].V {
-							if !e.V[x] {
+							inBaseEdge := false
+							for _, z := range eArr {
+								if x == z {
+									inBaseEdge = true
+									break
+								} 
+							}
+							if !inBaseEdge {
 								vCount[x]++
 							}
 						}
@@ -348,6 +368,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 						delete(incList[v], f)
 					}
 					g.RemoveEdge(f)
+					s3Arr[f] = 0
 				}
 
 				for f := range incList[b] {
@@ -355,6 +376,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 						delete(incList[v], f)
 					}
 					g.RemoveEdge(f)
+					s3Arr[f] = 0
 				}
 
 				c[a] = true
@@ -634,7 +656,7 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 	for eId, e := range g.Edges {
 		for v := range e.V {
 			if remVertices[v] {
-				delete(g.Edges, eId)
+				g.RemoveEdge(eId)
 				break
 			}
 		}
