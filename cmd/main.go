@@ -303,7 +303,7 @@ func main() {
 		}
 		g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
 	} else if *prefAttach > 0 {
-		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), 0.5, 3)
+		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), *prefAttach, 3)
 	} else if *prefAttachMod {
 		g = hypergraph.GenerateModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
 	} else {
