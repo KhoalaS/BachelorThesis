@@ -133,7 +133,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 			for f := range adjList[v] {
 				if e != f {
 					delete(remEdges, f)
-					delete(g.Edges, f)
+					g.RemoveEdge(f)
 				}
 			}
 		}
@@ -280,7 +280,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+	//defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
 	
 	incList := make(map[int32]map[int32]bool)
 	exec := 0
@@ -920,6 +920,72 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	return exec
+}
+
+func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
+	defer LogTime(time.Now(), "detectLowDegreeEdge")
+
+	vDeg := make(map[int32]int32)
+	incMap := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			vDeg[v]++
+			if _, ex := incMap[v]; !ex {
+				incMap[v] = make(map[int32]bool)
+			}
+			incMap[v][eId] = true
+		}
+	}
+	var closest int32 = 1000000
+	var closestId int32 = -1
+
+	for vId, val := range vDeg {
+		if val < closest {
+			closest = val
+			closestId = vId
+		}
+		if val == 2 {
+			break
+		}
+	}
+
+	var remEdge int32 = -1
+
+	for e := range incMap[closestId] {
+		found := false
+		for v := range g.Edges[e].V {
+			for f := range incMap[v] {
+				if !g.Edges[f].V[closestId] {
+					found = true
+					remEdge = f
+					break
+				}
+				if found {
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+	
+	if remEdge < 0 {
+		return F3Prepocess(g, c, 1)
+	}
+
+	for v := range g.Edges[remEdge].V {
+		c[v] = true
+		delete(g.Vertices, v)
+		for e := range incMap[v] {
+			g.RemoveEdge(e)
+		}
+	}
+	return 1
 }
 
 func mapToSlice[K comparable, V any](m map[K]V) []K {
