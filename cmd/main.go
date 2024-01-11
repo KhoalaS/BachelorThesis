@@ -224,7 +224,7 @@ func getRatio(execs map[string]int) float64 {
 }
 
 func main() {
-	input := flag.String("i", "", "Filepath to graphml input file.")
+	input := flag.String("i", "", "Filepath to input file.")
 	n := flag.Int("n", 10000, "Number of vertices if no graph file supplied.")
 	m := flag.Int("m", 20000, "Number of edges if no graph file supplied.")
 	K := flag.Int("k", 0, "The parameter k.")
