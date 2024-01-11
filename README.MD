@@ -1,4 +1,3 @@
-# Self-monitoring Approximation Algorithms | Implementation of a 3-HS Algorithm
 
 ## Building
 
@@ -233,7 +232,7 @@ One could also look into generating random bipartite graphs that translate back 
 
 In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph. 
 
-We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia lanuage. The implementation is based on a preferential attachment model proposed by Avin et al in [@DBLP:journals/corr/AvinLP15].  
+We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al in [@DBLP:journals/corr/AvinLP15].  
 
 ```go
 func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
@@ -243,9 +242,11 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 - $\texttt{p}$ is the probability of adding a new vertex to the graph
 - $\texttt{maxEdgesize}$ is the maximum size of a generated edge
 
-#### Preferential Attachment Hypergraph Model with high Modularity
+#### Preferential Attachment Hypergraph Model with high Modularity (Giroire et al.)
 
+Looking at the first preferential attachment model, one can see that the resulting graph will be one big community.
 
+We therefore also considered a model with high modularity proposed by Giroire et al.[@Giroire_Nisse_Trolliet_Sulkowska_2022]. 
 
 ## Reduction Rules
 The ususal signature of a reduction rule looks as follows:
@@ -283,6 +284,44 @@ func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int)
 
 #### $O(|E|)$ Algortihm
 Iterate over all edges of the graph and mark all edges of size $t$ in a set $\texttt{remEdges}$. We then iterate over all edges $\texttt{remEdges}$. We put the endpoints of the current edge $e$ in our partial solution. We then delete all edges that are edge adjacent to $e$ from $\texttt{remEdges}$ and our graph.
+
+$$
+\begin{algorithm}[H]
+\nllabel{label}
+
+\KwIn{A hypergraph $G=(V,E)$, a set $C$, an integer $t$ denoting the size of the edges to be removed}
+\KwOut{An integer denoting the number of rule applications.}
+
+\BlankLine
+$remEdges \gets \emptyset$\;
+$adjList \gets \texttt{map}[V]2^E$\;
+$exec \gets 0$\;
+
+\For{$e \in E$}{
+    \If{$|e| = t$}{
+        $remEdges \gets remEdges \cup \{e\}$ 
+    }
+    \For{$v \in V$}{
+        $adjList[v] \gets adjList[v] \cup e$
+    }
+}
+
+\For{$e \in remEdges$}{
+    $exec \gets exec+1$\;
+    \For{$v \in e$}{
+        $C \gets C \cup \{v\}$\;
+        $V \gets V\setminus \{v\}$\;
+        \For{$f\in adjList[v]$}{
+            $remEdges \gets remEdges\setminus \{f\}$\;
+            $E \gets E\setminus \{f\}$\;
+        }
+    }
+}
+\KwRet $exec$\;
+
+\caption{Algorithm for exhaustive application of Tiny/Small Edge Rule}
+\end{algorithm}
+$$
 
 ### Edge Domination Rule
 - (hyper)edge domination: A hyperedge $e$ is _dominated_ by another hyperedge $f$ if $f\subset e$. In that case, delete $e$.
@@ -490,7 +529,9 @@ __Factor-3 Rule Preprocessing.__ In its current implementation, the algorithm ap
   - Can we apply heuristics?
   - Do we select them randomly?
 
-__Lemma.__ Assume a run of the current algorithm executes the Fallback Rule at most $n$ times before any other rule is executed. Then prepocessing the instance with the Fallback Rule $m$ times, will not increase this maximum, for $m\leq ? n$.
+__Factor-3 Rule Function__. Instead of only executing the Factor-3 Rule exactly one time, we could consider using a function instead. This function would compute a value based on the current iteration. Experiments with linear,exponential and square root functions were quite promising in regards to execution time and approximation factor. Linear and exponential functions perform faster than the square root function, while the linear and square root function offer a better estimated approximation factor than the exponential one. 
+
+__Factor-3 Rule Targeting__. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly. 
 
 ## Testing
 
@@ -512,6 +553,5 @@ If our problem instance is simple, we can solve it in polynomial time using an e
 Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice. 
 
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
-
 
 # References
