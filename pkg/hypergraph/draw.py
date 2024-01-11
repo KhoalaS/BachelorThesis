@@ -43,7 +43,7 @@ plt.subplots(figsize=(5, 5))
 if datafile == None:
     hnx.draw(g, with_edge_labels=False,
              with_edge_counts=False,
-             with_node_labels=True,
+             with_node_labels=False,
              with_node_counts=False,
              node_radius=0.5)
 else:
@@ -53,7 +53,7 @@ else:
     ]
     hnx.draw(g, with_edge_labels=False,
              with_edge_counts=False,
-             with_node_labels=True,
+             with_node_labels=False,
              with_node_counts=False,
              node_radius=0.5,
              nodes_kwargs={
