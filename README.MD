@@ -101,7 +101,7 @@ func getHash(arr []int32) string
 ```
 Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
 
-We start by sorting $\texttt{arr}$ with a $\textnormal{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", returning a string of the form $|id_0|id_1|\dots|id_n|$.
+We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", returning a string of the form $|id_0|id_1|\dots|id_n|$.
 
 Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
 
@@ -275,15 +275,12 @@ Luckily for us, most of these problems can be solved using Go. We usually have t
 2. __Pseudo Single Loop:__ We find all structures a rule is targeting in a single loop. We do this by iterating over the data structures and simultaniously deleting the targets, mutating the structure we are iterating over. This can possibly eliminate targets which we did not reach yet, or create new targets which we already passed. This requires the use of an outer loop. Since we can not decouple the deletion of the targets from the main algorithm. We inevitably introduce a quadratic time complexity in a worst case scenario. 
 
 ### Tiny/Small Edge Rule
-- tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set
+- tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set.
 - small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
 and $y$ into the hitting set.
-```go
-func RemoveEdgeRule(g HyperGraph, c map[int32]bool, t int) 
-```
 
 #### $O(|E|)$ Algortihm
-Iterate over all edges of the graph and mark all edges of size $t$ in a set $\texttt{remEdges}$. We then iterate over all edges $\texttt{remEdges}$. We put the endpoints of the current edge $e$ in our partial solution. We then delete all edges that are edge adjacent to $e$ from $\texttt{remEdges}$ and our graph.
+Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge adjacent to $e$ from $rem$ and our graph.
 
 $$
 \begin{algorithm}[H]
@@ -293,26 +290,26 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 
 \BlankLine
-$remEdges \gets \emptyset$\;
-$adjList \gets \texttt{map}[V]2^E$\;
+$rem \gets \emptyset$\;
+$adj \gets \texttt{map}[V]2^E$\;
 $exec \gets 0$\;
 
 \For{$e \in E$}{
     \If{$|e| = t$}{
-        $remEdges \gets remEdges \cup \{e\}$ 
+        $rem \gets rem \cup \{e\}$ 
     }
     \For{$v \in V$}{
-        $adjList[v] \gets adjList[v] \cup e$
+        $adj[v] \gets adj[v] \cup e$
     }
 }
 
-\For{$e \in remEdges$}{
+\For{$e \in rem$}{
     $exec \gets exec+1$\;
     \For{$v \in e$}{
         $C \gets C \cup \{v\}$\;
         $V \gets V\setminus \{v\}$\;
-        \For{$f\in adjList[v]$}{
-            $remEdges \gets remEdges\setminus \{f\}$\;
+        \For{$f\in adj[v]$}{
+            $rem \gets rem\setminus \{f\}$\;
             $E \gets E\setminus \{f\}$\;
         }
     }
@@ -332,9 +329,7 @@ func EdgeDominationRule(g HyperGraph, c map[int32]bool)
 
 #### $O(|E|)$ Algorithm
 
-We partition our set of edges into two disjoint sets $sub$ and $dom$. The set $dom$ will contain edges that could possibly be dominated. The set $sub$ will contain hashes of edges $e$ that could dominate another edge. We compute these hashes as follows.
-
-First we store the ids of the endpoints of $e$ in an array. We then use the built-in $\texttt{sort}$ package to sort the array with a ${\textit{Quick-Sort}}$ algorithm. We then compute a string $\texttt{in}$ by joining the ids with a non-numerical delimiter like "|". We then use a [hash function](https://github.com/OneOfOne/xxhash) to obtain a hashsum of type $\texttt{uint32}$.
+We partition our set of edges into two disjoint sets $sub$ and $dom$. The set $dom$ will contain edges that could possibly be dominated. The set $sub$ will contain hashes of edges $e$ that could dominate another edge.
 
 We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the $\textit{hash of the subset}$ is present in our set $sub$. If it is then $f$ is dominated by another edge. 
 
@@ -360,9 +355,6 @@ __Lemma.__ _We can either call this algorithm exhaustively until there are no mo
 _Proof._ Assume that our algorithm finds an edge domination situation. Since there are no size one edges, edges with size two cannot be dominated. Thus a dominated edge has to be of size three. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
 
 This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
-
-##### Remarks
-We technically dont have to hash the string $\texttt{in}$ for our purposes. But we can possibly improve the lookup speed of the set $sub$ if we do hash the keys first.
 
 ### Vertex Domination Rule
 - A vertex $x$ is dominated by a vertex $y$ if, whenever $x$
@@ -418,15 +410,15 @@ $$
 \end{align*}
 $$
 
-We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. We then use a $\textnormal{Two-Sum}$-Algorithm to compute and return the first pair in $\texttt{vSubCount[v]}$, s.t. for the pair $\texttt{[a,b]}$ holds, $\texttt{vSubCount[v][a]} + \texttt{vSubCount[v][b]} = \texttt{vDeg[v]}+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a}\in f$ or $\texttt{b}\in f$.
+We then iterate other $\texttt{vSubCount}$, we will refer to the current value in the iteration as $\texttt{vSubCount[v]}$. We then use a $\textsc{Two-Sum}$-Algorithm to compute and return the first pair in $\texttt{vSubCount[v]}$, s.t. for the pair $\texttt{[a,b]}$ holds, $\texttt{vSubCount[v][a]} + \texttt{vSubCount[v][b]} = \texttt{vDeg[v]}+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $\texttt{a}\in f$ or $\texttt{b}\in f$.
 
 **Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $\texttt{sol=[a,b]}$ be the result of calling our $\textnormal{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $\texttt{vSub}$ and $\texttt{vSubCount}$. Let $\texttt{v}$ be an entry in $\texttt{vSubCount}$ and $\texttt{sol=[a,b]}$ be the result of calling our $\textsc{Two-Sum}$ implementation on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. 
 
 _Proposition._ If $\texttt{sol}$ is non-empty, then the edge $\{ \texttt{v,a,b} \}$ exists. 
 
-Let $\texttt{sol=[a,b]}$ be the solution obtained by calling our $\textnormal{Two-Sum}$ algorithm on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. For the sake of contradiction let us assume that the edge $\{ \texttt{v,a,b} \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ \texttt{v,a,b} \}$, there exist $\texttt{vDeg[v]}+1$ many edges that contain either $\texttt{a,v}$ or $\texttt{b,v}$. This however contradicts that there only exist $\texttt{vDeg[v]}$ many edges containing $\texttt{v}$. Therefore it must be, that the assumption that $\{ \texttt{v,a,b} \}$ does not exist, is false.
+Let $\texttt{sol=[a,b]}$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $\texttt{vSubCount[v]}$ with a target sum of $n=\texttt{vDeg[v]}+1$. For the sake of contradiction let us assume that the edge $\{ \texttt{v,a,b} \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ \texttt{v,a,b} \}$, there exist $\texttt{vDeg[v]}+1$ many edges that contain either $\texttt{a,v}$ or $\texttt{b,v}$. This however contradicts that there only exist $\texttt{vDeg[v]}$ many edges containing $\texttt{v}$. Therefore it must be, that the assumption that $\{ \texttt{v,a,b} \}$ does not exist, is false.
 
 Since $\{ \texttt{v,a,b} \}$ exists, $\texttt{a}$ and $\texttt{b}$ can only occur $n-2 = \texttt{vDeg[v]} - 1$ times in other edges containing $\texttt{v}$. Since duplicate edges of  $\{ \texttt{v,a,b} \}$ can not exist, we know that every other edge containing $\texttt{v}$ also contains $\texttt{a}$ or $\texttt{b}$, but not both simultaniously. $\square$
 
