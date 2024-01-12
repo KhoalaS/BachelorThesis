@@ -29,7 +29,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 
 		for s := 2; s > 0; s-- {
 			data := make([]int32, s)
-			getSubsetsRec(&epArr, 0, len(epArr), s, &data, 0, subsets)
+			getSubsetsRec(epArr, 0, len(epArr), s, data, 0, subsets)
 		}
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
@@ -564,7 +564,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		subsets := list.New()
 		s := 2
 		data := make([]int32, s)
-		getSubsetsRec(&arr, 0, len(arr), s, &data, 0, subsets)
+		getSubsetsRec(arr, 0, len(arr), s, data, 0, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
 			subset := item.Value.([]int32)
