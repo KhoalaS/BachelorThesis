@@ -7,7 +7,7 @@ import (
 	"math/rand"
 )
 
-func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
+func TestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 	g := NewHyperGraph()
 
 	edgeHashes := make(map[string]bool)
@@ -65,7 +65,7 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 	return g
 }
 
-func GenerateUniformTestGraph(n int32, m int32, u int) *HyperGraph {
+func UniformTestGraph(n int32, m int32, u int) *HyperGraph {
 	g := NewHyperGraph()
 
 	edgeHashes := make(map[string]bool)
@@ -109,7 +109,7 @@ func GenerateUniformTestGraph(n int32, m int32, u int) *HyperGraph {
 	return g
 }
 
-func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
+func FixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 	g := NewHyperGraph()
 
 	sum := 0
@@ -170,9 +170,9 @@ func GenerateFixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 	return g
 }
 
-func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGraph {
+func PrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGraph {
 	var initSize int32 = 5
-	g := GenerateTestGraph(initSize, initSize, true)
+	g := TestGraph(initSize, initSize, true)
 	var vCounter int32 = initSize
 
 	for vCounter < n {
@@ -191,13 +191,13 @@ func GeneratePrefAttachmentGraph(n int32, p float64, maxEdgesize int32) *HyperGr
 	return g
 }
 
-func GenerateModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph {
+func ModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph {
 	g := NewHyperGraph()
 	c := make([][]int32, r)
 	pcum := generate3PMatrix(r, alpha)
 	vc := 0
 
-	for ; vc < r; vc++{
+	for ; vc < r; vc++ {
 		c[vc] = []int32{}
 		g.AddVertex(int32(vc), vc)
 		g.AddEdge(int32(vc))

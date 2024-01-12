@@ -221,7 +221,7 @@ func TestSmallEdgeDegreeTwoRule(t *testing.T) {
 }
 
 func BenchmarkSmallDegreeTwoRule(b *testing.B) {
-	g := GenerateTestGraph(100000, 200000, false)
+	g := TestGraph(100000, 200000, false)
 	c := make(map[int32]bool)
 
 	b.ResetTimer()
@@ -231,7 +231,7 @@ func BenchmarkSmallDegreeTwoRule(b *testing.B) {
 }
 
 func BenchmarkTinyEdgeRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, true)
+	g := TestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
 
 	b.ResetTimer()
@@ -241,7 +241,7 @@ func BenchmarkTinyEdgeRule(b *testing.B) {
 }
 
 func BenchmarkSmallEdgeRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, true)
+	g := TestGraph(1000000, 2000000, true)
 	c := make(map[int32]bool)
 
 	b.ResetTimer()
@@ -251,7 +251,7 @@ func BenchmarkSmallEdgeRule(b *testing.B) {
 }
 
 func BenchmarkEdgeDominationRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, false)
+	g := TestGraph(1000000, 2000000, false)
 
 	f, err := makeProfile("edgeDom")
 	if err != nil {
@@ -266,7 +266,7 @@ func BenchmarkEdgeDominationRule(b *testing.B) {
 }
 
 func BenchmarkSmallTriangleRule(b *testing.B) {
-	g := GenerateTestGraph(100000, 2000000, false)
+	g := TestGraph(100000, 2000000, false)
 	c := make(map[int32]bool)
 
 	f, err := makeProfile("smallTriangleRule")
@@ -282,7 +282,7 @@ func BenchmarkSmallTriangleRule(b *testing.B) {
 }
 
 func BenchmarkApproxVertexDominationRule(b *testing.B) {
-	g := GenerateTestGraph(1000000, 2000000, false)
+	g := TestGraph(1000000, 2000000, false)
 	g.RemoveDuplicate()
 
 	c := make(map[int32]bool)
@@ -301,7 +301,7 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 }
 
 func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
-	g := GenerateTestGraph(100000, 200000, false)
+	g := TestGraph(100000, 200000, false)
 	g.RemoveDuplicate()
 	c := make(map[int32]bool)
 
@@ -330,7 +330,7 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 }
 
 func BenchmarkApproxDoubleVertexDominationRule2(b *testing.B) {
-	g := GenerateTestGraph(10000, 100000, false)
+	g := TestGraph(10000, 100000, false)
 	g.RemoveDuplicate()
 	c := make(map[int32]bool)
 

@@ -54,7 +54,7 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 		for i := 1; i <= maxratio; i++ {
 			labels[i-1] = i
 			if u > 0 {
-				g = hypergraph.GenerateUniformTestGraph(baseSize, int32(i)*baseSize, u)
+				g = hypergraph.UniformTestGraph(baseSize, int32(i)*baseSize, u)
 			} else if len(fixRatio) > 0 {
 				spl := strings.Split(fixRatio, ",")
 				ratios := make([]int, len(spl))
@@ -62,11 +62,11 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 					valInt, _ := strconv.Atoi(val)
 					ratios[i] = valInt
 				}
-				g = hypergraph.GenerateFixDistTestGraph(baseSize, int32(i)*baseSize, ratios)
+				g = hypergraph.FixDistTestGraph(baseSize, int32(i)*baseSize, ratios)
 			} else if pa > 0 {
-				g = hypergraph.GeneratePrefAttachmentGraph(baseSize, pa, 3)
+				g = hypergraph.PrefAttachmentGraph(baseSize, pa, 3)
 			} else {
-				g = hypergraph.GenerateTestGraph(baseSize, int32(i)*baseSize, true)
+				g = hypergraph.TestGraph(baseSize, int32(i)*baseSize, true)
 			}
 			c := make(map[int32]bool)
 			execs := make(map[string]int)
@@ -293,7 +293,7 @@ func main() {
 	if len(strings.Trim(*input, " ")) > 0 {
 		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
 	} else if *u > 0 {
-		g = hypergraph.GenerateUniformTestGraph(int32(*n), int32(*m), *u)
+		g = hypergraph.UniformTestGraph(int32(*n), int32(*m), *u)
 	} else if len(*f) > 0 {
 		spl := strings.Split(*f, ",")
 		ratios := make([]int, len(spl))
@@ -301,13 +301,13 @@ func main() {
 			valInt, _ := strconv.Atoi(val)
 			ratios[i] = valInt
 		}
-		g = hypergraph.GenerateFixDistTestGraph(int32(*n), int32(*m), ratios)
+		g = hypergraph.FixDistTestGraph(int32(*n), int32(*m), ratios)
 	} else if *prefAttach > 0 {
-		g = hypergraph.GeneratePrefAttachmentGraph(int32(*n), *prefAttach, 3)
+		g = hypergraph.PrefAttachmentGraph(int32(*n), *prefAttach, 3)
 	} else if *prefAttachMod {
-		g = hypergraph.GenerateModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
+		g = hypergraph.ModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
 	} else {
-		g = hypergraph.GenerateTestGraph(int32(*n), int32(*m), true)
+		g = hypergraph.TestGraph(int32(*n), int32(*m), true)
 	}
 
 	if len(*export) > 0 {
