@@ -27,9 +27,9 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 		// compute all subsets of edge with id eId
 		subsets := list.New()
 
+		// TODO: only compute size 2 subsets
 		for s := 2; s > 0; s-- {
-			data := make([]int32, s)
-			getSubsetsRec(epArr, 0, len(epArr), s, data, 0, subsets)
+			getSubsetsRec(epArr, s, subsets)
 		}
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
@@ -98,7 +98,7 @@ func EdgeDominationRule(g *HyperGraph) int {
 	for msg := range channel {
 		for eId := range msg {
 			exec++
-			delete(g.Edges, eId)
+			g.RemoveEdge(eId)
 		}
 	}
 	return exec
@@ -240,36 +240,41 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	for v := range g.Vertices {
-		vCount := make(map[int32]int32)
-		for e := range incList[v] {
-			for w := range g.Edges[e].V {
-				vCount[w]++
-			}
-		}
-		delete(vCount, v)
-
-		dom := false
-		//var vDom int32 = -1
-
-		for _, value := range vCount {
-			if value == vDeg[v] {
-				dom = true
-				//	vDom = key
-				break
-			}
-		}
-
-		if dom {
-			//fmt.Println("Vertex ", v, " is dominated by ", vDom)
+	for {
+		outer := false
+		for v := range g.Vertices {
+			vCount := make(map[int32]int32)
 			for e := range incList[v] {
-				delete(g.Edges[e].V, v)
+				for w := range g.Edges[e].V {
+					vCount[w]++
+				}
 			}
-			delete(g.Vertices, v)
-			delete(incList, v)
-			exec++
-		} else {
-			//fmt.Println("Vertex ", v, " is NOT dominated")
+			delete(vCount, v)
+	
+			dom := false
+			//var vDom int32 = -1
+	
+			for _, value := range vCount {
+				if value == vDeg[v] {
+					dom = true
+					//	vDom = key
+					break
+				}
+			}
+	
+			if dom {
+				outer = true
+				//fmt.Println("Vertex ", v, " is dominated by ", vDom)
+				for e := range incList[v] {
+					delete(g.Edges[e].V, v)
+				}
+				delete(g.Vertices, v)
+				delete(incList, v)
+				exec++
+			}
+		}
+		if !outer {
+			break
 		}
 	}
 
@@ -563,8 +568,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		arr := mapToSlice(val)
 		subsets := list.New()
 		s := 2
-		data := make([]int32, s)
-		getSubsetsRec(arr, 0, len(arr), s, data, 0, subsets)
+		getSubsetsRec(arr, s, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
 			subset := item.Value.([]int32)
