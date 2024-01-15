@@ -4,6 +4,9 @@
     header-includes: |
         \usepackage{algorithm2e}
         \usepackage[colorinlistoftodos]{todonotes}
+        \usepackage{hyperref}
+    link-citations: true
+
 ...
 
 \RestyleAlgo{ruled}
@@ -125,45 +128,47 @@ The algorithm is pretty simple. For every element $x$ in $\texttt{arr}$, we eith
 
 Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists.
 
-For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $\texttt{subsets}$ list, we pass in a function that shall be called whenever we find a subset, using the found subset as an argument.
+For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $\texttt{subsets}$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
 Given an array of integers and an integer target $t$, return indices of the two numbers such that they add up to $t$.
 
-```go
-func twoSum(items map[int32]int32, t int32) ([]int32, bool)
-```
-
 Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
 
-Let us again explain the arguments:
+$$
+\begin{algorithm}[H]
+\nllabel{label}
 
--   $\texttt{items}$ is a map that associates an integer with another integer
--   $\texttt{t}$ is the target value
--   $\texttt{return}$ values are a $\texttt{int32}$ array containing two keys $\texttt{a,b}$ of $\texttt{items}$, s.t. the sum of $\texttt{items[a]+items[b]}$ is equal to the target $\texttt{t}$ and a bool that indicates if such a pair was found.
+\KwIn{An array of integers $arr$, a target value $t$}
+\KwOut{Two indices $a,b$, such that $arr[a] + arr[b] = t$, a boolean indicating if a solution was found}
+\BlankLine
 
-The implementation looks as follows:
+$lookup \gets \texttt{map}[\mathbb{N}]\mathbb{N}$\;
 
-```go
-func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
-    lookup := make(map[int32]int32)
-
-    for key, val := range items {
-        if _, ex := lookup[t - val]; ex {
-            return []int32{key, lookup[t - val]}, true
-        } else {
-            lookup[val] = key
-        }
+\For{$i\gets 0$ \KwTo $len(arr)$}{
+    \lIf{$lookup[t-arr[i]]$ exists}{
+        \KwRet $(i, lookup[t-arr[i]]), true$\;
     }
-    return nil, false
+    \Else{
+        $lookup[arr[i]] \gets i$\;
+    } 
 }
-```
+\KwRet $nil, false$\;
 
-We start by creating a map called $\texttt{lookup}$. We then iterate other our entries $\texttt{items}$, each entry destructuring to a $\texttt{key,val}$ pair. We check if the entry $\texttt{lookup[t-val]}$ exists.
+\caption{An algorithm for the \textssc{Two-Sum} problem}
+\end{algorithm}
+$$
 
--   If the entry exist, we return an array containing $\texttt{val}$ and $\texttt{lookup[t-val]}$
--   If the entry does not exist, we add a new entry to the lookup map with $\texttt{lookup[val] = key}$.
+We start by creating a map called $lookup$. We then iterate other the elements of $arr$, checking if the entry $lookup[t-arr[i]]$ exists.
+
+-   If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value  $true$ since we found a solution.
+-   If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value.
+
+If no solution was found, we return $nil$ and the boolean value $false$.   
+
+
+This algorithm is an ingredient for the implementation of one of the reduction rules, specifically the Approximative Vertex Domination Rule. The actual implementation is accepting a map instead of an array as its first parameter.
 
 # Hypergraph Models
 
@@ -230,13 +235,9 @@ The ususal signature of a reduction rule looks as follows:
 func NameRule(g HyperGraph, c map[int32]bool) int32
 ```
 
-We take both a HyperGraph g and a _Set_ c as arguments and mutate them. We then return the number of rule executions.
+We take both a \texttt{HyperGraph} struct \texttt{g} and a _Set_ \texttt{c} as arguments and mutate them. We then return the number of rule executions.
 
 We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
-
-## Notation
-
-We usually use the $\texttt{teletype font}$ to refer to variable names or code. We will often refer to the $\texttt{id}$ field of a vertex struct as $\texttt{v}$ and will use the notion of a vertex $v$ and the $\texttt{id}$ of a vertex interchangebly. We use $d$ to refer to the degree of the graph.
 
 ## Executions
 
@@ -254,7 +255,7 @@ Luckily for us, most of these problems can be solved using Go. We usually have t
 
 ## Algorithms
 
-The presented algorithms are agnostic in regards to the underlying hypergraph representation.
+The presented algorithms are agnostic in regards to the underlying hypergraph representation. The implementations are almost identical to the pseudocode.
 
 Further we introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map.
 
@@ -397,7 +398,7 @@ $$
 \begin{algorithm}[H]
 \nllabel{vdom}
 
-\KwIn{A hypergraph $G=(V,E)$, a set $C$ }
+\KwIn{A hypergraph $G=(V,E)$ }
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
@@ -414,7 +415,7 @@ $inc \gets \texttt{map}[V]2^E$\;
 \While{true}{
     $outer \gets false$\;
     \For{$v \in V$}{
-        $vCount \gets \texttt{map}[v]\mathbb{N}$\;
+        $vCount \gets \texttt{map}[V]\mathbb{N}$\;
         \For{$e \in inc[v]$}{
             \For{$w \in e$}{
                 $vCount[w] \gets vCount[w]+1$\;
@@ -482,7 +483,7 @@ adjCount = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
 \end{align*}
 $$
 
-We then iterate other $adjCount$, we will refer to the current value in the iteration as $adjCount[v]$. We then use a $\textsc{Two-Sum}$-Algorithm to compute and return the first pair in $adjCount[v]$, s.t. for the pair $(a,b)$ holds, $adjCount[v][a] + adjCount[v][b] = vDeg[v]+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $a\in f$ or $b\in f$.
+We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair in $adjCount[v]$, s.t. for the pair $(a,b)$ holds, $adjCount[v][a] + adjCount[v][b] = vDeg[v]+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $a\in f$ or $b\in f$.
 
 **Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
 
@@ -615,9 +616,11 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 **Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
+# Applications
+
 # Testing
 
-Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the part ial solution and the amount of edges left in the graph.
+Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
 
 # Branching Algorithm
 
