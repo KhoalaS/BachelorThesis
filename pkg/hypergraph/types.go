@@ -14,10 +14,27 @@ type HyperGraph struct {
 	VDeg 		map[int32]int32
 }
 
+type Vertex struct {
+	Id   int32
+	Data any
+}
+
+type Edge struct {
+	V map[int32]bool
+}
+
 func (g *HyperGraph) AddVertex(id int32, data any) {
 	if _, ex := g.Vertices[id]; !ex {
 		g.Vertices[id] = Vertex{id, data}
 	}
+}
+
+func (g *HyperGraph) RemoveVertex(id int32) bool {
+	if _, ex := g.Vertices[id]; !ex {
+		return false
+	}
+	delete(g.Vertices, id)
+	return true
 }
 
 func (g *HyperGraph) AddEdge(eps ...int32) {
@@ -44,6 +61,19 @@ func (g *HyperGraph) RemoveEdge(id int32) bool {
 
 	delete(g.Edges, id)
 
+	return true
+}
+
+func (g *HyperGraph) RemoveElem(id int32, elem int32) bool {
+	if _, ex := g.Edges[id]; !ex {
+		return false
+	}
+
+	if _, ex := g.Edges[id].V[elem]; !ex {
+		return false
+	}
+
+	delete(g.Edges[id].V, elem)
 	return true
 }
 
@@ -134,15 +164,6 @@ func (g *HyperGraph) RemoveDuplicate() {
 
 func (g* HyperGraph) Draw() {
 
-}
-
-type Vertex struct {
-	Id   int32
-	Data any
-}
-
-type Edge struct {
-	V map[int32]bool
 }
 
 func NewEdge(eps map[int32]bool) *Edge {

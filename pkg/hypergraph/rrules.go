@@ -5,7 +5,6 @@ import (
 	"log"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // General TODO:
@@ -107,37 +106,36 @@ func EdgeDominationRule(g *HyperGraph) int {
 // Time Complexity: |E| * d
 
 func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
-	remEdges := make(map[int32]bool)
-	adjList := make(map[int32]map[int32]bool)
+	rem := make(map[int32]bool)
+	inc := make(map[int32]map[int32]bool)
 	exec := 0
 	//defer LogTime(time.Now(), fmt.Sprintf("RemoveEdgeRule-%d", t))
 
 
 	for eId, e := range g.Edges {
 		if len(e.V) == t {
-			remEdges[eId] = true
+			rem[eId] = true
 		}
 		for v := range e.V {
-			if _, ex := adjList[v]; !ex {
-				adjList[v] = make(map[int32]bool)
+			if _, ex := inc[v]; !ex {
+				inc[v] = make(map[int32]bool)
 			}
-			adjList[v][eId] = true
+			inc[v][eId] = true
 		}
 	}
 
-	for e := range remEdges {
+	for e := range rem {
 		exec++
 		for v := range g.Edges[e].V {
 			c[v] = true
-			delete(g.Vertices, v)
-			for f := range adjList[v] {
+			g.RemoveVertex(v)
+			for f := range inc[v] {
 				if e != f {
-					delete(remEdges, f)
+					delete(rem, f)
 					g.RemoveEdge(f)
 				}
 			}
 		}
-		delete(g.Edges, e)
 	}
 	return exec
 }
@@ -146,26 +144,26 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 	//defer LogTime(time.Now(), "ApproxVertexDominationRule")
 
 	vDeg := make(map[int32]int)
-	vSubCount := make(map[int32]map[int32]int32)
-	adjList := make(map[int32]map[int32]bool)
+	adjCount := make(map[int32]map[int32]int32)
+	inc := make(map[int32]map[int32]bool)
 
 	exec := 0
 
 	// Time Complexity: |E| * d^2
 	for eId, e := range g.Edges {
 		for vId0 := range e.V {
-			if _, ex := adjList[vId0]; !ex {
-				adjList[vId0] = make(map[int32]bool)
+			if _, ex := inc[vId0]; !ex {
+				inc[vId0] = make(map[int32]bool)
 			}
-			adjList[vId0][eId] = true
+			inc[vId0][eId] = true
 
-			if _, ex := vSubCount[vId0]; !ex {
-				vSubCount[vId0] = make(map[int32]int32)
+			if _, ex := adjCount[vId0]; !ex {
+				adjCount[vId0] = make(map[int32]int32)
 			}
 
 			for vId1 := range e.V {
 				if vId0 != vId1 {
-					vSubCount[vId0][vId1]++
+					adjCount[vId0][vId1]++
 				}
 			}
 			vDeg[vId0]++
@@ -175,7 +173,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 	// Time Complexity: |V| * (|V| + 4c)
 	for {
 		solFound := false
-		for vId, count := range vSubCount {
+		for vId, count := range adjCount {
 			if c[vId] {
 				continue
 			}
@@ -194,25 +192,25 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 
 			for _, v := range solution {
 				c[v] = true
-				for remEdge := range adjList[v] {
+				for remEdge := range inc[v] {
 					for w := range g.Edges[remEdge].V {
 						if w == v {
 							continue
 						}
 						subEdge, succ := SetMinus(g.Edges[remEdge], w)
 						for _, u := range subEdge {
-							vSubCount[w][u]--
+							adjCount[w][u]--
 						}
 						if succ {
 							vDeg[w]--
 						}
 					}
-					delete(g.Edges, remEdge)
+					g.RemoveEdge(remEdge)
 				}
-				delete(g.Vertices, v)
-				delete(adjList, v)
+				g.RemoveVertex(v)
+				delete(inc, v)
 				delete(vDeg, v)
-				delete(vSubCount, v)
+				delete(adjCount, v)
 			}
 		}
 		if !solFound {
@@ -266,9 +264,9 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				outer = true
 				//fmt.Println("Vertex ", v, " is dominated by ", vDom)
 				for e := range incList[v] {
-					delete(g.Edges[e].V, v)
+					g.RemoveElem(e, v)
 				}
-				delete(g.Vertices, v)
+				g.RemoveVertex(v)
 				delete(incList, v)
 				exec++
 			}
@@ -388,8 +386,8 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				c[b] = true
 				delete(incList, a)
 				delete(incList, b)
-				delete(g.Vertices, a)
-				delete(g.Vertices, b)
+				g.RemoveVertex(a)
+				g.RemoveVertex(b)
 			}
 		}
 		if !foundSol {
@@ -490,14 +488,14 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 				for eId, f := range incMatrix[a] {
 					if f == 1 {
 						remEdges[eId] = true
-						delete(g.Edges, int32(eId))
+						g.RemoveEdge(int32(eId))
 					}
 				}
 
 				for eId, f := range incMatrix[b] {
 					if f == 1 {
 						remEdges[eId] = true
-						delete(g.Edges, int32(eId))
+						g.RemoveEdge(int32(eId))
 					}
 				}
 
@@ -535,15 +533,9 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
 	exec := 0
-	degThree := []int32{}
 
 	// Time Compelxity: |E|
-	for eId, e := range g.Edges {
-		if len(e.V) == 3 {
-			// potential setup for worsening step, but also possible outside the rule
-			degThree = append(degThree, eId)
-			continue
-		}
+	for _, e := range g.Edges {
 		if len(e.V) != 2 {
 			continue
 		}
@@ -577,22 +569,6 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 			if adjList[subset[0]][subset[1]] {
 				exec++
 				remSet := map[int32]bool{subset[0]: true, subset[1]: true, x: true}
-				//if len(degThree) > 0 {
-				//	wEdge := degThree[len(degThree)-1]
-				//	removed := false
-				//	for v := range g.Edges[wEdge].V {
-				//		if remSet[v] {
-				//			removed = true
-				//			break
-				//		}
-				//	}
-				//	if !removed {
-				//		for v := range g.Edges[wEdge].V {
-				//			remSet[v] = true
-				//		}
-				//	}
-				//	degThree = degThree[:len(degThree)-1]
-				//}
 				for y := range remSet {
 					c[y] = true
 					remVertices[y] = true
@@ -618,11 +594,11 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	for eId := range remEdges {
-		delete(g.Edges, eId)
+		g.RemoveEdge(eId)
 	}
 
 	for vId := range remVertices {
-		delete(g.Vertices, vId)
+		g.RemoveVertex(vId)
 	}
 
 	return exec
@@ -649,7 +625,7 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 				i++
 				for v := range e.V {
 					remVertices[v] = true
-					delete(g.Vertices, v)
+					g.RemoveVertex(v)
 					c[v] = true
 				}
 			}
@@ -781,7 +757,7 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 		c[x] = true
 		delete(vDeg, x)
 		delete(incMap, x)
-		delete(g.Vertices, x)
+		g.RemoveVertex(x)
 
 		for a := range g.Edges[remEdge].V {
 			for h := range incMap[a] {
@@ -794,7 +770,7 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 			}
 			delete(incMap, a)
 			delete(vDeg, a)
-			delete(g.Vertices, a)
+			g.RemoveVertex(a)
 			c[a] = true
 		}
 
@@ -847,23 +823,26 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 
 				var f_0 int32 = -1
 
+				// iterate over edges f incident to y
 				for f := range incMap[y] {
+					// ensure f has size 3
 					if len(g.Edges[f].V) != 3 {
 						continue
 					}
-					// f has size 3
 
-					// Filter size e\cap f = 1
+					// if z in f, then |e ∩ f| != 1
 					if g.Edges[f].V[z] {
 						continue
 					}
 
+					// iterate over edges _g incident to z
 					for _g := range incMap[z] {
 						cond := true
 						for ep := range g.Edges[_g].V {
 							if ep == z {
 								continue
 							}
+							// check if the other vertices of g are in f
 							if !g.Edges[f].V[ep] {
 								cond = false
 								break
@@ -893,7 +872,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 							remEdges[h] = true
 						}
 						delete(incMap, a)
-						delete(g.Vertices, a)
+						g.RemoveVertex(a)
 						c[a] = true
 					}
 
@@ -901,7 +880,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 						remEdges[h] = true
 					}
 					delete(incMap, z)
-					delete(g.Vertices, z)
+					g.RemoveVertex(z)
 					c[z] = true
 
 					for h := range remEdges {
@@ -927,7 +906,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "detectLowDegreeEdge")
+	//defer LogTime(time.Now(), "detectLowDegreeEdge")
 
 	vDeg := make(map[int32]int32)
 	incMap := make(map[int32]map[int32]bool)
@@ -984,7 +963,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 
 	for v := range g.Edges[remEdge].V {
 		c[v] = true
-		delete(g.Vertices, v)
+		g.RemoveVertex(v)
 		for e := range incMap[v] {
 			g.RemoveEdge(e)
 		}
