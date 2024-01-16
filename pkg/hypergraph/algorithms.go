@@ -5,13 +5,13 @@ import (
 )
 
 func getSubsetsRec(arr []int32, s int, subsets *list.List) {
-	data := make([]int, s)
+	data := make([]int32, s)
 	n := len(arr)
 	last := s - 1
 	var rc func(int, int)
 	rc = func(i, next int) {
 		for j := next; j < n; j++ {
-			data[i] = j
+			data[i] = arr[j]
 			if i == last {
 				sub := make([]int32, s)
 				for k, val := range data {
@@ -34,7 +34,7 @@ func getSubsetsRec2(arr []int32, s int, do func(arg []int32)) {
 	var rc func(int, int)
 	rc = func(i, next int) {
 		for j := next; j < n; j++ {
-			data[i] = int32(j)
+			data[i] = arr[j]
 			if i == last {
 				do(data)
 			} else {

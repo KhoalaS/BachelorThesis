@@ -111,7 +111,6 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	exec := 0
 	//defer LogTime(time.Now(), fmt.Sprintf("RemoveEdgeRule-%d", t))
 
-
 	for eId, e := range g.Edges {
 		if len(e.V) == t {
 			rem[eId] = true
@@ -130,10 +129,8 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 			c[v] = true
 			g.RemoveVertex(v)
 			for f := range inc[v] {
-				if e != f {
-					delete(rem, f)
-					g.RemoveEdge(f)
-				}
+				delete(rem, f)
+				g.RemoveEdge(f)
 			}
 		}
 	}
@@ -248,10 +245,10 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				}
 			}
 			delete(vCount, v)
-	
+
 			dom := false
 			//var vDom int32 = -1
-	
+
 			for _, value := range vCount {
 				if value == vDeg[v] {
 					dom = true
@@ -259,7 +256,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 					break
 				}
 			}
-	
+
 			if dom {
 				outer = true
 				//fmt.Println("Vertex ", v, " is dominated by ", vDom)
@@ -284,7 +281,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	//defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
-	
+
 	incList := make(map[int32]map[int32]bool)
 	exec := 0
 	s3Arr := make([]int8, g.edgeCounter)
@@ -317,7 +314,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				eArr[i] = v
 				i++
 			}
-			
+
 			var a int32 = -1
 			var b int32 = -1
 
@@ -339,7 +336,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 								if x == z {
 									inBaseEdge = true
 									break
-								} 
+								}
 							}
 							if !inBaseEdge {
 								vCount[x]++
@@ -539,16 +536,16 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		if len(e.V) != 2 {
 			continue
 		}
-		arr := mapToSlice(e.V)
+		arr := setToSlice(e.V)
 
 		if _, ex := adjList[arr[0]]; !ex {
 			adjList[arr[0]] = make(map[int32]bool)
 		}
-		adjList[arr[0]][arr[1]] = true
-
 		if _, ex := adjList[arr[1]]; !ex {
 			adjList[arr[1]] = make(map[int32]bool)
 		}
+
+		adjList[arr[0]][arr[1]] = true
 		adjList[arr[1]][arr[0]] = true
 	}
 
@@ -557,7 +554,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		if len(val) < 2 {
 			continue
 		}
-		arr := mapToSlice(val)
+		arr := setToSlice(val)
 		subsets := list.New()
 		s := 2
 		getSubsetsRec(arr, s, subsets)
@@ -956,7 +953,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 			break
 		}
 	}
-	
+
 	if remEdge < 0 {
 		return F3Prepocess(g, c, 1)
 	}
@@ -971,7 +968,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	return 1
 }
 
-func mapToSlice[K comparable, V any](m map[K]V) []K {
+func setToSlice[K comparable, V any](m map[K]V) []K {
 	arr := make([]K, len(m))
 
 	i := 0

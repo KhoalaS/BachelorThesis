@@ -74,7 +74,7 @@ func TestRemoveEdgeRule(t *testing.T) {
 	}
 
 	if len(g.Edges) != 1 {
-		t.Fatalf("Graph g has %d edges, the expected number is 1.", len(g.Edges))
+		t.Fatalf("Graph g has %d edges, expected 1.", len(g.Edges))
 	}
 
 	for _, v := range edgeSol {
@@ -184,6 +184,7 @@ func TestSmallTriangleRule(t *testing.T) {
 	SmallTriangleRule(g, c)
 
 	if !(c[0] && c[1] && c[2]) {
+		t.Log(c)
 		t.Fatalf("Partial solution is wrong.")
 	}
 
