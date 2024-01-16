@@ -7,6 +7,7 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/alg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
@@ -69,9 +70,8 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 				g = hypergraph.TestGraph(baseSize, int32(i)*baseSize, true)
 			}
 			c := make(map[int32]bool)
-			execs := make(map[string]int)
 
-			alg.ThreeHS_F3ApprPoly(g, c, execs, 0, alg.Linear)
+			execs := alg.ThreeHS_F3ApprPoly(g, c, 0, nil)
 			var nom float64 = 0
 			var denom float64 = 0
 
@@ -227,11 +227,9 @@ func main() {
 	input := flag.String("i", "", "Filepath to input file.")
 	n := flag.Int("n", 10000, "Number of vertices if no graph file supplied.")
 	m := flag.Int("m", 20000, "Number of edges if no graph file supplied.")
-	K := flag.Int("k", 0, "The parameter k.")
 	chart := flag.Bool("c", false, "Make charts.")
 	u := flag.Int("u", 0, "Generate a u-uniform graph.")
 	f := flag.String("f", "", "Generate a random hypergraph with fixed ratios for the edge sizes.")
-	fr := flag.Int("fr", 0, "Preprocess the graph with fr many Factor-3 rule executions.")
 	evr := flag.Int("evr", 0, "Maximum ratio |E|/|V| to compute for random graphs.")
 	maxv := flag.Int("maxv", 0, "Maximum vertices for random graphs used in charts.")
 	profile := flag.Bool("prof", false, "Make CPU profile")
@@ -239,10 +237,14 @@ func main() {
 	exportSimple := flag.String("os", "", "Export the generated graph to the given filepath.")
 	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
 	prefAttachMod := flag.Bool("pamod", false, "")
+	er := flag.Bool("er", false, "")
+	logging := flag.Bool("log", false, "")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
 	printPreset := list.Bool("p", false, "")
+
+	graphtype := "STD046"
 
 	flag.Parse()
 
@@ -283,17 +285,13 @@ func main() {
 		return
 	}
 
-	if *K == 0 {
-		*K = *n
-	}
-
-	k := *K
-
 	var g *hypergraph.HyperGraph
 	if len(strings.Trim(*input, " ")) > 0 {
 		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
+		graphtype = "CUSTOM"
 	} else if *u > 0 {
 		g = hypergraph.UniformTestGraph(int32(*n), int32(*m), *u)
+		graphtype = "---"
 	} else if len(*f) > 0 {
 		spl := strings.Split(*f, ",")
 		ratios := make([]int, len(spl))
@@ -302,10 +300,16 @@ func main() {
 			ratios[i] = valInt
 		}
 		g = hypergraph.FixDistTestGraph(int32(*n), int32(*m), ratios)
+		graphtype = "FIX"
 	} else if *prefAttach > 0 {
 		g = hypergraph.PrefAttachmentGraph(int32(*n), *prefAttach, 3)
+		graphtype = "PREF"
 	} else if *prefAttachMod {
 		g = hypergraph.ModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
+		graphtype = "---"
+	} else if *er {
+		g = hypergraph.UniformERGraph(int(*n), 0.0, float64(*evr))
+		graphtype = "ERU3"
 	} else {
 		g = hypergraph.TestGraph(int32(*n), int32(*m), true)
 	}
@@ -321,7 +325,6 @@ func main() {
 	}
 
 	c := make(map[int32]bool)
-	execs := make(map[string]int)
 	fmt.Println("Start Algorithm")
 
 	if *profile {
@@ -336,21 +339,19 @@ func main() {
 
 	prio := 0
 
-	if *fr > 0 {
-		// this might put all edges into the hitting set
-		kFront := hypergraph.F3Prepocess(g, c, *fr)
-		execs["kFallback"] = kFront
-		k -= kFront
+	var logfile *os.File
+	if *logging {
+		t := time.Now().Unix()
+		logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), t)
+		logfile, _ = os.Create(logfilename)
 	}
 
-	ex, hs, execs := alg.ThreeHS_F3ApprPoly(g, c, execs, prio, alg.Linear)
+	execs := alg.ThreeHS_F3ApprPoly(g, c, prio, logfile)
+
+	logfile.Close()
 
 	pprof.StopCPUProfile()
-	if ex {
-		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(hs))
-		fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
-		fmt.Println(execs)
-	} else {
-		fmt.Println("Did not find a 3-Hitting-Set")
-	}
+	fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(hs))
+	fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
+	fmt.Println(execs)
 }

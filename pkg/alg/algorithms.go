@@ -19,6 +19,8 @@ import (
 //go:embed minedgecover.py
 var scriptCode string
 
+var Labels = []string{"kTiny", "kVertDom", "kEdgeDom", "kSmall", "kTri", "kExtTri", "kApVertDom", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
+
 var Ratios = map[string]pkg.IntTuple{
 	"kTiny":            {A: 1, B: 1},
 	"kSmall":           {A: 2, B: 1},
@@ -96,16 +98,34 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int, f3Func func(x int) int) (bool, map[int32]bool, map[string]int) {
-	f3 := 1
+func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int, out *os.File) map[string]int {
+	execs := MakeExecs()
+	
+	f3 := 0
+	header := "Iteration;"
+	header += strings.Join(Labels, ";") + ";\n"
+	
+	if out != nil {
+		out.Write([]byte(header))
+	}
+	
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-		
-		execs["kFallback"] += hypergraph.F3Prepocess(g, c, f3Func(f3))
+
+		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
+
+		if out != nil {
+			msg := fmt.Sprintf("%d;", f3)
+			for _, v := range Labels {
+				msg += fmt.Sprintf("%d;", execs[v])
+			}
+			msg += "\n"
+			out.Write([]byte(msg))
+		}
 		f3++
 	}
-	return true, c, execs
+	return execs
 }
 
 func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
