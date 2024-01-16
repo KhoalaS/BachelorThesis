@@ -102,13 +102,13 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int, ou
 	execs := MakeExecs()
 	
 	f3 := 0
-	header := "Iteration;"
+	header := "Iteration;Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 	
 	if out != nil {
 		out.Write([]byte(header))
 	}
-	
+
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
@@ -116,7 +116,7 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int, ou
 		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
 
 		if out != nil {
-			msg := fmt.Sprintf("%d;", f3)
+			msg := fmt.Sprintf("%d;%f;", f3, GetRatio(execs))
 			for _, v := range Labels {
 				msg += fmt.Sprintf("%d;", execs[v])
 			}

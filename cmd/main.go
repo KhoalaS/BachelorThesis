@@ -212,17 +212,6 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 	page.Render(f)
 }
 
-func getRatio(execs map[string]int) float64 {
-	var nom float64 = 0
-	var denom float64 = 0
-
-	for key, val := range execs {
-		nom += float64(alg.Ratios[key].A * val)
-		denom += float64(alg.Ratios[key].B * val)
-	}
-	return nom / denom
-}
-
 func main() {
 	input := flag.String("i", "", "Filepath to input file.")
 	n := flag.Int("n", 10000, "Number of vertices if no graph file supplied.")
@@ -351,7 +340,7 @@ func main() {
 	logfile.Close()
 
 	pprof.StopCPUProfile()
-	fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(hs))
-	fmt.Printf("Estimated Approximation Factor: %.2f\n", getRatio(execs))
+	fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(c))
+	fmt.Printf("Estimated Approximation Factor: %.2f\n", alg.GetRatio(execs))
 	fmt.Println(execs)
 }
