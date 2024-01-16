@@ -26,9 +26,8 @@ func TestGetSubsetsRec(t *testing.T) {
 	arr := []int32{0, 1, 2}
 	subsets := list.New()
 	size := 2
-	data := make([]int32, size)
 
-	getSubsetsRec(arr, 0, len(arr), size, data, 0, subsets)
+	getSubsetsRec(arr, size, subsets)
 
 	if subsets.Len() != 3 {
 		t.Fatalf("Solution has size %d, expected 3.", subsets.Len())
@@ -72,7 +71,6 @@ func BenchmarkGetSubsetsRec(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		subsets := list.New()
-		data := make([]int32, subsetSize)
-		getSubsetsRec(arr, 0, size, subsetSize, data, 0, subsets)
+		getSubsetsRec(arr, subsetSize, subsets)
 	}
 }

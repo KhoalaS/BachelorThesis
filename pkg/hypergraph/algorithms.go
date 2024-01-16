@@ -5,74 +5,44 @@ import (
 )
 
 func getSubsetsRec(arr []int32, s int, subsets *list.List) {
+	data := make([]int, s)
+	n := len(arr)
+	last := s - 1
+	var rc func(int, int)
+	rc = func(i, next int) {
+		for j := next; j < n; j++ {
+			data[i] = j
+			if i == last {
+				sub := make([]int32, s)
+				for k, val := range data {
+					sub[k] = int32(val)
+				}
+				subsets.PushBack(sub)
+			} else {
+				rc(i+1, j+1)
+			}
+		}
+	}
+	rc(0, 0)
+}
+
+// callback instead of list
+func getSubsetsRec2(arr []int32, s int, do func(arg []int32)) {
 	data := make([]int32, s)
-	getSubsetsRecMain(arr, 0, len(arr), s, data, 0, subsets)
-}
-
-func getSubsetsRecMain(arr []int32, i int, n int, s int, data []int32, index int, subsets *list.List) {
-	if index == s {
-		subset := make([]int32, s)
-		for j := 0; j < index; j++ {
-			subset[j] = data[j]
+	n := len(arr)
+	last := s - 1
+	var rc func(int, int)
+	rc = func(i, next int) {
+		for j := next; j < n; j++ {
+			data[i] = int32(j)
+			if i == last {
+				do(data)
+			} else {
+				rc(i+1, j+1)
+			}
 		}
-		subsets.PushBack(subset)
-		return
 	}
-
-	if i >= n {
-		return
-	}
-
-	data[index] = arr[i]
-
-	getSubsetsRecMain(arr, i+1, n, s, data, index+1, subsets)
-	getSubsetsRecMain(arr, i+1, n, s, data, index, subsets)
-}
-
-// slightly more memory efficient version of getSubsetsRec
-// uses fixed size subsets array instead of list
-func getSubsetsRec2(arr []int32, i int, n int, s int, data []int32, index int, subsets *[][]int32, subsetsIndex *int) {
-	if index == s {
-		subset := make([]int32, s)
-		for j := 0; j < index; j++ {
-			subset[j] = data[j]
-		}
-		(*subsets)[*subsetsIndex] = subset
-		*subsetsIndex++
-		return
-	}
-
-	if i >= n {
-		return
-	}
-
-	data[index] = arr[i]
-
-	getSubsetsRec2(arr, i+1, n, s, data, index+1, subsets, subsetsIndex)
-	getSubsetsRec2(arr, i+1, n, s, data, index, subsets, subsetsIndex)
-}
-
-// using generics and a callback to do something with the subset
-func getSubsetsRec3[V any](arr []V, s int, do func(arg []V)) {
-	data := make([]V, s)
-	getSubsetsRec3Main[V](arr, 0, len(arr), s, data, 0, do)
-
-}
-
-func getSubsetsRec3Main[V any](arr []V, i int, n int, s int, data []V, index int, do func(arg []V)) {
-	if index == s {
-		do(data)
-		return
-	}
-
-	if i >= n {
-		return
-	}
-
-	data[index] = arr[i]
-
-	getSubsetsRec3Main(arr, i+1, n, s, data, index+1, do)
-	getSubsetsRec3Main(arr, i+1, n, s, data, index, do)
+	rc(0, 0)
 }
 
 // Time Complexity: n

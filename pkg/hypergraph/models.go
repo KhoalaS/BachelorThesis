@@ -280,15 +280,14 @@ func UniformERGraph(n int, p float64, evr float64) *HyperGraph {
 	}
 
 	if evr > 0 {
-		p =  float64(n) * evr/float64(binomialCoefficient(n, size))
+		p = float64(n) * evr / float64(binomialCoefficient(n, size))
 	}
 
 	// Dont actually compute all of them but compute them one at at time
-	data := make([]int32, size)
-	
-	getSubsetsRec3[int32](nArr, size, func(arg []int32) {
+
+	getSubsetsRec2(nArr, size, func(arg []int32) {
 		if rand.Float64() < p {
-			g.AddEdge(data...)
+			g.AddEdge(arg...)
 		}
 	})
 
