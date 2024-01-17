@@ -1,17 +1,12 @@
 ---
     title: Implementation and evaluation of a self-monitoring approximation algorithm for 3-Hitting-Set
-    author: This document was auto-generated using pandoc.
-    header-includes: |
-        \usepackage{algorithm2e}
-        \usepackage[colorinlistoftodos]{todonotes}
-        \usepackage{hyperref}
     link-citations: true
 
 ...
-
 \RestyleAlgo{ruled}
 \DontPrintSemicolon
 \SetAlgoVlined
+\LinesNumbered
 
 # Programming Language
 
@@ -73,7 +68,7 @@ func getHash(arr []int32) string
 
 Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
 
-We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter "|", returning a string of the form $|id_0|id_1|\dots|id_n|$.
+We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter $"|"$, returning a string of the form $"|id_0|id_1|\dots|id_n|"$.
 
 Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
 
@@ -241,21 +236,23 @@ We prioritize time complexity over memory complexity when implementing rules, wh
 
 ## Executions
 
-Reduction rules are usually meant to be applied exhaustively. We actually do not want to do that, because the algorithms for the rules rely on building up auxilliary data strucutures. Since rebuilding these structures takes a not negligeble amount of time, we want to reuse them as much as possible.
+The proposed rules are meant to be applied exhaustively. A one to one implementation of a rule will only find one of the structures the rule is targeting. Calling such a rule implementation exhaustively will take polynomial time, but will be very inefficient in regards to memory writes and execution time. It is therefor necessary to design the algorithms for the rules with the aspect of exhaustive application in mind. 
 
-Trying to apply a rule exhaustively in a single execution will introduce some difficulties:
+The general outline of an algorithm will look as follows,
 
--   Some rules will mutate the graph, especially the set of edges. This can potentially create or eliminate a structure in the graph that a rule is targeting.
--   Can the auxilliary datastructure be mutated to reflect these changes in linear time?
+1. Construct auxilliary data structures that are used to find parts of the graph, for which the rule can be applied. 
+2. As long as we can apply rules do:
+   
+    Iterate over the auxilliary data structure, or the vertices/edges themselves.
+      - Identify targets of the rule.
+      - Mutate the graph according to the rule.
+      - Mutate the auxilliary data structure according to the rule.
 
-Luckily for us, most of these problems can be solved using Go. We usually have two possible ways of implementing a rule:
-
-1. **Outer Loop:** We wrap our main algorithm in an outer loop. We then apply the rule one time per loop iteration. The outer loop will break when the rule can't be applied anymore. This way we can reuse our auxilliary data structures.
-2. **Pseudo Single Loop:** We find all structures a rule is targeting in a single loop. We do this by iterating over the data structures and simultaniously deleting the targets, mutating the structure we are iterating over. This can possibly eliminate targets which we did not reach yet, or create new targets which we already passed. This requires the use of an outer loop. Since we can not decouple the deletion of the targets from the main algorithm. We inevitably introduce a quadratic time complexity in a worst case scenario.
+This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxilliary data structure at the same time. 
 
 ## Algorithms
 
-The presented algorithms are agnostic in regards to the underlying hypergraph representation. The implementations are almost identical to the pseudocode.
+The presented algorithms are agnostic in regards to the underlying hypergraph implementation. That means that the datatype used to represent the hypergraph, does not need to have special characteristics. Although it could be beneficial to incorporate some of the used data structures into the hypergraph itself. 
 
 Further we introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map.
 
@@ -265,7 +262,7 @@ Further we introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E|)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
+$O(|E|^2)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
 
 $$
 \begin{algorithm}[H]
@@ -311,13 +308,13 @@ $$
 
 $O(|E|)$ **Algorithm**. We partition our set of edges into two disjoint sets $sub$ and $dom$. The set $dom$ will contain edges that could possibly be dominated. The set $sub$ will contain hashes of edges $e$ that could dominate another edge.
 
-We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the $\textit{hash of the subset}$ is present in our set $sub$. If it is then $f$ is dominated by another edge.
+We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the hash of the subset is present in our set $sub$. If it is then $f$ is dominated by another edge.
 
 $$
 \begin{algorithm}[H]
 \nllabel{edom}
 \SetKwFunction{subsets}{getSubsetsRec}
-\KwIn{A hypergraph $G=(V,E)$, a set $C$}
+\KwIn{A hypergraph $G=(V,E)$ without size one edges, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
@@ -327,7 +324,7 @@ $exec \gets 0$\;
 
 \For{$e \in E$}{
     \eIf{$|e| = 2$}{
-        $sub \gets sub\cup \{ e \}$\;
+        $sub \gets sub\cup \{ hash(e) \}$\;
     }{
         $dom \gets dom\cup \{ e \}$\;
     }
@@ -341,7 +338,7 @@ $exec \gets 0$\;
 \For{$e \in dom$}{
     $subsets \gets \subsets{e, 2}$\;
     \For{$f \in subsets$}{
-        \If{$f \in sub$}{
+        \If{$hash(f) \in sub$}{
             $E \gets E \setminus \{ e \}$\;
             $exec \gets exec + 1$\;
             \textbf{break}\;
@@ -372,11 +369,11 @@ T &= |E| \cdot 3\cdot \log (3) + (|E| \cdot (11 + 24 \cdot \log(3))) \\
 \end{align*}
 $$
 
-\todo{Instead of a Lemma, repharse into proof of exhaustiveness?}
+\begin{lemma}
+\hyperref[edom]{Algorithm 3} finds all edges of G that are dominated, iff G has no size one edges.
+\end{lemma}
 
-**Lemma.** _We can either call this algorithm exhaustively until there are no more edge domination situations, or find all domination situations in a single execution of the algorithm, iff there are no size one edges._
-
-_Proof._ Assume that our algorithm finds an edge domination situation. Since there are no size one edges, edges with size two cannot be dominated. Thus a dominated edge has to be of size three. Then simply removing the dominated edge will not create nor eliminate an edge domination situation. It is therefore safe to remove all dominated edges in a single execution of the rule.
+_Proof._ Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. 
 
 This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
 
@@ -389,8 +386,8 @@ This also allows us to parallelize the main part of the algorithm, where we chec
 $O(|E| + |V|^2)$ **Algorithm**.
 We first construct two maps:
 
--   $vDeg \;\texttt{map}[V]\mathbb{N}:$ this map associates a vertex $v$ with $deg(v)$.
--   $inc \;\texttt{map}[V]2^E:$ this map associates a vertex $v$ with all other edges that are incident to $v$.
+-   $vDeg$: this map associates a vertex $v$ with $deg(v)$.
+-   $inc$: this map associates a vertex $v$ with all other edges that are incident to $v$.
 
 We then iterate over the vertices of the graph. For the current vertex $v$, we compute a map $vCount$. This map keeps track of the amount of times a vertex $w$ is adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $vCount$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
@@ -458,8 +455,8 @@ $O(|E| + |V|^2)$ __Algorithm__. The quadratic exponent in $|V|$ looks scary at f
 
 We first construct two maps:
 
--   $vDeg \;\texttt{map}[V]\mathbb{N}:$ this map associates a vertex $v$ with $deg(v)$.
--   $adjCount \;\texttt{map}[V]\texttt{map}[V]\mathbb{N}:$ this map associates a vertex $v$ with the amount of times another vertex is adjacent to $v$.
+-   $vDeg$: this map associates a vertex $v$ with $deg(v)$.
+-   $adjCount$: this map associates a vertex $v$ with the amount of times another vertex is adjacent to $v$.
 
 Example:
 
@@ -485,7 +482,8 @@ $$
 
 We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair in $adjCount[v]$, s.t. for the pair $(a,b)$ holds, $adjCount[v][a] + adjCount[v][b] = vDeg[v]+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $a\in f$ or $b\in f$.
 
-**Lemma.** _The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges._
+\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
+\end{lemma}
 
 _Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $vDeg$ and $adjCount$. Let $v$ be an entry in $adjCount$ and $sol=(a,b)$ be the result of calling our $\textsc{Two-Sum}$ implementation on $adjCount[v]$ with a target sum of $n=vDeg[v]+1$.
 
@@ -602,15 +600,6 @@ We also looked at the number of rule executions for $r=1$ and $r=10$.
 Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.
 
 We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
-
-**Factor-3 Rule Preprocessing.** In its current implementation, the algorithm applies all rules and if there are edges left in the graph, adds an edge of size 3 to the solution if possible. In most of these cases we have to apply the Fallback-Rule $n$ times, before we can apply any other rule. We could alternatively apply this factor 3 rule at the beginning of the algorithm. We hope that this will allow for an increase of Vertex Domination Rule executions, which can cascade into Small Edge Rule executions. We kinda open another can of worms by introducing another form of preprocessing. For example one could consider:
-
--   Amount executions of the fallback rule
-    -   Do we consider both the amount of edges and vertices? Or perhaps only one of those?
-    -   Can we predict the amount?
--   Choosing the edge:
-    -   Can we apply heuristics?
-    -   Do we select them randomly?
 
 **Factor-3 Rule Function**. Instead of only executing the Factor-3 Rule exactly one time, we could consider using a function instead. This function would compute a value based on the current iteration. Experiments with linear,exponential and square root functions were quite promising in regards to execution time and approximation factor. Linear and exponential functions perform faster than the square root function, while the linear and square root function offer a better estimated approximation factor than the exponential one.
 
