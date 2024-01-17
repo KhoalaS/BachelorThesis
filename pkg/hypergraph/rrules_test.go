@@ -114,7 +114,8 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	if !((c[2] && c[7]) || (c[0] && c[2]) || (c[2] && c[3])) {
 		t.Fatalf("Partial solution is wrong.")
 	}
-	log.Println(g)
+	t.Log(c)
+	t.Log(g)
 }
 
 func TestApproxDoubleVertexDominationRule(t *testing.T) {
