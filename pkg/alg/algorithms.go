@@ -3,6 +3,7 @@ package alg
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/KhoalaS/BachelorThesis/pkg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
@@ -98,31 +100,61 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int, out *os.File) map[string]int {
-	execs := MakeExecs()
+func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string) map[string]int{
 	
-	f3 := 0
-	header := "Iteration;Ratio;"
+	t := time.Now().Unix()
+	
+	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
-	
-	if out != nil {
-		out.Write([]byte(header))
+
+	logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), t)
+	logfile, err := os.Create(logfilename)
+	if err != nil {
+		log.Fatalf("Could not create file %s", logfilename)
 	}
+
+	fMasterFilename := fmt.Sprintf("./data/%s", masterfilename)
+	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND, 0755)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist){
+			masterfile, _  = os.Create(fMasterFilename)
+			masterfile.Write([]byte(header))
+		}else{
+			log.Fatalf("Could not open file %s", masterfilename)
+		}
+	}
+
+	defer logfile.Close()
+	defer masterfile.Close()
+
+	logfile.Write([]byte(header))
+
+	execs := MakeExecs()
+	msg := ""
+
+	for len(g.Edges) > 0 {
+		execs = ApplyRules(g, c, execs, 0)
+		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
+
+		msg = fmt.Sprintf("%f;", GetRatio(execs))
+		for _, v := range Labels {
+			msg += fmt.Sprintf("%d;", execs[v])
+		}
+		msg += "\n"
+		logfile.Write([]byte(msg))
+	}
+	masterfile.Write([]byte(msg))
+	return execs
+}
+
+func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) map[string]int {
+	execs := MakeExecs()
+	f3 := 0
 
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-
 		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
-
-		if out != nil {
-			msg := fmt.Sprintf("%d;%f;", f3, GetRatio(execs))
-			for _, v := range Labels {
-				msg += fmt.Sprintf("%d;", execs[v])
-			}
-			msg += "\n"
-			out.Write([]byte(msg))
-		}
 		f3++
 	}
 	return execs

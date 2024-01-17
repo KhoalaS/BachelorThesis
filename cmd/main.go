@@ -71,7 +71,7 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 			}
 			c := make(map[int32]bool)
 
-			execs := alg.ThreeHS_F3ApprPoly(g, c, 0, nil)
+			execs := alg.ThreeHS_F3ApprPoly(g, c, 0)
 			var nom float64 = 0
 			var denom float64 = 0
 
@@ -212,6 +212,40 @@ func makeChart(pa float64, u int, evr int, maxv int, checkpoint int, fixRatio st
 	page.Render(f)
 }
 
+func makeHypergraph(input string, u int, f string, n int, m int, prefAttach float64, prefAttachMod bool, er bool, evr int) (*hypergraph.HyperGraph, string) {
+	g := hypergraph.NewHyperGraph()
+	graphtype := "STD"
+
+	if len(strings.Trim(input, " ")) > 0 {
+		g = hypergraph.ReadFromFile(strings.Trim(input, " "))
+		graphtype = "CUSTOM"
+	} else if u > 0 {
+		g = hypergraph.UniformTestGraph(int32(n), int32(m), u)
+		graphtype = "---"
+	} else if len(f) > 0 {
+		spl := strings.Split(f, ",")
+		ratios := make([]int, len(spl))
+		for i, val := range spl {
+			valInt, _ := strconv.Atoi(val)
+			ratios[i] = valInt
+		}
+		g = hypergraph.FixDistTestGraph(int32(n), int32(m), ratios)
+		graphtype = "FIX"
+	} else if prefAttach > 0 {
+		g = hypergraph.PrefAttachmentGraph(int32(n), prefAttach, 3)
+		graphtype = "PREF"
+	} else if prefAttachMod {
+		g = hypergraph.ModPrefAttachmentGraph(int(n), 5, 0.5, 0.21)
+		graphtype = "---"
+	} else if er {
+		g = hypergraph.UniformERGraph(int(n), 0.0, float64(evr))
+		graphtype = "ERU3"
+	} else {
+		g = hypergraph.TestGraph(int32(n), int32(m), true)
+	}
+	return g, graphtype
+}
+
 func main() {
 	input := flag.String("i", "", "Filepath to input file.")
 	n := flag.Int("n", 10000, "Number of vertices if no graph file supplied.")
@@ -227,13 +261,11 @@ func main() {
 	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
 	prefAttachMod := flag.Bool("pamod", false, "")
 	er := flag.Bool("er", false, "")
-	logging := flag.Bool("log", false, "")
+	logging := flag.Int("log", 1, "")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
 	printPreset := list.Bool("p", false, "")
-
-	graphtype := "STD046"
 
 	flag.Parse()
 
@@ -274,34 +306,8 @@ func main() {
 		return
 	}
 
-	var g *hypergraph.HyperGraph
-	if len(strings.Trim(*input, " ")) > 0 {
-		g = hypergraph.ReadFromFile(strings.Trim(*input, " "))
-		graphtype = "CUSTOM"
-	} else if *u > 0 {
-		g = hypergraph.UniformTestGraph(int32(*n), int32(*m), *u)
-		graphtype = "---"
-	} else if len(*f) > 0 {
-		spl := strings.Split(*f, ",")
-		ratios := make([]int, len(spl))
-		for i, val := range spl {
-			valInt, _ := strconv.Atoi(val)
-			ratios[i] = valInt
-		}
-		g = hypergraph.FixDistTestGraph(int32(*n), int32(*m), ratios)
-		graphtype = "FIX"
-	} else if *prefAttach > 0 {
-		g = hypergraph.PrefAttachmentGraph(int32(*n), *prefAttach, 3)
-		graphtype = "PREF"
-	} else if *prefAttachMod {
-		g = hypergraph.ModPrefAttachmentGraph(int(*n), 5, 0.5, 0.21)
-		graphtype = "---"
-	} else if *er {
-		g = hypergraph.UniformERGraph(int(*n), 0.0, float64(*evr))
-		graphtype = "ERU3"
-	} else {
-		g = hypergraph.TestGraph(int32(*n), int32(*m), true)
-	}
+	g, graphtype := makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
+	c := make(map[int32]bool)
 
 	if len(*export) > 0 {
 		hypergraph.WriteToFile(g, *export)
@@ -313,7 +319,6 @@ func main() {
 		return
 	}
 
-	c := make(map[int32]bool)
 	fmt.Println("Start Algorithm")
 
 	if *profile {
@@ -327,20 +332,25 @@ func main() {
 	}
 
 	prio := 0
+	var execs map[string]int
 
-	var logfile *os.File
-	if *logging {
+	if *logging > 0 {
+		l_evr := float64(*evr)
+		if *evr == 0 {
+			l_evr = float64(len(g.Edges)) / float64(len(g.Vertices))
+		}
 		t := time.Now().Unix()
-		logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), t)
-		logfile, _ = os.Create(logfilename)
+		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
+		for i := 0; i < *logging; i++ {
+			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename)
+			g, _ = makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
+			c = make(map[int32]bool)
+		}
+	} else {
+		execs = alg.ThreeHS_F3ApprPoly(g, c, prio)
+		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(c))
+		fmt.Printf("Estimated Approximation Factor: %.2f\n", alg.GetRatio(execs))
+		fmt.Println(execs)
 	}
-
-	execs := alg.ThreeHS_F3ApprPoly(g, c, prio, logfile)
-
-	logfile.Close()
-
 	pprof.StopCPUProfile()
-	fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(c))
-	fmt.Printf("Estimated Approximation Factor: %.2f\n", alg.GetRatio(execs))
-	fmt.Println(execs)
 }
