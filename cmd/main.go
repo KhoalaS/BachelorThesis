@@ -343,6 +343,9 @@ func main() {
 		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
 		for i := 0; i < *logging; i++ {
 			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename)
+			if i == *logging - 1 {
+				break
+			}
 			g, _ = makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
 			c = make(map[int32]bool)
 		}
