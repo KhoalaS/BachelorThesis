@@ -206,7 +206,7 @@ One could also look into generating random bipartite graphs that translate back 
 
 In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph.
 
-We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al in [@DBLP:journals/corr/AvinLP15].
+We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al. in [@DBLP:journals/corr/AvinLP15].
 
 ```go
 func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
@@ -254,7 +254,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 The presented algorithms are agnostic in regards to the underlying hypergraph implementation. That means that the datatype used to represent the hypergraph, does not need to have special characteristics. Although it could be beneficial to incorporate some of the used data structures into the hypergraph itself. 
 
-Further we introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map.
+Further we introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
 
 ### Tiny/Small Edge Rule
 
@@ -340,7 +340,7 @@ $exec \gets 0$\;
     \For{$f \in subsets$}{
         \If{$hash(f) \in sub$}{
             $E \gets E \setminus \{ e \}$\;
-            $exec \gets exec + 1$\;
+            $exec \gets exec+1$\;
             \textbf{break}\;
         }
     }
@@ -409,7 +409,8 @@ $inc \gets \texttt{map}[V]2^E$\;
     }
 }
 
-\While{true}{
+$outer \gets true$\;
+\While{$outer$}{
     $outer \gets false$\;
     \For{$v \in V$}{
         $vCount \gets \texttt{map}[V]\mathbb{N}$\;
@@ -437,9 +438,6 @@ $inc \gets \texttt{map}[V]2^E$\;
             $exec \gets exec+1$\;
         }
     }
-    \If{outer = false}{
-        \textbf{break}\;
-    }
 }
 \KwRet $exec$\;
 
@@ -451,7 +449,7 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|E| + |V|^2)$ __Algorithm__. The quadratic exponent in $|V|$ looks scary at first, but will only occur in the worst case if there exists a vertex $v$, that is adjacent to all other vertices $w \in V$.
+$O(|E| + |V|\cdot |E|)$ __Algorithm__. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
 We first construct two maps:
 
@@ -503,7 +501,59 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
-\caption{}
+$vDeg \gets \texttt{map}[V]\mathbb{N}$\;
+$adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
+$inc \gets \texttt{map}[V]2^E$\;
+$exec \gets 0$\;
+
+\For{$e \in E$}{
+    \For{$v \in e$}{
+        $vDeg[v] \gets vDeg[v]+1$\;
+        $inc[v] \gets inc[v] \cup \{ e \}$\;
+        \For{$w \in e$}{
+            \If{$w \neq v$}{
+                $adjCount[v][w] \gets adjCount[v][w]+1$\;
+            }
+        }
+    }
+}
+
+$outer \gets true$\;
+\While{$outer$}{
+    $outer \gets false$\;
+    \For{$(v, count) \in adjCount$}{
+        $sol, ex \gets \textsc{Two-Sum}(count, vDeg[v]+1)$\;
+        \If{\textbf{not} $ex$}{
+            \textbf{continue}\;
+        }
+        $outer \gets true$\;
+        $exec \gets exec+1$\;
+
+        \For{$w \in sol$}{
+            $C\gets C\cup \{ w \}$\;
+            \For{$e \in inc[w]$}{
+                \For{$x \in e$}{
+                    \If{$x = w$}{
+                        \textbf{continue}\;
+                    }
+                    $vDeg[x] \gets vDeg[x]-1$\;
+                    \For{$y \in e\setminus x$}{
+                        $adjCount[x][y] \gets adjCount[x][y]-1$\;
+                    }
+                }
+                $E \gets E\setminus \{ e \}$\;
+            }
+            $V \gets V\setminus \{ w \}$\;
+            $delete(inc, w)$\;
+			$delete(vDeg, w)$\;
+			$delete(adjCount, w)$\;
+        }
+    }
+}
+
+\KwRet $exec$\;
+
+\caption{Algorithm for exhaustive application of Approximative Vertex Domination Rule}
 \end{algorithm}
 $$
 
