@@ -269,10 +269,9 @@ func ModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph 
 	return g
 }
 
-func UniformERGraph(n int, p float64, evr float64) *HyperGraph {
+func UniformERGraph(n int, p float64, evr float64, size int) *HyperGraph {
 	g := NewHyperGraph()
 	nArr := make([]int32, n)
-	size := 3
 
 	for i := 0; i < n; i++ {
 		g.AddVertex(int32(i), 0)

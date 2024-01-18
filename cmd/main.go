@@ -238,7 +238,7 @@ func makeHypergraph(input string, u int, f string, n int, m int, prefAttach floa
 		g = hypergraph.ModPrefAttachmentGraph(int(n), 5, 0.5, 0.21)
 		graphtype = "---"
 	} else if er {
-		g = hypergraph.UniformERGraph(int(n), 0.0, float64(evr))
+		g = hypergraph.UniformERGraph(int(n), 0.0, float64(evr), 3)
 		graphtype = "ERU3"
 	} else {
 		g = hypergraph.TestGraph(int32(n), int32(m), true)

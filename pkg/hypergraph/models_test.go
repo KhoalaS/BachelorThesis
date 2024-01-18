@@ -7,6 +7,6 @@ func BenchmarkUniformERGraph(b *testing.B) {
 	
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		UniformERGraph(n, 0, 2)
+		UniformERGraph(n, 0, 2, 3)
 	}
 }
