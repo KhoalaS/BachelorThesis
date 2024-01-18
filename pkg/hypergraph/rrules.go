@@ -34,7 +34,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 		}
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
-			hash := getHash(item.Value.([]int32))
+			hash := GetHash(item.Value.([]int32))
 			if subEdges[hash] {
 				remEdges[eId] = true
 				break
@@ -171,9 +171,9 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 	}
 
 	// Time Complexity: |V| * (|V| + 4c)
-	for solFound:=true; solFound; {
+	for solFound := true; solFound; {
 		solFound = false
-		
+
 		for vId, count := range adjCount {
 			if c[vId] {
 				// TODO: check if this is just a remnant of an earlier version
@@ -183,7 +183,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 			}
 
 			// probably not relevant anymore
-			// used to be a lock mechanism to not trigger this rule on deg 1 vertices 
+			// used to be a lock mechanism to not trigger this rule on deg 1 vertices
 			// and reserve these edges for the vertex dom rule
 			if lock && vDeg[vId] == 1 {
 				continue
@@ -243,7 +243,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	for outer := true; outer;{
+	for outer := true; outer; {
 		outer = false
 		for v := range g.Vertices {
 			vCount := make(map[int32]int32)

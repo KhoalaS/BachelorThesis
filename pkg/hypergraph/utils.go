@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func getHash(arr []int32) string {
+func GetHash(arr []int32) string {
 	sort.Slice(arr, func(i, j int) bool {
 		return arr[i] < arr[j]
 	})
@@ -55,7 +55,7 @@ func binomialCoefficient(n int, k int) int {
 	}
 	c := 1.0
 	for i := 1; i <= k; i++ {
-		c = c * float64(n + 1 - i) / float64(i)
+		c = c * float64(n+1-i) / float64(i)
 	}
 	return int(math.Ceil(c))
 }

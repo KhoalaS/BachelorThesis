@@ -55,7 +55,7 @@ func TestGraph(n int32, m int32, tinyEdges bool) *HyperGraph {
 			break
 		}
 
-		hash := getHash(epsArr)
+		hash := GetHash(epsArr)
 		if !edgeHashes[hash] {
 			edgeHashes[hash] = true
 			g.AddEdgeMap(eps)
@@ -100,7 +100,7 @@ func UniformTestGraph(n int32, m int32, u int) *HyperGraph {
 			continue
 		}
 
-		hash := getHash(epsArr)
+		hash := GetHash(epsArr)
 		if !edgeHashes[hash] {
 			edgeHashes[hash] = true
 			g.AddEdgeMap(eps)
@@ -160,7 +160,7 @@ func FixDistTestGraph(n int32, m int32, dist []int) *HyperGraph {
 			break
 		}
 
-		hash := getHash(epsArr)
+		hash := GetHash(epsArr)
 		if !edgeHashes[hash] {
 			edgeHashes[hash] = true
 			g.AddEdgeMap(eps)
