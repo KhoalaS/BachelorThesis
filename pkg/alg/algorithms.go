@@ -105,6 +105,8 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 
+	os.Mkdir("data", 0700)
+
 	logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
 	logfile, err := os.Create(logfilename)
 	if err != nil {
