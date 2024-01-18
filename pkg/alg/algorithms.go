@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/KhoalaS/BachelorThesis/pkg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
@@ -101,7 +100,7 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 }
 
 func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int{
-	
+		
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 
@@ -114,11 +113,11 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	}
 
 	fMasterFilename := fmt.Sprintf("./data/%s", masterfilename)
-	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND, 0755)
+	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist){
 			masterfile, _  = os.Create(fMasterFilename)
-			masterfile.Write([]byte(header))
+			masterfile.WriteString(header)
 		}else{
 			log.Fatalf("Could not open file %s", masterfilename)
 		}
@@ -127,7 +126,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	defer logfile.Close()
 	defer masterfile.Close()
 
-	logfile.Write([]byte(header))
+	logfile.WriteString(header)
 
 	execs := MakeExecs()
 	msg := ""
@@ -141,9 +140,9 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 			msg += fmt.Sprintf("%d;", execs[v])
 		}
 		msg += "\n"
-		logfile.Write([]byte(msg))
+		logfile.WriteString(msg)
 	}
-	masterfile.Write([]byte(msg))
+	masterfile.WriteString(msg)
 	return execs
 }
 
