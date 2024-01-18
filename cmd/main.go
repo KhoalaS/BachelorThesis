@@ -342,7 +342,7 @@ func main() {
 		t := time.Now().Unix()
 		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
 		for i := 0; i < *logging; i++ {
-			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename)
+			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i)
 			if i == *logging - 1 {
 				break
 			}

@@ -100,14 +100,12 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string) map[string]int{
-	
-	t := time.Now().Unix()
+func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int{
 	
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 
-	logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), t)
+	logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
 	logfile, err := os.Create(logfilename)
 	if err != nil {
 		log.Fatalf("Could not create file %s", logfilename)
