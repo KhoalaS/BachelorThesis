@@ -261,7 +261,7 @@ func main() {
 	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
 	prefAttachMod := flag.Bool("pamod", false, "")
 	er := flag.Bool("er", false, "")
-	logging := flag.Int("log", 1, "")
+	logging := flag.Int("log", 0, "")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
