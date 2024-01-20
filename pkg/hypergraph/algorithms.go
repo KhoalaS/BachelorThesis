@@ -84,7 +84,7 @@ func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
 func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 	//defer LogTime(time.Now(), "SmallTriangleRule")
 	g := NewHyperGraph()
-	hashes :=make( map[string]bool)
+	hashes := make(map[string]bool)
 	exec := 0
 
 	// Time Compelxity: |V|^2
@@ -93,19 +93,14 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 			continue
 		}
 		arr := setToSlice(val)
-		subsets := list.New()
 		s := 2
-		getSubsetsRec(arr, s, subsets)
 
-		for item := subsets.Front(); item != nil; item = item.Next() {
-			subset := item.Value.([]int32)
-			//y := subset[0] and z := subset[1]
-			// triangle condition
-			if adjList[subset[0]][subset[1]] {
-				exec++
+		GetSubsetsRec3(arr, s, func(subset []int32) {
+			if adjList[subset[0]][subset[1]] || adjList[subset[1]][subset[0]] {
 				remSet := []int32{subset[0], subset[1], x}
 				hash := GetHash(remSet)
-				if _, ex := hashes[hash]; !ex {
+				if !hashes[hash] {
+					exec++
 					fmt.Printf("Add edge %d\r", exec)
 					g.AddEdge(remSet...)
 					for _, v := range remSet {
@@ -114,7 +109,7 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 					hashes[hash] = true
 				}
 			}
-		}
+		})
 	}
 	fmt.Println()
 	return g
