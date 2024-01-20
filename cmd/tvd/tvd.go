@@ -33,6 +33,9 @@ func main() {
 	adjList := make(map[int32]map[int32]bool)
 
 	graphtype := "CUSTOM"
+	if !flagPassed("in") {
+		graphtype = "ER"
+	}
 	var g *hypergraph.HyperGraph
 
 	timestamp := time.Now().Unix()
