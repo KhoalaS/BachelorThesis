@@ -56,6 +56,7 @@ func main(){
 
 	t := hypergraph.TriangleDetection(g)
 
+	g = &hypergraph.HyperGraph{}
 	g = ReduceToHS(t)
 
 	fmt.Printf("Found %d triangles\n",len(g.Edges))
