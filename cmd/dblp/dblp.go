@@ -13,7 +13,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 	"golang.org/x/text/encoding/ianaindex"
 )
 
@@ -97,12 +96,16 @@ func main(){
 					}
 				}
 
-				hypergraph.GetSubsetsRec3[Author](p.Authors, 2, func (sub []Author)  {
-					if _ ,ex := coauthor[authorId[sub[0].Name]]; !ex {
-						coauthor[authorId[sub[0].Name]] = make(map[int32]bool)
+				if len(p.Authors) > 1 {
+					a := p.Authors[0]
+					for i:=1; i<len(p.Authors); i++ {
+						if _ ,ex := coauthor[authorId[a.Name]]; !ex {
+							coauthor[authorId[a.Name]] = make(map[int32]bool)
+						}
+						coauthor[authorId[a.Name]][authorId[p.Authors[i].Name]] = true
 					}
-					coauthor[authorId[sub[0].Name]][authorId[sub[1].Name]] = true
-				})
+				}
+				
 				count++
 				fmt.Printf("Processed %d publications\r", count)
 			}
