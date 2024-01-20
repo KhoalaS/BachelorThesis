@@ -99,7 +99,7 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int{
+func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int {
 		
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
@@ -115,10 +115,10 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	fMasterFilename := fmt.Sprintf("./data/%s", masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist){
-			masterfile, _  = os.Create(fMasterFilename)
+		if errors.Is(err, os.ErrNotExist) {
+			masterfile, _ = os.Create(fMasterFilename)
 			masterfile.WriteString(header)
-		}else{
+		} else {
 			log.Fatalf("Could not open file %s", masterfilename)
 		}
 	}
