@@ -33,7 +33,7 @@ func main() {
 	adjList := make(map[int32]map[int32]bool)
 
 	graphtype := "CUSTOM"
-	if !flagPassed("in") {
+	if !flagPassed("i") {
 		graphtype = "ER"
 	}
 	var g *hypergraph.HyperGraph
