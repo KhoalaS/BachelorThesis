@@ -48,7 +48,7 @@ func main(){
 
 	graphtype := "CUSTOM"
 	if len(*in) > 0 {
-		g = hypergraph.ReadFromFileSimple(*in)
+		g = hypergraph.ReadFromFile(*in)
 	}else{
 		g = hypergraph.UniformERGraph(*n, *p, *evr, 2)
 		graphtype = "ER"
