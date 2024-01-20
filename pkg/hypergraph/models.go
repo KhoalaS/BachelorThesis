@@ -293,6 +293,26 @@ func UniformERGraph(n int, p float64, evr float64, size int) *HyperGraph {
 	return g
 }
 
+func UniformERGraphCallback(n int, p float64, evr float64, size int, callback func(edge []int32)) {
+	nArr := make([]int32, n)
+
+	for i := 0; i < n; i++ {
+		nArr[i] = int32(i)
+	}
+
+	if evr > 0 {
+		p = float64(n) * evr / float64(binomialCoefficient(n, size))
+	}
+
+	// Dont actually compute all of them but compute them one at at time
+
+	getSubsetsRec2(nArr, size, func(arg []int32) {
+		if rand.Float64() < p {
+			callback(arg)
+		}
+	})
+}
+
 func generate3PMatrix(r int, alpha float64) [][][]float64 {
 	p := make([][][]float64, r)
 
