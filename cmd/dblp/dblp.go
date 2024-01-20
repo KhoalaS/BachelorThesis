@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 	"golang.org/x/text/encoding/ianaindex"
@@ -31,7 +32,7 @@ type Author struct {
 
 func main(){
 
-	in := flag.String("-i", "./dblp.xml", "filepath to dblp.xml") 
+	in := flag.String("i", "./dblp.xml", "filepath to dblp.xml") 
 	flag.Parse()
 
 	f, err := os.Open(*in)
@@ -99,4 +100,24 @@ func main(){
 			}
 		}
 	}
+
+	fmt.Printf("\nProcessed all publications\n")
+	fmt.Println("Writing coauthor graph to file")
+
+	out, err := os.Create("./coauthor.txt")
+	if err != nil {
+		log.Fatal("Could not open file coauthor.txt")
+	}
+
+	count = 0
+	
+	for k, val := range coauthor {
+		for v := range val {
+			line := strconv.Itoa(int(k)) + " " + strconv.Itoa(int(v)) + "\n"
+			out.WriteString(line)
+			fmt.Printf("Processed %d edges\r", count)
+			count++
+		}
+	}
+	fmt.Println("Processed all edges")
 }
