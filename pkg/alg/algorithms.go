@@ -100,7 +100,7 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 }
 
 func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int {
-		
+
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 
@@ -191,6 +191,71 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
 
 		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
+			break
+		}
+	}
+
+	fmt.Println(execs)
+
+	return execs
+}
+
+func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
+
+	switch prio {
+	case 2:
+		exec := hypergraph.SmallTriangleRule(g, c)
+		execs["kTri"] += exec
+	}
+
+	for {
+		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+		kEdgeDom := hypergraph.EdgeDominationRule(g)
+		kVertDom := hypergraph.VertexDominationRule(g, c)
+		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+
+		kApVertDom := 0
+		kApDoubleVertDom := 0
+		kSmallEdgeDegTwo := 0
+		kTri := 0
+		kExtTri := 0
+		kSmall := 0
+
+		perm := make([]int, 6)
+		for i := range perm {
+			perm[i] = i
+		}
+
+		Shuffle[int](perm)
+
+		for i := 0; i < 6; i++ {
+			switch perm[i] {
+			case 0:
+				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c, false)
+			case 1:
+				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule(g, c)
+			case 2:
+				kSmallEdgeDegTwo = hypergraph.SmallEdgeDegreeTwoRule(g, c)
+			case 3:
+				kTri = hypergraph.SmallTriangleRule(g, c)
+			case 4:
+				kExtTri = hypergraph.ExtendedTriangleRule(g, c)
+			case 5:
+				kSmall = hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
+			}
+		}
+
+		execs["kTiny"] += kTiny
+		execs["kVertDom"] += kVertDom
+		execs["kEdgeDom"] += kEdgeDom
+		execs["kTri"] += kTri
+		execs["kExtTri"] += kExtTri
+		execs["kSmall"] += kSmall
+		execs["kApVertDom"] += kApVertDom
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+
+		if kTiny+kEdgeDom+kVertDom+kTri+kSmall+kApVertDom+kApDoubleVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
 			break
 		}
 	}
