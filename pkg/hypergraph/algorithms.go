@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"container/list"
+	"fmt"
 )
 
 func getSubsetsRec(arr []int32, s int, subsets *list.List) {
@@ -80,26 +81,11 @@ func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
 	return nil, false
 }
 
-func TriangleDetection(g *HyperGraph) []map[int32]bool {
+func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 	//defer LogTime(time.Now(), "SmallTriangleRule")
-	c := []map[int32]bool{}
-	adjList := make(map[int32]map[int32]bool)
+	g := NewHyperGraph()
+	hashes :=make( map[string]bool)
 	exec := 0
-
-	// Time Compelxity: |E|
-	for _, e := range g.Edges {
-		for v := range e.V {
-			if _, ex := adjList[v]; !ex {
-				adjList[v] = make(map[int32]bool)
-			}
-			for w := range e.V {
-				if v == w {
-					continue
-				}
-				adjList[v][w] = true
-			}
-		}
-	}
 
 	// Time Compelxity: |V|^2
 	for x, val := range adjList {
@@ -117,10 +103,19 @@ func TriangleDetection(g *HyperGraph) []map[int32]bool {
 			// triangle condition
 			if adjList[subset[0]][subset[1]] {
 				exec++
-				remSet := map[int32]bool{subset[0]: true, subset[1]: true, x: true}
-				c = append(c, remSet) 
+				remSet := []int32{subset[0], subset[1], x}
+				hash := GetHash(remSet)
+				if _, ex := hashes[hash]; !ex {
+					fmt.Printf("Add edge %d\r", exec)
+					g.AddEdge(remSet...)
+					for _, v := range remSet {
+						g.AddVertex(v, uint8(0))
+					}
+					hashes[hash] = true
+				}
 			}
 		}
 	}
-	return c
+	fmt.Println()
+	return g
 }
