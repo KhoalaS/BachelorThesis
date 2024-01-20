@@ -86,6 +86,22 @@ func WriteToFileSimple(g *HyperGraph, filepath string) bool {
 
 }
 
+func ReadFromFileSimpleCallback(filename string, callback func(line string)) {
+	file, err := os.Open(filename)
+	
+	if err != nil {
+		log.Fatalf("Could not open file '%s'", filename)
+	}
+	defer file.Close()
+	
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+ 
+	for scanner.Scan() {
+		callback(scanner.Text())
+	}
+}
+
 func ReadFromFileSimple(filename string) *HyperGraph{
 	file, err := os.Open(filename)
 	
