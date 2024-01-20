@@ -1,5 +1,7 @@
 package alg
 
+import "math/rand"
+
 func MakeExecs() map[string]int{
 	execs := make(map[string]int)
 	for _, k := range Labels {
@@ -17,4 +19,14 @@ func GetRatio(execs map[string]int) float64 {
 		denom += float64(Ratios[key].B * val)
 	}
 	return nom / denom
+}
+
+func Shuffle[V any](arr []V){
+	var t V
+	for i:=len(arr)-1; i>0; i--{
+		j := rand.Intn(i+1)
+		t = arr[i]
+		arr[i] = arr[j]
+		arr[j] = t
+	}
 }
