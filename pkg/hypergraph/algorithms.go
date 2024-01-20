@@ -45,6 +45,27 @@ func getSubsetsRec2(arr []int32, s int, do func(arg []int32)) {
 	rc(0, 0)
 }
 
+func GetSubsetsRec3[V any](arr []V, s int, do func(arg []V)) {
+	if len(arr) < s {
+		return
+	}
+	data := make([]V, s)
+	n := len(arr)
+	last := s - 1
+	var rc func(int, int)
+	rc = func(i, next int) {
+		for j := next; j < n; j++ {
+			data[i] = arr[j]
+			if i == last {
+				do(data)
+			} else {
+				rc(i+1, j+1)
+			}
+		}
+	}
+	rc(0, 0)
+}
+
 // Time Complexity: n
 func twoSum(items map[int32]int32, t int32) ([]int32, bool) {
 	lookup := make(map[int32]int32)
