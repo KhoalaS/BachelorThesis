@@ -115,9 +115,14 @@ func ReadFromFileSimple(filename string) *HyperGraph{
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	var lines []string
- 
+	
+	var line string
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		line = scanner.Text()
+		if line[0] == '#' {
+			continue
+		}
+		lines = append(lines, line)
 	}
   
 	for _, line := range lines {

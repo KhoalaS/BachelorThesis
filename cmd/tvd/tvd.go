@@ -48,6 +48,9 @@ func main() {
 
 		if len(*in) > 0 {
 			hypergraph.ReadFromFileSimpleCallback(*in, func(line string) {
+				if line[0] == '#' {
+					return
+				}
 				spl := strings.Fields(line)
 				a, _ = strconv.Atoi(spl[0])
 				b, _ = strconv.Atoi(spl[1])
