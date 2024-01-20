@@ -75,11 +75,11 @@ func main(){
 			}
 
 			if len(*in) > 0 {
-				g = hypergraph.ReadFromFileSimple(*in)
+				g = hypergraph.ReadFromFile(*in)
 			}else{
 				g = hypergraph.UniformERGraph(*n, *p, *evr, 2)
 			}
-			
+
 			t = hypergraph.TriangleDetection(g)
 			g = ReduceToHS(t)
 			c = make(map[int32]bool)
@@ -89,6 +89,5 @@ func main(){
 		fmt.Println(execs)
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
 	}
-
 }
 
