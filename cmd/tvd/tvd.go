@@ -48,7 +48,7 @@ func main() {
 
 		if len(*in) > 0 {
 			hypergraph.ReadFromFileSimpleCallback(*in, func(line string) {
-				spl := strings.Split(line, " ")
+				spl := strings.Fields(line)
 				a, _ = strconv.Atoi(spl[0])
 				b, _ = strconv.Atoi(spl[1])
 				if _, ex := adjList[int32(a)]; !ex {
@@ -70,12 +70,14 @@ func main() {
 				}
 				adjList[edge[0]][edge[1]] = true
 				adjList[edge[1]][edge[0]] = true
+
 			})
 			graphtype = "ER"
 		}
 
 		fmt.Println("Start Triangle detection and problem reduction")
 		g = hypergraph.TriangleDetection(adjList)
+
 		c := make(map[int32]bool)
 
 		var execs map[string]int

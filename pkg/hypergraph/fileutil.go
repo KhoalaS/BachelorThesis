@@ -121,7 +121,7 @@ func ReadFromFileSimple(filename string) *HyperGraph{
 	}
   
 	for _, line := range lines {
-		spl := strings.Split(strings.Trim(line, "\n"), " ")
+		spl := strings.Fields(line)
 		splInt32 := make([]int32, len(spl))
 		for i, v := range spl {
 			id, _ := strconv.Atoi(v)
