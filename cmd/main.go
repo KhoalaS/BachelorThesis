@@ -262,6 +262,7 @@ func main() {
 	prefAttachMod := flag.Bool("pamod", false, "")
 	er := flag.Bool("er", false, "")
 	logging := flag.Int("log", 0, "")
+	outdir := flag.String("d", "./data", "")
 
 	preset := flag.String("p", "", "Use a preconfigured chart preset. For available presets run with 'list -p'.")
 	list := flag.NewFlagSet("list", flag.ExitOnError)
@@ -342,7 +343,7 @@ func main() {
 		t := time.Now().Unix()
 		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
 		for i := 0; i < *logging; i++ {
-			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i)
+			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
 			if i == *logging - 1 {
 				break
 			}

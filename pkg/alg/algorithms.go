@@ -98,27 +98,27 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 	return true, c_n, execs_n
 }
 
-func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int) map[string]int {
+func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
 
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + ";\n"
 
-	os.Mkdir("data", 0700)
+	os.Mkdir(outdir, 0700)
 
-	logfilename := fmt.Sprintf("./data/%s_%.2f_%d.csv", graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
+	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv",outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
 	logfile, err := os.Create(logfilename)
 	if err != nil {
 		log.Fatalf("Could not create file %s", logfilename)
 	}
 
-	fMasterFilename := fmt.Sprintf("./data/%s", masterfilename)
+	fMasterFilename := fmt.Sprintf("%s/%s",outdir, masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
 			masterfile.WriteString(header)
 		} else {
-			log.Fatalf("Could not open file %s", masterfilename)
+			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
 	}
 

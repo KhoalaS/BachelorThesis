@@ -27,6 +27,7 @@ func main() {
 	p := flag.Float64("p", 0.5, "probability of adding an edge")
 	evr := flag.Float64("evr", 0.0, "targetted edge/vertex ratio, takes priority over p")
 	logging := flag.Int("log", 1, "log the number of rule executions, do log many runs")
+	outdir := flag.String("d", "./data", "output directory")
 
 	flag.Parse()
 
@@ -81,13 +82,15 @@ func main() {
 		fmt.Println("Start Triangle detection and problem reduction")
 		g = hypergraph.TriangleDetection(adjList)
 
+		fmt.Println(len(g.Vertices))
+
 		c := make(map[int32]bool)
 
 		var execs map[string]int
 
 		fmt.Println("Start 3-HS algorithm")
 		if flagPassed("log") {
-			execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i)
+			execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
 		} else {
 			execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
 		}
