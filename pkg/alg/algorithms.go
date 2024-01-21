@@ -1,6 +1,7 @@
 package alg
 
 import (
+	"bufio"
 	"context"
 	_ "embed"
 	"errors"
@@ -110,6 +111,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	if err != nil {
 		log.Fatalf("Could not create file %s", logfilename)
 	}
+	logWriter := bufio.NewWriter(logfile)
 
 	fMasterFilename := fmt.Sprintf("%s/%s",outdir, masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
@@ -125,7 +127,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	defer logfile.Close()
 	defer masterfile.Close()
 
-	logfile.WriteString(header)
+	logWriter.WriteString(header)
 
 	execs := MakeExecs()
 	msg := ""
@@ -139,9 +141,10 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 			msg += fmt.Sprintf("%d;", execs[v])
 		}
 		msg += "\n"
-		logfile.WriteString(msg)
+		logWriter.WriteString(msg)
 	}
 	masterfile.WriteString(msg)
+	logWriter.Flush()
 	return execs
 }
 
