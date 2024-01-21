@@ -13,7 +13,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/KhoalaS/BachelorThesis/pkg"
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
 
@@ -22,7 +21,7 @@ var scriptCode string
 
 var Labels = []string{"kTiny", "kVertDom", "kEdgeDom", "kSmall", "kTri", "kExtTri", "kApVertDom", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
 
-var Ratios = map[string]pkg.IntTuple{
+var Ratios = map[string]IntTuple{
 	"kTiny":            {A: 1, B: 1},
 	"kSmall":           {A: 2, B: 1},
 	"kTri":             {A: 3, B: 2},
