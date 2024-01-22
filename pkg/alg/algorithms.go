@@ -102,7 +102,7 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
 
 	header := "Ratio;"
-	header += strings.Join(Labels, ";") + ";\n"
+	header += strings.Join(Labels, ";") + "\n"
 
 	os.Mkdir(outdir, 0700)
 
@@ -140,7 +140,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		for _, v := range Labels {
 			msg += fmt.Sprintf("%d;", execs[v])
 		}
-		msg += "\n"
+		msg = msg[:len(msg)-1] + "\n"
 		logWriter.WriteString(msg)
 	}
 	masterfile.WriteString(msg)
