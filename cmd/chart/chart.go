@@ -17,6 +17,16 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
+func generateBoxPlotItems(boxPlotData [][]float64) []opts.BoxPlotData {
+	items := make([]opts.BoxPlotData, 0)
+	for i := 0; i < len(boxPlotData); i++ {
+		items = append(items, opts.BoxPlotData{Value: boxPlotData[i]})
+	}
+	return items
+}
+
+// works in theory, but the data needs to be prepared first
+
 func main() {
 	in := flag.String("d", "./data", "path to folder with csv files")
 	start := flag.Int("start", 1, "if placeholder is used in path, first value to be used")
@@ -25,7 +35,6 @@ func main() {
 	flag.Parse()
 
 	ratios := [][]float64{}
-	ratioItems := []opts.BoxPlotData{}
 
 	box := charts.NewBoxPlot()
 	box.SetGlobalOptions(
@@ -88,9 +97,6 @@ func main() {
 				ratio, _ := strconv.ParseFloat(record[0], 64)
 				ratios[i-*start] = append(ratios[i-*start], ratio)
 			}
-
-			ratioItems = append(ratioItems, opts.BoxPlotData{Value: ratios[i-*start]})
-
 		}
 
 	}
@@ -102,7 +108,7 @@ func main() {
 	}
 
 	box.SetXAxis(labels)
-	box.AddSeries("Ratio", ratioItems)
+	box.AddSeries("Ratio", generateBoxPlotItems(ratios))
 	outfile, err := os.OpenFile("./out/out.html", os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatal("Could not open ./out/out.html")
