@@ -1,9 +1,14 @@
-from pyecharts.charts import Boxplot
+from pyecharts.charts import Boxplot, Line
 import argparse
 import os
 import csv
 from pyecharts import options as opts
-import math
+import statistics as st
+
+
+def floatFormat(params):
+    return str(round(params.data, 2))
+
 
 parser = argparse.ArgumentParser(
     prog='chart.py',
@@ -52,11 +57,22 @@ for i in range(args.s, args.t+1):
 
 seq = [args.s + x for x in range(0, len(ratios))]
 
+minval = round(minval, 1)
+avgs = []
+for arr in ratios:
+    avgs.append(st.mean(arr))
+
+line = Line()
+line.add_xaxis(range(0, len(avgs))).add_yaxis("mean", avgs, yaxis_index=1)
+line.set_series_opts(label_opts=opts.LabelOpts(
+    is_show=False), itemstyle_opts=opts.ItemStyleOpts(color="orange"))
+
 box = Boxplot()
 box.add_xaxis(seq)
-box.add_yaxis("Ratios", box.prepare_data(ratios))
+box.add_yaxis("est. appr. ratio", box.prepare_data(ratios))
+box.extend_axis(yaxis=opts.AxisOpts(min_=minval))
 
-minval = round(minval, 1)
-box.set_global_opts(yaxis_opts=opts.AxisOpts(min_= minval))
-
+box.set_global_opts(title_opts=opts.TitleOpts(title="Triangle Vertex Deletion for ER graphs", subtitle="1000 vertices, Edge\\Vertex ratios of 10-25"),
+                    yaxis_opts=opts.AxisOpts(min_=minval), xaxis_opts=opts.AxisOpts(name="EVR", name_gap=30))
+box.overlap(line)
 box.render()
