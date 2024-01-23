@@ -9,3 +9,4 @@ graphs
 data
 test.go
 coauthor.txt
+**/__pycache__
