@@ -631,13 +631,13 @@ for key, val := range execs {
 
 We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 vertices. We calculateted the estimated approximation factor for these graphs. We did this for ratios $r = \frac{|E|}{|V|}$ of 1 to 20.
 
-![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/line_fac.png)
+![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](img/line_fac.png)
 
 We also looked at the number of rule executions for $r=1$ and $r=10$.
 
-![Number of Rule Executions, $r=1$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_1.png)
+![Number of Rule Executions, $r=1$](img/bar_ex_1.png)
 
-![Number of Rule Executions, $r=10$](https://raw.githubusercontent.com/KhoalaS/BachelorThesis/main/img/bar_ex_10.png)
+![Number of Rule Executions, $r=10$](img/bar_ex_10.png)
 
 Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.
 
@@ -647,7 +647,37 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 **Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
-# Applications
+# Applications and Results
+
+## Triangle Vertex Deletion
+[PROBLEM DEFINITION]
+
+\textsc{Triangle Vertex Deletion} can be reduced to the \textsc{3-Hitting Set} problem. Triangles in the input graph will be represented as size 3 edges in a hypergraph, containing the vertices that make up the triangle. 
+
+We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component, due to RAM limitations of the test rig. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
+
+![Triangle Vertex Deletion on a DBLP coauthor graph, the ratio was calculated after every execution of the F3 rule](img/dblp_tvd_ratio.png)
+
+![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
+
+The algorithm achieved a estimated approximation ratio of $1.844202$.
+
+Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR. 
+
+![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
+
+![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=10](img/er_tvd_rules_1.png)
+
+
+![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=20](img/er_tvd_rules_2.png)
+
+## Cluster Vertex Deletion
+
+## Preferential Attachment Hypergraphs
+
+![](img/pa_ratio.png)
+![](img/pa_rules_02.png)
+![](img/pa_rules_05.png)
 
 # Testing
 
