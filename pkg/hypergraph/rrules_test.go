@@ -222,6 +222,33 @@ func TestSmallEdgeDegreeTwoRule(t *testing.T) {
 	}
 }
 
+func TestF3TargetLowDegree(t *testing.T) {
+	g := NewHyperGraph()
+	for i := 0; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
+	}
+
+	g.AddEdge(0, 1)
+	g.AddEdge(1, 2, 3)
+	g.AddEdge(4, 3, 5)
+
+	c := make(map[int32]bool)
+	F3TargetLowDegree(g, c)
+
+	if !(c[3] && c[4] && c[5]){
+		t.Log("Partial solution is wrong.")
+	}
+}
+
+func BenchmarkF3TargetLowDegree(b *testing.B){
+	g := TestGraph(100000, 200000, false)
+	c := make(map[int32]bool)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		F3TargetLowDegree(g, c)
+	}
+}
+
 func BenchmarkSmallDegreeTwoRule(b *testing.B) {
 	g := TestGraph(100000, 200000, false)
 	c := make(map[int32]bool)
