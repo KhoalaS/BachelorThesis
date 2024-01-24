@@ -924,6 +924,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	}
 	var closest int32 = 1000000
 	var closestId int32 = -1
+	var remEdge int32 = -1
 
 	for vId, val := range vDeg {
 		if val < closest {
@@ -931,11 +932,39 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 			closestId = vId
 		}
 		if val == 2 {
-			break
+			found := false
+			for e := range incMap[closestId] {
+				for v := range g.Edges[e].V {
+					for f := range incMap[v] {
+						if !g.Edges[f].V[closestId] {
+							found = true
+							remEdge = f
+							break
+						}
+						if found {
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
+			if found {
+				for v := range g.Edges[remEdge].V {
+					c[v] = true
+					g.RemoveVertex(v)
+					for e := range incMap[v] {
+						g.RemoveEdge(e)
+					}
+				}
+				return 1
+			}
 		}
 	}
-
-	var remEdge int32 = -1
 
 	for e := range incMap[closestId] {
 		found := false
