@@ -20,5 +20,5 @@ out.write(text)
 out.close()
 
 code = os.system(
-    "pandoc -H header.tex --number-sections --toc -V geometry:margin=1in out/out.MD -o notes.pdf --bibliography=./lit.bib --csl=./ieee.csl")
+    "pandoc --verbose -H header.tex --number-sections --toc -V geometry:margin=1in out/out.MD -o notes.pdf --bibliography=./lit.bib --csl=./ieee.csl")
 exit(code)
