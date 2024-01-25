@@ -660,7 +660,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $1.844202$.
+The algorithm achieved a estimated approximation ratio of $1.845276$.
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR. 
 
@@ -678,6 +678,12 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 ![](img/pa_ratio.png)
 ![](img/pa_rules_02.png)
 ![](img/pa_rules_05.png)
+
+## 3-Unifrom ER Hypergraphs
+
+![](img/eru3_ratio.png)
+![](img/eru3_rules_1.png)
+![](img/eru3_rules_2.png)
 
 # Testing
 
