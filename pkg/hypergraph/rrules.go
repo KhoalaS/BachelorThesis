@@ -935,7 +935,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 			found := false
 			for e := range incMap[closestId] {
 				for v := range g.Edges[e].V {
-					if v == closestId{
+					if v == closestId {
 						continue
 					}
 					for f := range incMap[v] {
@@ -972,7 +972,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	for e := range incMap[closestId] {
 		found := false
 		for v := range g.Edges[e].V {
-			if v == closestId{
+			if v == closestId {
 				continue
 			}
 			for f := range incMap[v] {
@@ -1008,6 +1008,115 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	return 1
 }
 
+func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
+	defer LogTime(time.Now(), "detectLowDegreeEdge")
+
+	vDeg := make(map[int32]int32)
+	incMap := make(map[int32]map[int32]bool)
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			vDeg[v]++
+			if _, ex := incMap[v]; !ex {
+				incMap[v] = make(map[int32]bool)
+			}
+			incMap[v][eId] = true
+		}
+	}
+	var closest int32 = 1000000
+	var closestId int32 = -1
+	var remEdge int32 = -1
+
+	for vId, val := range vDeg {
+		if val < closest {
+			closest = val
+			closestId = vId
+		}
+		if val == 2 {
+			found := false
+			for e := range incMap[closestId] {
+				for v := range g.Edges[e].V {
+					if v == closestId {
+						continue
+					}
+					for f := range incMap[v] {
+						if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
+							found = true
+							remEdge = f
+							break
+						}
+						if found {
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
+			if found {
+				for v := range g.Edges[remEdge].V {
+					c[v] = true
+					g.RemoveVertex(v)
+					for e := range incMap[v] {
+						g.RemoveEdge(e)
+					}
+				}
+				return 1
+			}
+		}
+	}
+
+	for e := range incMap[closestId] {
+		found := false
+		for v := range g.Edges[e].V {
+			if v == closestId {
+				continue
+			}
+			for f := range incMap[v] {
+				if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
+					found = true
+					remEdge = f
+					break
+				}
+				if found {
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+
+	if remEdge < 0 {
+		return F3Prepocess(g, c, 1)
+	}
+
+	h := GetFrontierGraph(g, incMap, 3, remEdge)
+	c_h := make(map[int32]bool)
+	for i := 1; i<10; i++ {
+		execs := make(map[string]int)
+		applyRules(h, c_h, execs, i)
+		fmt.Println(execs)
+	}
+
+	for v := range g.Edges[remEdge].V {
+		c[v] = true
+		g.RemoveVertex(v)
+		for e := range incMap[v] {
+			g.RemoveEdge(e)
+		}
+	}
+	return 1
+}
+
 func setToSlice[K comparable, V any](m map[K]V) []K {
 	arr := make([]K, len(m))
 
@@ -1023,4 +1132,67 @@ func setToSlice[K comparable, V any](m map[K]V) []K {
 type IdValueHolder struct {
 	Id    int32
 	Value int32
+}
+
+func applyRules(g *HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
+
+	switch prio {
+	case 1:
+		exec := RemoveEdgeRule(g, c, TINY)
+		execs["kTiny"] += exec
+	case 2:
+		exec := EdgeDominationRule(g)
+		execs["kEdgeDom"] += exec
+	case 3:
+		exec := VertexDominationRule(g, c)
+		execs["kVertDom"] += exec
+	case 4:
+		exec := ApproxVertexDominationRule(g, c, false)
+		execs["kApVertDom"] += exec
+	case 5:
+		exec := ApproxDoubleVertexDominationRule(g, c)
+		execs["kApDoubleVertDom"] += exec
+	case 6:
+		exec := SmallEdgeDegreeTwoRule(g, c)
+		execs["kSmallEdgeDegTwo"] += exec
+	case 7:
+		exec := SmallTriangleRule(g, c)
+		execs["kTri"] += exec
+	case 8:
+		exec := ExtendedTriangleRule(g, c)
+		execs["kExtTri"] += exec
+	case 9:
+		exec := RemoveEdgeRule(g, c, SMALL)
+		execs["kSmall"] += exec
+	}
+
+
+	for {
+		kTiny := RemoveEdgeRule(g, c, TINY)
+		kEdgeDom := EdgeDominationRule(g)
+		kVertDom := VertexDominationRule(g, c)
+		kTiny += RemoveEdgeRule(g, c, TINY)
+		kApVertDom := ApproxVertexDominationRule(g, c, false)
+		kApDoubleVertDom := ApproxDoubleVertexDominationRule(g, c)
+		kSmallEdgeDegTwo := SmallEdgeDegreeTwoRule(g, c)
+		kTri := SmallTriangleRule(g, c)
+		kExtTri := ExtendedTriangleRule(g, c)
+		kSmall := RemoveEdgeRule(g, c, SMALL)
+
+		execs["kTiny"] += kTiny
+		execs["kVertDom"] += kVertDom
+		execs["kEdgeDom"] += kEdgeDom
+		execs["kTri"] += kTri
+		execs["kExtTri"] += kExtTri
+		execs["kSmall"] += kSmall
+		execs["kApVertDom"] += kApVertDom
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+
+		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
+			break
+		}
+	}
+
+	return execs
 }
