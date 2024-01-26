@@ -177,7 +177,7 @@ func NewEdge(eps map[int32]bool) *Edge {
 }
 
 // Time Complexity: 2d + d*log(d)
-func (e *Edge) getHash() string {
+func (e Edge) getHash() string {
 
 	arr := make([]int32, len(e.V))
 	var i int32 = 0
