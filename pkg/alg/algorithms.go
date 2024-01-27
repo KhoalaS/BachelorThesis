@@ -155,10 +155,10 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) ma
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-		kFallback, nextPrio := hypergraph.F3TargetLowDegree2(g, c)
+		kFallback := hypergraph.F3TargetLowDegree(g, c)
 		execs["kFallback"] += kFallback
 		f3++
-		prio = nextPrio
+		//prio = nextPrio
 	}
 	return execs
 }
@@ -176,7 +176,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c, false)
+		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
 		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		kApDoubleVertDom := 0
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
