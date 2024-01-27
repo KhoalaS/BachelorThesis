@@ -235,7 +235,7 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 		for i := 0; i < 6; i++ {
 			switch perm[i] {
 			case 0:
-				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c, false)
+				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c)
 			case 1:
 				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule(g, c)
 			case 2:

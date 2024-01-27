@@ -140,10 +140,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	return exec
 }
 
-func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int {
-	//defer LogTime(time.Now(), "ApproxVertexDominationRule")
-
-	vDeg := make(map[int32]int)
+func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	adjCount := make(map[int32]map[int32]int32)
 	inc := make(map[int32]map[int32]bool)
 
@@ -175,21 +172,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 		solFound = false
 
 		for vId, count := range adjCount {
-			if c[vId] {
-				// TODO: check if this is just a remnant of an earlier version
-				// would be concerning if still needed
-				fmt.Println("Uhh this should not happen")
-				continue
-			}
-
-			// probably not relevant anymore
-			// used to be a lock mechanism to not trigger this rule on deg 1 vertices
-			// and reserve these edges for the vertex dom rule
-			if lock && vDeg[vId] == 1 {
-				continue
-			}
-
-			solution, ex := twoSum(count, int32(vDeg[vId]+1))
+			solution, ex := twoSum(count, int32(g.VDeg[vId]+1))
 			if !ex {
 				continue
 			}

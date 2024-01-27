@@ -103,7 +103,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 	g.AddEdge(1, 4)
 
 	c := make(map[int32]bool)
-	ApproxVertexDominationRule(g, c, false)
+	ApproxVertexDominationRule(g, c)
 
 	// possible solutions: [2,7], [0,2], [2,3]
 
@@ -324,7 +324,7 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxVertexDominationRule(g, c, false)
+		ApproxVertexDominationRule(g, c)
 	}
 
 }
