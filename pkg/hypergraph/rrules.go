@@ -814,8 +814,9 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 						log.Panic("uhhh this should not happen")
 					}
 					for a := range g.Edges[f_0].V {
+						c[a] = true
 						for h := range g.IncMap[a] {
-							remEdges[h] = true
+							g.RemoveEdge(h)
 						}
 						delete(g.IncMap, a)
 						g.RemoveVertex(a)
@@ -828,8 +829,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 					delete(g.IncMap, z)
 					g.RemoveVertex(z)
 					c[z] = true
-
-					for h := range remEdges {
+					for h := range g.IncMap[z] {
 						g.RemoveEdge(h)
 					}
 					break
