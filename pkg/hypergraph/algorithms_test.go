@@ -4,18 +4,18 @@ import (
 	"container/list"
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTwoSum(t *testing.T) {
-	values := map[int32]int32{0: 2, 1: 4, 2: 4, 3: 6}
+	values := map[int32]int32{0: 4, 1: 3, 2: 1}
 
-	solution, _ := twoSum(values, int32(10))
-	sol := map[int32]bool{1: true, 3: true, 2: true}
+	solution, _ := twoSum(values, int32(7))
+	sol := map[int32]bool{0: true, 1: true, 2: true}
 
 	for _, val := range solution {
-		if !sol[val] {
-			t.Fatalf("ID %d is not part of the solution", val)
-		}
+		assert.Equal(t, true, sol[val])
 	}
 }
 
@@ -26,17 +26,14 @@ func TestGetSubsetsRec(t *testing.T) {
 	arr := []int32{0, 1, 2}
 	subsets := list.New()
 	size := 2
+	sol := map[string]bool{"|0|1|": true, "|0|2|": true, "|1|2|": true}
 
 	getSubsetsRec(arr, size, subsets)
 
-	if subsets.Len() != 3 {
-		t.Fatalf("Solution has size %d, expected 3.", subsets.Len())
-	}
+	assert.Equal(t, 3, subsets.Len())
 
-	for item := subsets.Front().Next(); item != nil; item = item.Next() {
-		//if !hashes[getHash(item.Value.([]int32))] {
-		//	t.Fatalf("Solution %d is not a size two subset of [0,1,2].", item.Value.([]int32))
-		//}
+	for item := subsets.Front(); item != nil; item = item.Next() {
+		assert.Equal(t, true, sol[GetHash(item.Value.([]int32))])
 	}
 }
 
