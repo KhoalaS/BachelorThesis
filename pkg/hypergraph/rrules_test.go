@@ -6,9 +6,13 @@ import (
 	"os"
 	"runtime/pprof"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEdgeDominationRule(t *testing.T) {
+	assert := assert.New(t)
+
 	var vSize int32 = 5
 	g := NewHyperGraph()
 
@@ -25,27 +29,30 @@ func TestEdgeDominationRule(t *testing.T) {
 	EdgeDominationRule(g)
 
 	// since edge 0 is a strict superset of edge 1, edge 0 will be removed by the rule.
-
-	if len(g.Edges) != 2 {
-		t.Fatalf("Graph g has %d edges, the expected number is 2.", len(g.Edges))
-	}
+	assert.Equal(2, len(g.Edges))
 
 	for _, edge := range g.Edges {
-		if len(edge.V) != 2 {
-			t.Fatalf("The wrong edge has been removed.")
-		}
+		assert.Equal(2, len(edge.V), "The wrong edge has been removed.")
 	}
 
+	// incidence
+	assert.Equal(1, len(g.IncMap[0]))
+	assert.Equal(2, len(g.IncMap[1]))
+	assert.Equal(1, len(g.IncMap[4]))
+
+	//degree
+	assert.Equal(int32(1), g.VDeg[0])
+	assert.Equal(int32(2), g.VDeg[1])
+	assert.Equal(int32(1), g.VDeg[4])
 }
 
 func TestRemoveEdgeRule(t *testing.T) {
-	var vSize int32 = 8
+	assert := assert.New(t)
+
 	g := NewHyperGraph()
 
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
+	for i := 0; i < 8; i++ {
+		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 3, 2)
@@ -59,6 +66,11 @@ func TestRemoveEdgeRule(t *testing.T) {
 	// this rule will remove edge (1) and will put vertex 1 into the partial solution
 	// after putting vertex 1 into c1, edge (1,6,7) will be removed since vertex 1 is an element of it
 	RemoveEdgeRule(g, c, TINY)
+	assert.Equal(6, len(g.Vertices))
+	assert.Equal(6, len(g.VDeg))
+	assert.Equal(6, len(g.IncMap), g.IncMap)
+
+
 
 	// this rule will remove edge (2,4) and will put both vertex 2 and 4 into the partial solution c2
 	// after putting vertex 2 and 4 into c2, edge (0,3,2) will be removed analogous to previous rule call
@@ -115,6 +127,7 @@ func TestApproxVertexDominationRule3(t *testing.T) {
 		t.Fatalf("Partial solution is wrong.")
 	}
 	t.Log(c)
+	t.Log(g.IncMap)
 	t.Log(g)
 }
 
@@ -235,12 +248,12 @@ func TestF3TargetLowDegree(t *testing.T) {
 	c := make(map[int32]bool)
 	F3TargetLowDegree(g, c)
 
-	if !(c[3] && c[4] && c[5]){
+	if !(c[3] && c[4] && c[5]) {
 		t.Log("Partial solution is wrong.")
 	}
 }
 
-func BenchmarkF3TargetLowDegree(b *testing.B){
+func BenchmarkF3TargetLowDegree(b *testing.B) {
 	g := TestGraph(100000, 200000, false)
 	c := make(map[int32]bool)
 	b.ResetTimer()
