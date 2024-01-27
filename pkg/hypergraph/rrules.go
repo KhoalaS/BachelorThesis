@@ -225,13 +225,8 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 				yz, _ = SetMinus(edge, x)
 
 				for f := range g.IncMap[x] {
-					for _, v := range yz {
-						if !g.Edges[f].V[v] {
-							found = false
-						}
-						break
-					}
-					if !found {
+					if !g.Edges[f].V[yz[0]] && !g.Edges[f].V[yz[1]] {
+						found = false
 						break
 					}
 				}
