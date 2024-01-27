@@ -60,14 +60,14 @@ func binomialCoefficient(n int, k int) int {
 	return int(math.Ceil(c))
 }
 
-func GetFrontierGraph(g *HyperGraph, incMap map[int32]map[int32]bool, level int, remId int32) *HyperGraph {
+func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 	g2 := NewHyperGraph()
 	frontier := make(map[int32]bool)
 	remEdge := g.Edges[remId]
 	hashes := make(map[string]bool)
 
 	for v := range g.Edges[remId].V {
-		for e := range incMap[v] {
+		for e := range g.IncMap[v] {
 			for w := range g.Edges[e].V {
 				if !g.Edges[remId].V[w] {
 					frontier[w] = true
@@ -80,7 +80,7 @@ func GetFrontierGraph(g *HyperGraph, incMap map[int32]map[int32]bool, level int,
 	for i := 0; i < level; i++ {
 		nextFrontier := make(map[int32]bool)
 		for v := range frontier {
-			for e := range incMap[v] {
+			for e := range g.IncMap[v] {
 				found := true
 				for w := range g.Edges[e].V {
 					if remEdge.V[w] {
