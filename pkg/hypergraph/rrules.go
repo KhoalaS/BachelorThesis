@@ -230,9 +230,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 						break
 					}
 				}
-				if !found {
-					continue
-				} else {
+				if found {
 					break
 				}
 			}
