@@ -12,6 +12,8 @@ import (
 // General TODO:
 // Build an interface ontop of the HyperGraph class and inplement the "crud" there
 
+const logging = true
+
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
 	defer wg.Done()
@@ -52,7 +54,9 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 
 func EdgeDominationRule(g *HyperGraph) int {
 	var wg sync.WaitGroup
-	//defer LogTime(time.Now(), "EdgeDomination")
+	if logging {
+		defer LogTime(time.Now(), "EdgeDomination")
+	}
 
 	subEdges := make(map[string]bool)
 	domEdges := []int32{}
@@ -108,7 +112,10 @@ func EdgeDominationRule(g *HyperGraph) int {
 // Time Complexity: |E| * d
 
 func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
-	//defer LogTime(time.Now(), "RemoveEdgeRule")
+	if logging {
+		defer LogTime(time.Now(), "RemoveEdgeRule")
+	}
+
 	rem := make(map[int32]bool)
 	inc := make(map[int32]map[int32]bool)
 	exec := 0
@@ -141,8 +148,9 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 }
 
 func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	adjCount := make(map[int32]map[int32]int32)
-	inc := make(map[int32]map[int32]bool)
+	if logging {
+		defer LogTime(time.Now(), "ApproxVertexDominationRule")
+	}
 
 	exec := 0
 
@@ -210,10 +218,9 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "VertexDominationRule")
-
-	vDeg := make(map[int32]int32)
-	incList := make(map[int32]map[int32]bool)
+	if logging {
+		defer LogTime(time.Now(), "VertexDominationRule")
+	}
 	exec := 0
 
 	for eId, e := range g.Edges {
@@ -268,9 +275,9 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
-
-	incList := make(map[int32]map[int32]bool)
+	if logging {
+		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+	}
 	exec := 0
 	s3Arr := make([]int8, g.edgeCounter)
 
@@ -512,8 +519,9 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 }
 
 func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "SmallTriangleRule")
-
+	if logging {
+		defer LogTime(time.Now(), "SmallTriangleRule")
+	}
 	adjList := make(map[int32]map[int32]bool)
 	remVertices := make(map[int32]bool)
 	remEdges := make(map[int32]bool)
@@ -674,7 +682,9 @@ func F3Prepocess2(g *HyperGraph, c map[int32]bool, incMap map[int32]map[int32]bo
 }
 
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
+	if logging {
+		LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
+	}
 
 	exec := 0
 	vDeg := make(map[int32]int)
@@ -815,8 +825,9 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 }
 
 func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "ExtendedTriangleRule")
-
+	if logging {
+		defer LogTime(time.Now(), "ExtendedTriangleRule")
+	}
 	exec := 0
 	incMap := make(map[int32]map[int32]bool)
 
@@ -935,19 +946,8 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
-	//defer LogTime(time.Now(), "detectLowDegreeEdge")
-
-	vDeg := make(map[int32]int32)
-	incMap := make(map[int32]map[int32]bool)
-
-	for eId, e := range g.Edges {
-		for v := range e.V {
-			vDeg[v]++
-			if _, ex := incMap[v]; !ex {
-				incMap[v] = make(map[int32]bool)
-			}
-			incMap[v][eId] = true
-		}
+	if logging {
+		defer LogTime(time.Now(), "detectLowDegreeEdge")
 	}
 	var closest int32 = 1000000
 	var closestId int32 = -1
@@ -1036,6 +1036,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 }
 
 func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
+	if logging {
 	defer LogTime(time.Now(), "detectLowDegreeEdge")
 
 	vDeg := make(map[int32]int32)
