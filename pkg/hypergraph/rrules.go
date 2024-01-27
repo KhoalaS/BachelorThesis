@@ -168,7 +168,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		solFound = false
 
 		for vId, count := range adjCount {
-			solution, ex := twoSum(count, int32(g.VDeg[vId]+1))
+			solution, ex := twoSum(count, int32(g.Deg(vId)+1))
 			if !ex {
 				continue
 			}
@@ -264,8 +264,8 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 	for outer := true; outer; {
 		outer = false
-		for v := range g.VDeg {
-			vCount := make(map[int32]int32)
+		for v := range g.IncMap {
+			vCount := make(map[int32]int)
 			for e := range g.IncMap[v] {
 				for w := range g.Edges[e].V {
 					vCount[w]++
@@ -277,7 +277,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 			//var vDom int32 = -1
 
 			for _, value := range vCount {
-				if value == g.VDeg[v] {
+				if value == g.Deg(v) {
 					dom = true
 					//	vDom = key
 					break
@@ -644,7 +644,8 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 
 	for {
 		outer := false
-		for v, deg := range g.VDeg {
+		for v := range g.IncMap {
+			deg := g.Deg(v)
 			if deg != 2 {
 				continue
 			}
@@ -855,12 +856,12 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	var closestId int32 = -1
 	var remEdge int32 = -1
 
-	for vId, val := range g.VDeg {
-		if val < closest {
-			closest = val
+	for vId := range g.IncMap {
+		deg := g.Deg(vId)
+			closest = deg
 			closestId = vId
 		}
-		if val == 2 {
+		if deg == 2 {
 			found := false
 			for e := range g.IncMap[closestId] {
 				for v := range g.Edges[e].V {
@@ -945,12 +946,10 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
 	var closestId int32 = -1
 	var remEdge int32 = -1
 
-	for vId, val := range g.VDeg {
-		if val < closest {
-			closest = val
+	for vId := range g.IncMap {
 			closestId = vId
 		}
-		if val == 2 {
+		if deg == 2 {
 			found := false
 			for e := range g.IncMap[closestId] {
 				for v := range g.Edges[e].V {
