@@ -155,8 +155,10 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) ma
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
+		kFallback, nextPrio := hypergraph.F3TargetLowDegree2(g, c)
+		execs["kFallback"] += kFallback
 		f3++
+		prio = nextPrio
 	}
 	return execs
 }

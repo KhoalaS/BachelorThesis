@@ -203,3 +203,8 @@ const (
 	SMALL = 2
 )
 
+type IntTuple struct {
+	A int
+	B int
+}
+

@@ -52,7 +52,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 
 func EdgeDominationRule(g *HyperGraph) int {
 	var wg sync.WaitGroup
-	defer LogTime(time.Now(), "EdgeDomination")
+	//defer LogTime(time.Now(), "EdgeDomination")
 
 	subEdges := make(map[string]bool)
 	domEdges := []int32{}
@@ -108,7 +108,7 @@ func EdgeDominationRule(g *HyperGraph) int {
 // Time Complexity: |E| * d
 
 func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
-	defer LogTime(time.Now(), "RemoveEdgeRule")
+	//defer LogTime(time.Now(), "RemoveEdgeRule")
 	rem := make(map[int32]bool)
 	inc := make(map[int32]map[int32]bool)
 	exec := 0
@@ -141,7 +141,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 }
 
 func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int {
-	defer LogTime(time.Now(), "ApproxVertexDominationRule")
+	//defer LogTime(time.Now(), "ApproxVertexDominationRule")
 
 	vDeg := make(map[int32]int)
 	adjCount := make(map[int32]map[int32]int32)
@@ -227,7 +227,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool, lock bool) int 
 }
 
 func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "VertexDominationRule")
+	//defer LogTime(time.Now(), "VertexDominationRule")
 
 	vDeg := make(map[int32]int32)
 	incList := make(map[int32]map[int32]bool)
@@ -285,7 +285,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+	//defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
 
 	incList := make(map[int32]map[int32]bool)
 	exec := 0
@@ -529,7 +529,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 }
 
 func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "SmallTriangleRule")
+	//defer LogTime(time.Now(), "SmallTriangleRule")
 
 	adjList := make(map[int32]map[int32]bool)
 	remVertices := make(map[int32]bool)
@@ -646,8 +646,52 @@ func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
 	return i
 }
 
+func F3Prepocess2(g *HyperGraph, c map[int32]bool, incMap map[int32]map[int32]bool) (int, int) {
+	remVertices := make(map[int32]bool)
+	var remId int32
+
+	for eId, e := range g.Edges {
+		if len(e.V) == 3 {
+			for v := range e.V {
+				remVertices[v] = true
+			}
+			remId = eId
+			break
+		}
+	}
+
+	if len(remVertices) == 0 {
+		return 0, 0
+	}
+
+	h := GetFrontierGraph(g, incMap, 3, remId)
+	c_h := make(map[int32]bool)
+	bestRatio := 3.0
+	rule := 0
+	for i := 1; i < 10; i++ {
+		execs := make(map[string]int)
+		applyRules(h, c_h, execs, i)
+		r := getRatio(execs)
+		if r < bestRatio {
+			bestRatio = r
+			rule = i
+			fmt.Println("rand", i, r, execs)
+		}
+	}
+
+	for eId, e := range g.Edges {
+		for v := range e.V {
+			if remVertices[v] {
+				g.RemoveEdge(eId)
+				break
+			}
+		}
+	}
+	return 1, rule
+}
+
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
+	//defer LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
 
 	exec := 0
 	vDeg := make(map[int32]int)
@@ -788,7 +832,7 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 }
 
 func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "ExtendedTriangleRule")
+	//defer LogTime(time.Now(), "ExtendedTriangleRule")
 
 	exec := 0
 	incMap := make(map[int32]map[int32]bool)
@@ -908,7 +952,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
-	defer LogTime(time.Now(), "detectLowDegreeEdge")
+	//defer LogTime(time.Now(), "detectLowDegreeEdge")
 
 	vDeg := make(map[int32]int32)
 	incMap := make(map[int32]map[int32]bool)
@@ -1008,7 +1052,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	return 1
 }
 
-func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
+func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
 	defer LogTime(time.Now(), "detectLowDegreeEdge")
 
 	vDeg := make(map[int32]int32)
@@ -1058,6 +1102,21 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
 				}
 			}
 			if found {
+				h := GetFrontierGraph(g, incMap, 3, remEdge)
+				c_h := make(map[int32]bool)
+				bestRatio := 3.0
+				rule := 0
+				for i := 1; i < 10; i++ {
+					execs := make(map[string]int)
+					applyRules(h, c_h, execs, i)
+					r := getRatio(execs)
+					if r < bestRatio {
+						bestRatio = r
+						rule = i
+						fmt.Println("deg2", i, r, execs)
+					}
+				}
+
 				for v := range g.Edges[remEdge].V {
 					c[v] = true
 					g.RemoveVertex(v)
@@ -1065,7 +1124,7 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
 						g.RemoveEdge(e)
 					}
 				}
-				return 1
+				return 1, rule
 			}
 		}
 	}
@@ -1096,15 +1155,22 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	if remEdge < 0 {
-		return F3Prepocess(g, c, 1)
+		return F3Prepocess2(g, c, incMap)
 	}
 
 	h := GetFrontierGraph(g, incMap, 3, remEdge)
 	c_h := make(map[int32]bool)
-	for i := 1; i<10; i++ {
+	bestRatio := 3.0
+	rule := 0
+	for i := 1; i < 10; i++ {
 		execs := make(map[string]int)
 		applyRules(h, c_h, execs, i)
-		fmt.Println(execs)
+		r := getRatio(execs)
+		if r < bestRatio {
+			bestRatio = r
+			rule = i
+			fmt.Println(fmt.Sprintf("deg%d", closest), i, r, execs)
+		}
 	}
 
 	for v := range g.Edges[remEdge].V {
@@ -1114,7 +1180,7 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) int {
 			g.RemoveEdge(e)
 		}
 	}
-	return 1
+	return 1, rule
 }
 
 func setToSlice[K comparable, V any](m map[K]V) []K {
@@ -1165,7 +1231,6 @@ func applyRules(g *HyperGraph, c map[int32]bool, execs map[string]int, prio int)
 		exec := RemoveEdgeRule(g, c, SMALL)
 		execs["kSmall"] += exec
 	}
-
 
 	for {
 		kTiny := RemoveEdgeRule(g, c, TINY)
