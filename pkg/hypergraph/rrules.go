@@ -304,12 +304,12 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
 	}
 	exec := 0
-	s3Arr := make(map[int32]bool)
+	s3Map := make(map[int32]bool)
 
 	// |E| * d
 	for eId, e := range g.Edges {
 		if len(e.V) == 3 {
-			s3Arr[eId] = true
+			s3Map[eId] = true
 		}
 	}
 
@@ -317,7 +317,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 	for {
 		foundSol := false
-		for eId, val := range s3Arr {
+		for eId, val := range s3Map {
 			if !val {
 				continue
 			}
@@ -379,12 +379,12 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 				for f := range g.IncMap[a] {
 					g.RemoveEdge(f)
-					delete(s3Arr, f)
+					delete(s3Map, f)
 				}
 
 				for f := range g.IncMap[b] {
 					g.RemoveEdge(f)
-					delete(s3Arr, f)
+					delete(s3Map, f)
 				}
 
 				c[a] = true
