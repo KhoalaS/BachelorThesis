@@ -204,6 +204,58 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
+	if logging {
+		defer LogTime(time.Now(), "ApproxVertexDominationRule")
+	}
+
+	exec := 0
+
+	for outer:=true; outer;{
+		outer = false
+		for _, edge := range g.Edges {
+			if len(edge.V) != 3 {
+				continue
+			}
+	
+			found := true
+			var yz []int32
+			for x := range edge.V {
+				yz, _ = SetMinus(edge, x)
+	
+				for f := range g.IncMap[x] {
+					for _, v := range yz {
+						if !g.Edges[f].V[v] {
+							found = false
+						}
+						break
+					}
+					if !found {
+						break
+					}
+				}
+				if !found {
+					continue
+				}else{
+					break
+				}
+			}
+			if found {
+				outer = true
+				exec++
+				for _, v := range yz {
+					c[v] = true
+					for f := range g.IncMap[v] {
+						g.RemoveEdge(f)
+					}
+				}
+			}
+		}
+	}
+
+	return exec
+}
+
 func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "VertexDominationRule")
