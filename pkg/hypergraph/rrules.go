@@ -558,88 +558,29 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
-func F3Prepocess(g *HyperGraph, c map[int32]bool, n int) int {
-	remVertices := make(map[int32]bool)
+func F3Rule(g *HyperGraph, c map[int32]bool) int {
+	s3Arr := make([]int32, len(g.Edges))
 
 	i := 0
-	for _, e := range g.Edges {
-		if i == n {
-			break
-		}
+	for eId, e := range g.Edges {
 		if len(e.V) == 3 {
-			add := true
-			for v := range e.V {
-				if remVertices[v] {
-					add = false
-					break
+			s3Arr[i] = eId
+			i++
 				}
 			}
-
-			if add {
-				i++
-				for v := range e.V {
-					remVertices[v] = true
-					g.RemoveVertex(v)
+	if i > 0{
+		r := rand.Intn(i)
+		for v := range g.Edges[s3Arr[r]].V {
 					c[v] = true
-				}
-			}
-
-		}
-	}
-
-	for eId, e := range g.Edges {
-		for v := range e.V {
-			if remVertices[v] {
-				g.RemoveEdge(eId)
-				break
+			for e := range g.IncMap[v] {
+				g.RemoveEdge(e)
 			}
 		}
-	}
-	return i
-}
-
-func F3Prepocess2(g *HyperGraph, c map[int32]bool) (int, int) {
-	remVertices := make(map[int32]bool)
-	var remId int32
-
-	for eId, e := range g.Edges {
-		if len(e.V) == 3 {
-			for v := range e.V {
-				remVertices[v] = true
-			}
-			remId = eId
-			break
-		}
+	}else{
+		return 0
 	}
 
-	if len(remVertices) == 0 {
-		return 0, 0
-	}
-
-	h := GetFrontierGraph(g, 3, remId)
-	c_h := make(map[int32]bool)
-	bestRatio := 3.0
-	rule := 0
-	for i := 1; i < 10; i++ {
-		execs := make(map[string]int)
-		applyRules(h, c_h, execs, i)
-		r := getRatio(execs)
-		if r < bestRatio {
-			bestRatio = r
-			rule = i
-			fmt.Println("rand", i, r, execs)
-		}
-	}
-
-	for eId, e := range g.Edges {
-		for v := range e.V {
-			if remVertices[v] {
-				g.RemoveEdge(eId)
-				break
-			}
-		}
-	}
-	return 1, rule
+	return 1
 }
 
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
@@ -931,7 +872,7 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	if remEdge < 0 {
-		return F3Prepocess(g, c, 1)
+		return F3Rule(g, c)
 	}
 
 	for v := range g.Edges[remEdge].V {
@@ -1036,7 +977,7 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
 	}
 
 	if remEdge < 0 {
-		return F3Prepocess2(g, c)
+		return F3Rule(g, c), 0
 	}
 
 	h := GetFrontierGraph(g, 3, remEdge)
