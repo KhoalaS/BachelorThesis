@@ -252,7 +252,9 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 ## Algorithms
 
-We introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
+The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings.
+
+We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
 
 ### Tiny/Small Edge Rule
 
@@ -537,14 +539,89 @@ $\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start be generating a $adjCount$ ma
 
 $$
 \begin{align*}
-    deg(x) - 1 = adjCount[x][a] + adjCount[x][b] \\
-    deg(y) - 1 = adjCount[y][a] + adjCount[y][b]
+    deg(x)= adjCount[x][a]+ adjCount[x][b] \\
+    deg(y)= adjCount[y][a]+ adjCount[y][b]
 \end{align*}
 $$
 
-Note that when both $deg(x) - 1 = adjCount[x][a]$ and $deg(y) - 1 = adjCount[y][a]$ are already satisfied, we can select any vertex in $adjCount[x]$ or $adjCount[y]$ but not in $e$ as $b$.
+Note that when both $deg(x)= adjCount[x][a]$ and $deg(y)= adjCount[y][a]$ are already satisfied, we can select any vertex in $adjCount[x]$ or $adjCount[y]$ but not in $e$ as $b$.
 
 \todo{Proof}
+
+$$
+\begin{algorithm}[H]
+\nllabel{apdvdom}
+
+\KwIn{A hypergraph $G=(V,E)$, a set $C$}
+\KwOut{An integer denoting the number of rule applications.}
+\BlankLine
+
+$adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
+$exec \gets 0$\;
+
+\tcc{Build adjCount analogous to Apr. Vertex Domination}
+
+$outer \gets true$\;
+\For{$outer$}{
+    $outer \gets false$\;
+    \For{$e \in E$}{
+        \If{$|e| \neq 3$}{
+            \textbf{continue}\;
+        }
+
+        $found \gets false$\;
+        $a \gets nil$\;
+        $b \gets nil$\;
+
+        \For{$u \in e$}{
+            $a \gets u$\;
+            $count \gets \texttt{map}[V]\mathbb{N}$\;
+            $need \gets 2$\;
+
+            \For{$v \in e\setminus \{a\}$}{
+                \eIf{$adjCount[v][a] == deg(w)$}{
+                    $need \gets need - 1$\;
+                }{
+                    \For{$(w,val) \in adjCount[v]$}{
+                        \If{$w \in e$}{
+                            \textbf{continue}\;
+                        }
+                        \If{$adjCount[v][a] + val = deg(v)$}{
+                            $count[w] \gets count[w] +1$\;
+                        }
+                    }
+                }
+            }
+            \eIf{$need = 0$}{
+                $b \gets \argmax_{v\in N(e\setminus \{ a \})\setminus \{ a \}} deg(v)$\;
+                $found \gets true$\;
+                \textbf{break}\;
+            }{
+                \For{$(v, val) \in count$}{
+                    \If{$val = need$}{
+                        $found \gets true$\;
+                        $b \gets v$\;
+                        \textbf{break}\;
+                    }
+                }
+            }
+            \If{$found$}{
+                \textbf{break}\;
+            }
+        }
+
+        \If{found}{
+            $exec \gets exec+1$\;
+            \tcc{Mutate adjCount analogous to Apr. Vertex Domination}
+        }
+    }
+}
+
+\KwRet $exec$\;
+
+\caption{Algorithm for exhaustive application of Approximative Double Vertex Domination Rule}
+\end{algorithm}
+$$
 
 ### Small Triangle Rule
 
