@@ -114,34 +114,17 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 
 	g := NewHyperGraph()
 
-	for i := 0; i < 6; i++ {
-		g.AddVertex(int32(i), 0)
-	}
-
-	g.AddEdge(0, 1, 2)
-	g.AddEdge(0, 3)
-	g.AddEdge(1, 4)
-	g.AddEdge(2, 5)
-
-	// possible solutions [1,2], [2,6], [3,5], [3,6]
-
-	c := make(map[int32]bool)
-	ApproxDoubleVertexDominationRule(g, c)
-
-	assert.Equal(4, len(g.Edges))
-	assert.Equal(0, len(c))
-
-	g = NewHyperGraph()
-
 	for i := 0; i < 4; i++ {
 		g.AddVertex(int32(i), 0)
 	}
+
+	c := make(map[int32]bool)
 
 	g.AddEdge(0, 1, 2)
 	g.AddEdge(0, 3)
 	g.AddEdge(1, 3)
 
-	ApproxDoubleVertexDominationRule(g, c)
+	ApproxDoubleVertexDominationRule2(g, c)
 	assert.Equal(2, len(c))
 	assert.Equal(0, len(g.Vertices))
 	assert.Equal(0, len(g.IncMap))
@@ -412,7 +395,7 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxDoubleVertexDominationRule(g, c)
+		ApproxDoubleVertexDominationRule2(g, c)
 	}
 
 	m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))

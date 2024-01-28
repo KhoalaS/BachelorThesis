@@ -177,8 +177,8 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
-		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		kApDoubleVertDom := 0
+		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule2(g, c)
+		//kApDoubleVertDom := 0
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
@@ -237,7 +237,7 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 			case 0:
 				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c)
 			case 1:
-				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule(g, c)
+				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule2(g, c)
 			case 2:
 				kSmallEdgeDegTwo = hypergraph.SmallEdgeDegreeTwoRule(g, c)
 			case 3:

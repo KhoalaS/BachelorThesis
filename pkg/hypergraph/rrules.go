@@ -13,7 +13,7 @@ import (
 // General TODO:
 // Build an interface ontop of the HyperGraph class and inplement the "crud" there
 
-const logging = false
+const logging = true
 
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
@@ -196,7 +196,6 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 					g.RemoveEdge(e)
 				}
 				g.RemoveVertex(w)
-				delete(g.IncMap, w)
 				delete(adjCount, w)
 			}
 		}
@@ -391,6 +390,133 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 			break
 		}
 	}
+	return exec
+}
+
+func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
+	if logging {
+		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+	}
+
+	adjCount := make(map[int32]map[int32]int32)
+	exec := 0
+
+	// Time Complexity: |E| * d^2
+	for _, e := range g.Edges {
+		for v := range e.V {
+			if _, ex := adjCount[v]; !ex {
+				adjCount[v] = make(map[int32]int32)
+			}
+
+			for w := range e.V {
+				if v != w {
+					adjCount[v][w]++
+				}
+			}
+		}
+	}
+
+	for outer := true; outer; {
+		outer = false
+
+		for _, e := range g.Edges {
+			if len(e.V) != 3 {
+				continue
+			}
+
+			var sub []int32
+			found := false
+			var a int32 = -1
+			var b int32 = -1
+
+			for u := range e.V {
+				a = u
+				sub, _ = SetMinus(e, a)
+				x := sub[0]
+				y := sub[1]
+
+				t_0 := int32(g.Deg(x) - 1)
+				t_1 := int32(g.Deg(y) - 1)
+
+				count := make(map[int32]int)
+				maxDeg := 0
+				var maxB int32 = -1
+				need := 2
+
+				if adjCount[x][a] == t_0 {
+					need--
+				}
+				for v := range adjCount[x] {
+					if v == a || v == y {
+						continue
+					}
+					if adjCount[x][a]+v == t_0 {
+						count[v]++
+					} else if g.Deg(v) > maxDeg {
+						maxDeg = g.Deg(v)
+						maxB = v
+					}
+				}
+
+				if adjCount[y][a] == t_1 {
+					need--
+				}
+				for v := range adjCount[y] {
+					if v == a || v == x {
+						continue
+					}
+					if adjCount[y][a]+v == t_1 {
+						count[v]++
+					} else if g.Deg(v) > maxDeg {
+						maxDeg = g.Deg(v)
+						maxB = v
+					}
+				}
+
+				if need == 0 {
+					//dom condition met
+					found = true
+					b = maxB
+					break
+				} else {
+					for v, val := range count {
+						if val == need {
+							found = true
+							b = v
+							break
+						}
+					}
+				}
+				if found {
+					break
+				}
+
+			}
+
+			if found {
+				solution := [2]int32{a, b}
+				for _, w := range solution {
+					c[w] = true
+					for e := range g.IncMap[w] {
+						for x := range g.Edges[e].V {
+							if x == w {
+								continue
+							}
+							subEdge, _ := SetMinus(g.Edges[e], x)
+							for _, y := range subEdge {
+								adjCount[x][y]--
+								if adjCount[x][y] == 0 {
+									delete(adjCount[x], y)
+								}
+							}
+						}
+						g.RemoveEdge(e)
+					}
+				}
+			}
+		}
+	}
+
 	return exec
 }
 
