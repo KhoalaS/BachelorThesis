@@ -132,7 +132,7 @@ Given an array of integers and an integer target $t$, return indices of the two 
 Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{label}
 
 \KwIn{An array of integers $arr$, a target value $t$}
@@ -265,7 +265,7 @@ We further introduce a $map$ data structure in our pseudocode with syntax $\text
 $O(|E| + |E|^2)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{TinySmall}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$, an integer $t$ denoting the size of the edges to be removed}
@@ -307,7 +307,7 @@ $O(|E|)$ **Algorithm**. We partition our set of edges into two disjoint sets $su
 We then iterate over the set $dom$ and compute every strict subset of the current edge $f$. For each of these subsets, we test if the hash of the subset is present in our set $sub$. If it is then $f$ is dominated by another edge.
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{edom}
 \SetKwFunction{subsets}{getSubsetsRec}
 \KwIn{A hypergraph $G=(V,E)$ without size one edges, a set $C$}
@@ -383,7 +383,7 @@ $O(|V| \cdot |E|)$ **Algorithm**
 We iterate over the vertices of the graph. For the current vertex $v$, we compute a map $vCount$. This map keeps track of the amount of times a vertex $w$ is adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $vCount$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{vdom}
 
 \KwIn{A hypergraph $G=(V,E)$ }
@@ -470,7 +470,7 @@ Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times 
 We then add the two vertices in the solution $sol$ to our partial solution $c$.
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{apvdom}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
@@ -549,7 +549,7 @@ Note that when both $deg(x)= adjCount[x][a]$ and $deg(y)= adjCount[y][a]$ are al
 \todo{Proof}
 
 $$
-\begin{algorithm}[H]
+\begin{algorithm}
 \nllabel{apdvdom}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
@@ -579,7 +579,7 @@ $outer \gets true$\;
             $need \gets 2$\;
 
             \For{$v \in e\setminus \{a\}$}{
-                \eIf{$adjCount[v][a] == deg(w)$}{
+                \eIf{$adjCount[v][a] = deg(w)$}{
                     $need \gets need - 1$\;
                 }{
                     \For{$(w,val) \in adjCount[v]$}{
