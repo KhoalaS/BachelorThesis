@@ -431,25 +431,22 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 			for u := range e.V {
 				a = u
-				sub, _ = SetMinus(e, a)
-				x := sub[0]
-				y := sub[1]
-
-				t_0 := int32(g.Deg(x))
-				t_1 := int32(g.Deg(y))
-				t := [2]int32{t_0, t_1}
+	
 				count := make(map[int32]int)
 				need := 2
 
-				for i := 0; i < 2; i++ {
-					if adjCount[sub[i]][a] == t[i] {
+				for w := range e.V {
+					if w == a {
+						continue
+					}
+					if adjCount[w][a] == int32(g.Deg(w)) {
 						need--
 					} else {
-						for v, val := range adjCount[sub[i]] {
-							if v == a || v == sub[(i+1)%2] {
+						for v, val := range adjCount[w] {
+							if e.V[v] {
 								continue
 							}
-							if adjCount[sub[i]][a]+val == t[i] {
+							if adjCount[w][a]+val == int32(g.Deg(w)) {
 								count[v]++
 							}
 						}
