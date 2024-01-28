@@ -10,7 +10,7 @@
 
 # Programming Language
 
-We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
+We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop. 
 
 # Datastructures
 
@@ -46,7 +46,7 @@ type HyperGraph struct {
 	Vertices map[int32]Vertex
 	Edges map[int32]Edge
 	edgeCounter int32
-	Degree int32
+	IncMap map[int32]map[int32]bool
 }
 ```
 
@@ -56,7 +56,7 @@ We chose this $\texttt{Set}$-like datastructure over lists again because of fast
 
 The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges.
 
-The field $\texttt{Degree}$ specifies the maximum degree of the graph.
+The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map.
 
 # Misc. Algorithms/Utilities
 
@@ -252,9 +252,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 ## Algorithms
 
-The presented algorithms are agnostic in regards to the underlying hypergraph implementation. That means that the datatype used to represent the hypergraph, does not need to have special characteristics. Although it could be beneficial to incorporate some of the used data structures into the hypergraph itself. 
-
-Further we introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
+We introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
 
 ### Tiny/Small Edge Rule
 
@@ -262,7 +260,7 @@ Further we introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E|^2)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
+$O(|E| + |E|^2)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
 
 $$
 \begin{algorithm}[H]
@@ -273,15 +271,11 @@ $$
 
 \BlankLine
 $rem \gets \emptyset$\;
-$inc \gets \texttt{map}[V]2^E$\;
 $exec \gets 0$\;
 
 \For{$e \in E$}{
     \If{$|e| = t$}{
         $rem \gets rem \cup \{e\}$
-    }
-    \For{$v \in V$}{
-        $inc[v] \gets inc[v] \cup e$
     }
 }
 
@@ -290,7 +284,7 @@ $exec \gets 0$\;
     \For{$v \in e$}{
         $C \gets C \cup \{v\}$\;
         $V \gets V\setminus \{v\}$\;
-        \For{$f\in inc[v]$}{
+        \For{$f$ incident to $v$}{
             $rem \gets rem\setminus \{f\}$\;
             $E \gets E\setminus \{f\}$\;
         }
@@ -383,13 +377,8 @@ This also allows us to parallelize the main part of the algorithm, where we chec
     belongs to some hyperedge $e$, then $y$ also belongs to $e$. Then, we can simply
     delete $x$ from the vertex set and from all edges it belongs to.
 
-$O(|E| + |V|^2)$ **Algorithm**.
-We first construct two maps:
-
--   $vDeg$: this map associates a vertex $v$ with $deg(v)$.
--   $inc$: this map associates a vertex $v$ with all other edges that are incident to $v$.
-
-We then iterate over the vertices of the graph. For the current vertex $v$, we compute a map $vCount$. This map keeps track of the amount of times a vertex $w$ is adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $vCount$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
+$O(|V| \cdot |E|)$ **Algorithm**
+We iterate over the vertices of the graph. For the current vertex $v$, we compute a map $vCount$. This map keeps track of the amount of times a vertex $w$ is adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $vCount$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
 \begin{algorithm}[H]
@@ -399,22 +388,14 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
-$vDeg \gets \texttt{map}[V]\mathbb{N}$\;
-$inc \gets \texttt{map}[V]2^E$\;
-
-\For{$e \in E$}{
-    \For{$v \in e$}{
-        $vDeg[v] \gets vDeg[v]+1$\;
-        $inc[v] \gets inc[v] \cup \{ e \}$\;
-    }
-}
+$exec \gets 0$\;
 
 $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
     \For{$v \in V$}{
         $vCount \gets \texttt{map}[V]\mathbb{N}$\;
-        \For{$e \in inc[v]$}{
+        \For{$e$ incident to $v$}{
             \For{$w \in e$}{
                 $vCount[w] \gets vCount[w]+1$\;
             }
@@ -430,11 +411,10 @@ $outer \gets true$\;
         }
         \If{$dom$}{
             $outer = true$\;
-            \For{$e \in inc[v]$}{
+            \For{$e$ incident to $v$}{
                 $e \gets e\setminus \{ v \}$;
             }
             $V \gets V\setminus \{ v \}$\;
-            $delete(inc, v)$\;
             $exec \gets exec+1$\;
         }
     }
@@ -449,25 +429,15 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|E| + |V|\cdot |E|)$ __Algorithm__. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
+$O(|V|\cdot |E|)$ __Algorithm__. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
-We first construct two maps:
+We first construct the following map:
 
--   $vDeg$: this map associates a vertex $v$ with $deg(v)$.
 -   $adjCount$: this map associates a vertex $v$ with the amount of times another vertex is adjacent to $v$.
 
 Example:
 
-Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $vDeg$ and $adjCount$ will look as follows,
-
-$$
-\begin{align*}
-vDeg = \{\quad&1: 2,\\
- &2: 2, \\
- &3: 1, \\
- &4: 1 \quad \}
-\end{align*}
-$$
+Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $adjCount$ will look as follows,
 
 $$
 \begin{align*}
@@ -478,18 +448,22 @@ adjCount = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
 \end{align*}
 $$
 
-We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair in $adjCount[v]$, s.t. for the pair $(a,b)$ holds, $adjCount[v][a] + adjCount[v][b] = vDeg[v]+1$. If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds for $f$ that, either $a\in f$ or $b\in f$.
+We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for the $(a,b)$ holds, 
+$$
+adjCount[v][a] + adjCount[v][b] = vDeg[v]+1
+$$
+If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds that, either $a\in f$ or $b\in f$.
 
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our two maps $vDeg$ and $adjCount$. Let $v$ be an entry in $adjCount$ and $sol=(a,b)$ be the result of calling our $\textsc{Two-Sum}$ implementation on $adjCount[v]$ with a target sum of $n=vDeg[v]+1$.
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our map $adjCount$. Let $v$ be an entry in $adjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ implementation on $adjCount[v]$ with a target sum of $n=deg(v)+1$.
 
 _Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
-Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $adjCount[v]$ with a target sum of $n=vDeg[v]+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ v,a,b \}$, there exist $vDeg[v]+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $vDeg[v]$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
+Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $adjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
 
-Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = vDeg[v] - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ can not exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaniously. $\square$
+Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ can not exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaniously. $\square$
 
 We then add the two vertices in the solution $sol$ to our partial solution $c$.
 
@@ -501,15 +475,11 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
-$vDeg \gets \texttt{map}[V]\mathbb{N}$\;
 $adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
-$inc \gets \texttt{map}[V]2^E$\;
 $exec \gets 0$\;
 
 \For{$e \in E$}{
     \For{$v \in e$}{
-        $vDeg[v] \gets vDeg[v]+1$\;
-        $inc[v] \gets inc[v] \cup \{ e \}$\;
         \For{$w \in e$}{
             \If{$w \neq v$}{
                 $adjCount[v][w] \gets adjCount[v][w]+1$\;
@@ -522,7 +492,7 @@ $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
     \For{$(v, count) \in adjCount$}{
-        $sol, ex \gets \textsc{Two-Sum}(count, vDeg[v]+1)$\;
+        $sol, ex \gets \textsc{Two-Sum}(count, deg(v)+1)$\;
         \If{\textbf{not} $ex$}{
             \textbf{continue}\;
         }
@@ -531,12 +501,11 @@ $outer \gets true$\;
 
         \For{$w \in sol$}{
             $C\gets C\cup \{ w \}$\;
-            \For{$e \in inc[w]$}{
+            \For{$e$ incident to $w$}{
                 \For{$x \in e$}{
                     \If{$x = w$}{
                         \textbf{continue}\;
                     }
-                    $vDeg[x] \gets vDeg[x]-1$\;
                     \For{$y \in e\setminus x$}{
                         $adjCount[x][y] \gets adjCount[x][y]-1$\;
                     }
@@ -544,8 +513,6 @@ $outer \gets true$\;
                 $E \gets E\setminus \{ e \}$\;
             }
             $V \gets V\setminus \{ w \}$\;
-            $delete(inc, w)$\;
-			$delete(vDeg, w)$\;
 			$delete(adjCount, w)$\;
         }
     }
@@ -557,7 +524,7 @@ $outer \gets true$\;
 \end{algorithm}
 $$
 
-**Idea**: The initial idea for this algorithm involved the usage of an incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the _Domination Condition_ for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a worse time complexity of $|V|+|V|^2\cdot|E|$, and a high memory complexity of $|V|\cdot|E|$.
+**Idea**: The initial idea for this algorithm involved the usage of a complete incidence matrix, where edges are identified by the rows and the vertices are identified by the columns. To check the _Domination Condition_ for a vertex $v$, the algortihm would select all edges/columns that contain $v$ and then add up the columns. Now let $n$ be the amount of edges containing $v$. If there exist two entries in the resulting column that have a combined value of $n+1$, then the rule applies for $v$ under the assumption that there are no duplicate edges. This would result in an algorithm with a worse time complexity of $|V|+|V|^2\cdot|E|$.
 
 ### Approximative Double Vertex Domination Rule
 
@@ -566,17 +533,14 @@ $$
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start by iterating over the edges of our graph and building an incidence list. We then iterate over the edges again. If the current edge $e$ is not of size 3 we continue with the iteration. If $|e| = 3$ we iterate over the endpoints of $e$. We assign the variable $\texttt{a}$ to $v$ and create a map $\texttt{vCount map[int32]int32}$. For each vertex $w \in e\setminus v$ we look at the the edges incident to $w$, we then for each vertex $u$ of these edges, increment $\texttt{vCount[u]}$. We ignore edges that are incident to $\texttt{a}$ and do not care about vertices that are in $e$. We keep track of the amount of edges we considered with the variable $\texttt{xyCount}$.
+\todo{rewrite with new algortihm}
+$\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start by iterating over the edges. If the current edge $e$ is not of size 3 we continue with the iteration. If $|e| = 3$ we iterate over the endpoints of $e$. We assign the variable $\texttt{a}$ to $v$ and create a map $\texttt{vCount map[int32]int32}$. For each vertex $w \in e\setminus v$ we look at the the edges incident to $w$, we then for each vertex $u$ of these edges, increment $\texttt{vCount[u]}$. We ignore edges that are incident to $\texttt{a}$ and do not care about vertices that are in $e$. We keep track of the amount of edges we considered with the variable $\texttt{xyCount}$.
 
 If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
 
 ### Small Triangle Rule
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
-
-```go
-func SmallTriangleRule(g HyperGraph, c map[int32]bool)
-```
 
 $O(|E|+|V|^2)$ __Algorithm__. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an edge-adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
 
