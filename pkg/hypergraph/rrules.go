@@ -446,11 +446,11 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 					if adjCount[sub[i]][a] == t[i] {
 						need--
 					} else {
-						for v := range adjCount[sub[i]] {
+						for v, val := range adjCount[sub[i]] {
 							if v == a || v == sub[(i+1)%2] {
 								continue
 							}
-							if adjCount[sub[i]][a]+v == t[i] {
+							if adjCount[sub[i]][a]+val == t[i] {
 								count[v]++
 							}
 						}
