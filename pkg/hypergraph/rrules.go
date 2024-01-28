@@ -437,46 +437,41 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 				t_0 := int32(g.Deg(x) - 1)
 				t_1 := int32(g.Deg(y) - 1)
+				t := [2]int32{t_0, t_1}
 
 				count := make(map[int32]int)
-				maxDeg := 0
-				var maxB int32 = -1
 				need := 2
 
-				if adjCount[x][a] == t_0 {
-					need--
-				}
-				for v := range adjCount[x] {
-					if v == a || v == y {
-						continue
-					}
-					if adjCount[x][a]+v == t_0 {
-						count[v]++
-					} else if g.Deg(v) > maxDeg {
-						maxDeg = g.Deg(v)
-						maxB = v
-					}
-				}
-
-				if adjCount[y][a] == t_1 {
-					need--
-				}
-				for v := range adjCount[y] {
-					if v == a || v == x {
-						continue
-					}
-					if adjCount[y][a]+v == t_1 {
-						count[v]++
-					} else if g.Deg(v) > maxDeg {
-						maxDeg = g.Deg(v)
-						maxB = v
+				for i := 0; i < 2; i++ {
+					if adjCount[sub[i]][a] == t[i] {
+						need--
+					} else {
+						for v := range adjCount[sub[i]] {
+							if v == a || v == sub[(i+1)%2] {
+								continue
+							}
+							if adjCount[sub[i]][a]+v == t[i] {
+								count[v]++
+							}
+						}
 					}
 				}
 
 				if need == 0 {
 					//dom condition met
+					maxDeg := 0
+					for i := 0; i < 2; i++ {
+						for v := range adjCount[sub[i]] {
+							if v == a || v == sub[(i+1)%2] {
+								continue
+							}
+							if g.Deg(v) > maxDeg {
+								maxDeg = g.Deg(v)
+								b = v
+							}
+						}
+					}
 					found = true
-					b = maxB
 					break
 				} else {
 					for v, val := range count {
