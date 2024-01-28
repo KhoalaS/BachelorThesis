@@ -448,7 +448,7 @@ adjCount = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
 \end{align*}
 $$
 
-We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for the $(a,b)$ holds, 
+We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for $(a,b)$ holds, 
 $$
 adjCount[v][a] + adjCount[v][b] = vDeg[v]+1
 $$
@@ -533,10 +533,18 @@ $$
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-\todo{rewrite with new algortihm}
-$\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start by iterating over the edges. If the current edge $e$ is not of size 3 we continue with the iteration. If $|e| = 3$ we iterate over the endpoints of $e$. We assign the variable $\texttt{a}$ to $v$ and create a map $\texttt{vCount map[int32]int32}$. For each vertex $w \in e\setminus v$ we look at the the edges incident to $w$, we then for each vertex $u$ of these edges, increment $\texttt{vCount[u]}$. We ignore edges that are incident to $\texttt{a}$ and do not care about vertices that are in $e$. We keep track of the amount of edges we considered with the variable $\texttt{xyCount}$.
+$\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start be generating a $adjCount$ map, analogous to the one used in the approximative vertex domination rule. We then iterate over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
 
-If we find an entry $\texttt{vCount[b]}$, s.t. $\texttt{vCount[b] = xyCount}$, we found a double vertex domination situation in $e$.
+$$
+\begin{align*}
+    deg(x) - 1 = adjCount[x][a] + adjCount[x][b] \\
+    deg(y) - 1 = adjCount[y][a] + adjCount[y][b]
+\end{align*}
+$$
+
+Note that when both $deg(x) - 1 = adjCount[x][a]$ and $deg(y) - 1 = adjCount[y][a]$ are already satisfied, we can select any vertex in $adjCount[x]$ or $adjCount[y]$ but not in $e$ as $b$.
+
+\todo{Proof}
 
 ### Small Triangle Rule
 
