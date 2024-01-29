@@ -131,7 +131,6 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 		exec++
 		for v := range g.Edges[e].V {
 			c[v] = true
-			g.RemoveVertex(v)
 			for f := range g.IncMap[v] {
 				delete(rem, f)
 				g.RemoveEdge(f)
@@ -195,7 +194,6 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 					}
 					g.RemoveEdge(e)
 				}
-				g.RemoveVertex(w)
 				delete(adjCount, w)
 			}
 		}
@@ -280,7 +278,6 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 			if dom {
 				outer = true
 				g.RemoveElem(v)
-				g.RemoveVertex(v)
 				exec++
 			}
 		}
@@ -382,8 +379,6 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 				c[a] = true
 				c[b] = true
-				g.RemoveVertex(a)
-				g.RemoveVertex(b)
 			}
 		}
 		if !foundSol {
@@ -965,7 +960,6 @@ func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
 
 				for v := range g.Edges[remEdge].V {
 					c[v] = true
-					g.RemoveVertex(v)
 					for e := range g.IncMap[v] {
 						g.RemoveEdge(e)
 					}

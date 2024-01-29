@@ -101,7 +101,7 @@ func (g *HyperGraph) RemoveElem(elem int32) bool {
 		}
 	}
 
-	delete(g.Vertices, elem)
+	g.RemoveVertex(elem)
 	delete(g.IncMap, elem)
 	return true
 }
