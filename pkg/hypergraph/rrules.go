@@ -704,22 +704,18 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 
 	if found {
 		// should be possible to delete immidietly
+		c[x] = true
 		for h := range g.IncMap[x] {
 			g.RemoveEdge(h)
 		}
 
 		for w := range g.Edges[remEdge].V {
+			c[w] = true
 			for h := range g.IncMap[w] {
 				g.RemoveEdge(h)
 			}
-			c[w] = true
-			delete(g.IncMap, w)
-			g.RemoveVertex(w)
 		}
 
-		c[x] = true
-		delete(g.IncMap, x)
-		g.RemoveVertex(x)
 	}
 	return found
 }
