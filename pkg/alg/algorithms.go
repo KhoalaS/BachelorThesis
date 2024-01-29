@@ -155,8 +155,10 @@ func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) ma
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, prio)
 		prio = 0
-		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
+		kFallback := hypergraph.F3TargetLowDegree(g, c)
+		execs["kFallback"] += kFallback
 		f3++
+		//prio = nextPrio
 	}
 	return execs
 }
@@ -174,9 +176,9 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c, false)
-		//kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
-		kApDoubleVertDom := 0
+		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
+		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule2(g, c)
+		//kApDoubleVertDom := 0
 		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
@@ -233,9 +235,9 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 		for i := 0; i < 6; i++ {
 			switch perm[i] {
 			case 0:
-				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c, false)
+				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c)
 			case 1:
-				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule(g, c)
+				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule2(g, c)
 			case 2:
 				kSmallEdgeDegTwo = hypergraph.SmallEdgeDegreeTwoRule(g, c)
 			case 3:

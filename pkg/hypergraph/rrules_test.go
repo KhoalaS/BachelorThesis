@@ -2,56 +2,56 @@ package hypergraph
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime/pprof"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEdgeDominationRule(t *testing.T) {
-	var vSize int32 = 5
+	assert := assert.New(t)
+
 	g := NewHyperGraph()
 
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
+	for i := 0; i < 4; i++ {
+		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 1, 2)
 	g.AddEdge(0, 1)
-	g.AddEdge(1, 4)
+	g.AddEdge(1, 3)
 
 	EdgeDominationRule(g)
 
 	// since edge 0 is a strict superset of edge 1, edge 0 will be removed by the rule.
-
-	if len(g.Edges) != 2 {
-		t.Fatalf("Graph g has %d edges, the expected number is 2.", len(g.Edges))
-	}
+	assert.Equal(3, len(g.Vertices), g.Vertices)
+	assert.Equal(3, len(g.IncMap))
+	assert.Equal(2, len(g.Edges))
 
 	for _, edge := range g.Edges {
-		if len(edge.V) != 2 {
-			t.Fatalf("The wrong edge has been removed.")
-		}
+		assert.Equal(2, len(edge.V), "The wrong edge has been removed.")
 	}
 
+	// incidence
+	assert.Equal(1, g.Deg(0))
+	assert.Equal(2, g.Deg(1))
+	assert.Equal(1, g.Deg(3))
 }
 
 func TestRemoveEdgeRule(t *testing.T) {
-	var vSize int32 = 8
+	assert := assert.New(t)
+
 	g := NewHyperGraph()
 
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
+	for i := 0; i < 8; i++ {
+		g.AddVertex(int32(i), 0)
 	}
 
-	g.AddEdge(0, 3, 2)
 	g.AddEdge(1)
-	g.AddEdge(2, 4)
 	g.AddEdge(1, 6, 7)
+	g.AddEdge(0, 3, 2)
+	g.AddEdge(2, 4)
 	g.AddEdge(3, 6, 5)
 
 	c := make(map[int32]bool)
@@ -59,188 +59,239 @@ func TestRemoveEdgeRule(t *testing.T) {
 	// this rule will remove edge (1) and will put vertex 1 into the partial solution
 	// after putting vertex 1 into c1, edge (1,6,7) will be removed since vertex 1 is an element of it
 	RemoveEdgeRule(g, c, TINY)
+	assert.Equal(6, len(g.Vertices))
+	assert.Equal(6, len(g.IncMap), g.IncMap)
+	assert.Equal(3, len(g.Edges))
+
+	assert.Equal(1, g.Deg(0))
+	assert.Equal(2, g.Deg(2))
+	assert.Equal(2, g.Deg(3))
+	assert.Equal(1, g.Deg(4))
+	assert.Equal(1, g.Deg(5))
+	assert.Equal(1, g.Deg(6))
 
 	// this rule will remove edge (2,4) and will put both vertex 2 and 4 into the partial solution c2
 	// after putting vertex 2 and 4 into c2, edge (0,3,2) will be removed analogous to previous rule call
+	// only edge (3,6,5) remains
 	RemoveEdgeRule(g, c, SMALL)
+	assert.Equal(3, len(g.Vertices))
+	assert.Equal(3, len(g.IncMap), g.IncMap)
+	assert.Equal(1, len(g.Edges))
 
-	psol := []int32{1, 2, 4}
-	edgeSol := []int32{3, 6, 5}
-
-	for _, v := range psol {
-		if !c[v] {
-			t.Fatalf("Vertex %d should have been part of solution.", v)
-		}
-	}
-
-	if len(g.Edges) != 1 {
-		t.Fatalf("Graph g has %d edges, expected 1.", len(g.Edges))
-	}
-
-	for _, v := range edgeSol {
-		for _, ep := range g.Edges {
-			if !ep.V[v] {
-				t.Fatalf("Vertex %d should have been part of solution.", v)
-			}
-		}
-	}
-
+	assert.Equal(1, g.Deg(3))
+	assert.Equal(1, g.Deg(6))
+	assert.Equal(1, g.Deg(5))
 }
 
-func TestApproxVertexDominationRule3(t *testing.T) {
-	var vSize int32 = 8
+func TestApproxVertexDominationRule(t *testing.T) {
+	assert := assert.New(t)
 	g := NewHyperGraph()
 
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
-	}
-
-	g.AddEdge(0, 3, 2)
-	g.AddEdge(2, 4)
-	g.AddEdge(0, 2, 7)
-	g.AddEdge(1, 4)
-
-	c := make(map[int32]bool)
-	ApproxVertexDominationRule(g, c, false)
-
-	// possible solutions: [2,7], [0,2], [2,3]
-
-	if len(c) != 2 {
-		t.Fatalf("Partial solution is wrong.")
-	}
-
-	if !((c[2] && c[7]) || (c[0] && c[2]) || (c[2] && c[3])) {
-		t.Fatalf("Partial solution is wrong.")
-	}
-	t.Log(c)
-	t.Log(g)
-}
-
-func TestApproxDoubleVertexDominationRule(t *testing.T) {
-	g := NewHyperGraph()
-	g.AddEdge(1, 2, 3)
-	g.AddEdge(2, 3, 4)
-	g.AddEdge(2, 5, 6)
-	g.AddEdge(1, 6)
-
-	// possible solutions [1,2], [2,6], [3,5], [3,6]
-
-	c := make(map[int32]bool)
-
-	ApproxDoubleVertexDominationRule(g, c)
-	if len(c) != 2 {
-		t.Fatalf("Partial solution is wrong.")
-	}
-
-	if !((c[1] && c[2]) || (c[2] && c[6]) || (c[3] && (c[5] || c[6]))) {
-		t.Fatalf("Partial solution is wrong.")
-	}
-}
-
-func TestApproxDoubleVertexDominationRule2(t *testing.T) {
-	g := NewHyperGraph()
 	for i := 0; i < 6; i++ {
 		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 1, 2)
-	g.AddEdge(1, 2, 3)
-	g.AddEdge(1, 4, 5)
-	g.AddEdge(0, 5)
+	g.AddEdge(1, 3)
+	g.AddEdge(2, 4)
+	g.AddEdge(3, 5)
 
-	// possible solutions [0,1], [1,5], [2,4], [2,5]
+	c := make(map[int32]bool)
+	ApproxVertexDominationRule(g, c)
+
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(2, len(g.Vertices))
+	assert.Equal(2, len(g.IncMap))
+	assert.Equal(2, len(c))
+
+	assert.Equal(1, g.Deg(3))
+	assert.Equal(1, g.Deg(5))
+
+}
+
+func TestApproxDoubleVertexDominationRule(t *testing.T) {
+	assert := assert.New(t)
+
+	g := NewHyperGraph()
+
+	for i := 0; i < 4; i++ {
+		g.AddVertex(int32(i), 0)
+	}
 
 	c := make(map[int32]bool)
 
-	ApproxDoubleVertexDominationRule2(g, c)
-	if len(c) != 2 {
-		t.Fatalf("Partial solution is wrong.")
-	}
+	g.AddEdge(0, 1, 2)
+	g.AddEdge(0, 3)
+	g.AddEdge(1, 3)
 
-	if !((c[0] && c[1]) || (c[1] && c[5]) || (c[2] && (c[4] || c[5]))) {
-		t.Fatalf("Partial solution is wrong.")
-	}
+	ApproxDoubleVertexDominationRule2(g, c)
+	assert.Equal(2, len(c))
+	assert.Equal(0, len(g.Vertices))
+	assert.Equal(0, len(g.IncMap))
+	assert.Equal(0, len(g.Edges))
+
 }
 
 func TestSmallTriangleRule(t *testing.T) {
-	var vSize int32 = 7
+	assert := assert.New(t)
 	g := NewHyperGraph()
 
-	var i int32 = 0
-
-	for ; i < vSize; i++ {
-		g.AddVertex(i, 0)
+	for i := 0; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 1)
 	g.AddEdge(1, 2)
 	g.AddEdge(2, 0)
-	g.AddEdge(2, 4)
-	g.AddEdge(4, 5, 6)
+	g.AddEdge(2, 3)
+	g.AddEdge(3, 4, 5)
 
 	c := make(map[int32]bool)
 
 	SmallTriangleRule(g, c)
 
-	if !(c[0] && c[1] && c[2]) {
-		t.Log(c)
-		t.Fatalf("Partial solution is wrong.")
-	}
+	assert.Equal(3, len(c))
+	assert.Equal(3, len(g.Vertices))
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(3, len(g.IncMap))
 
-	if len(g.Edges) != 1 {
-		t.Fatalf("Graph g has %d edges, the expected number is 1.", len(g.Edges))
-	}
-
-	if _, ex := g.Edges[4]; !ex {
-		t.Fatalf("The wrong edge has been removed.")
-	}
+	assert.Equal(1, g.Deg(3))
+	assert.Equal(1, g.Deg(4))
+	assert.Equal(1, g.Deg(5))
 }
 
 func TestSmallEdgeDegreeTwoRule(t *testing.T) {
-	var i int32 = 0
+	assert := assert.New(t)
+
 	g := NewHyperGraph()
 	c := make(map[int32]bool)
 
-	for ; i < 6; i++ {
-		g.AddVertex(i, 0)
+	for i := 0; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 1)
 	g.AddEdge(1, 2, 3)
 	g.AddEdge(3, 4, 5)
 
-	exec := SmallEdgeDegreeTwoRule(g, c)
-	log.Println(g)
-	if exec != 1 {
-		log.Fatalf("Number of rule executions is wrong. Expected %d, got %d.", 1, exec)
-	}
+	SmallEdgeDegreeTwoRule(g, c)
 
-	if len(g.Vertices) != 2 || !c[0] || !c[3] || !c[4] || !c[5] {
-		t.Fatalf("Partial solution is wrong.")
-	}
+	assert.Equal(4, len(c))
+	assert.Equal(0, len(g.Vertices))
+	assert.Equal(0, len(g.Edges))
+	assert.Equal(0, len(g.IncMap))
+
 }
 
 func TestF3TargetLowDegree(t *testing.T) {
+	assert := assert.New(t)
+
 	g := NewHyperGraph()
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 7; i++ {
 		g.AddVertex(int32(i), 0)
 	}
 
 	g.AddEdge(0, 1)
 	g.AddEdge(1, 2, 3)
 	g.AddEdge(4, 3, 5)
+	g.AddEdge(3, 6)
 
 	c := make(map[int32]bool)
 	F3TargetLowDegree(g, c)
 
-	if !(c[3] && c[4] && c[5]){
-		t.Log("Partial solution is wrong.")
-	}
+	assert.Equal(true, (c[3] && c[4] && c[5]), c)
+	assert.Equal(true, !(c[0] && c[1] && c[2]))
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(2, len(g.Vertices))
+	assert.Equal(2, len(g.IncMap))
+
+	assert.Equal(1, g.Deg(0))
+	assert.Equal(1, g.Deg(1))
 }
 
-func BenchmarkF3TargetLowDegree(b *testing.B){
+func TestVertexDominationRule(t *testing.T) {
+	assert := assert.New(t)
+
+	g := NewHyperGraph()
+
+	for i := 0; i < 5; i++ {
+		g.AddVertex(int32(i), 0)
+	}
+
+	g.AddEdge(0, 1, 2)
+	g.AddEdge(2, 3, 4)
+	g.AddEdge(2)
+
+	c := make(map[int32]bool)
+	VertexDominationRule(g, c)
+
+	assert.Equal(0, len(c))
+	assert.Equal(1, len(g.Vertices))
+	assert.Equal(1, len(g.IncMap))
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(1, g.Deg(2))
+}
+
+func TestExtendedTriangleRule(t *testing.T) {
+	assert := assert.New(t)
+	
+	g := NewHyperGraph()
+
+	for i := 0; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
+	}
+
+	g.AddEdge(0,1)
+	g.AddEdge(1,2,3)
+	g.AddEdge(1,2)
+	g.AddEdge(3,4,5)
+	g.AddEdge(4,5)
+
+
+	c := make(map[int32]bool)
+	ExtendedTriangleRule(g, c)
+
+	assert.Equal(2, len(g.Vertices))
+	assert.Equal(2, len(g.IncMap))
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(4, len(c))
+
+	assert.Equal(1, g.Deg(4))
+	assert.Equal(1, g.Deg(5))
+}
+
+func TestF3Rule(t *testing.T) {
+	assert := assert.New(t)
+	g := NewHyperGraph()
+
+	for i := 0; i < 6; i++ {
+		g.AddVertex(int32(i), 0)
+	}
+
+	g.AddEdge(0,1,2)
+	g.AddEdge(1,3)
+	g.AddEdge(0,4)
+	g.AddEdge(4,5)
+
+	c := make(map[int32]bool)
+
+	F3Rule(g, c)
+
+	assert.Equal(1, len(g.Edges))
+	assert.Equal(2, len(g.Vertices))
+	assert.Equal(2, len(g.IncMap))
+	assert.Equal(3, len(c))
+
+	assert.Equal(1, g.Deg(4))
+	assert.Equal(1, g.Deg(5))
+
+
+
+
+
+}
+
+func BenchmarkF3TargetLowDegree(b *testing.B) {
 	g := TestGraph(100000, 200000, false)
 	c := make(map[int32]bool)
 	b.ResetTimer()
@@ -311,7 +362,7 @@ func BenchmarkSmallTriangleRule(b *testing.B) {
 }
 
 func BenchmarkApproxVertexDominationRule(b *testing.B) {
-	g := TestGraph(1000000, 2000000, false)
+	g := TestGraph(100000, 200000, false)
 	g.RemoveDuplicate()
 
 	c := make(map[int32]bool)
@@ -324,7 +375,7 @@ func BenchmarkApproxVertexDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxVertexDominationRule(g, c, false)
+		ApproxVertexDominationRule(g, c)
 	}
 
 }
@@ -335,35 +386,6 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 	c := make(map[int32]bool)
 
 	name := "approxDoubleVertexDom"
-
-	f, err := makeProfile(name)
-	if err != nil {
-		b.Fatal("Could not create cpu profile")
-	}
-	defer stopProfiling(f)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		ApproxDoubleVertexDominationRule(g, c)
-	}
-
-	m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
-	if err != nil {
-		b.Fatal("could not create memory profile: ", err)
-	}
-	defer m.Close() // error handling omitted for example
-	if err := pprof.WriteHeapProfile(m); err != nil {
-		b.Fatal("could not write memory profile: ", err)
-	}
-
-}
-
-func BenchmarkApproxDoubleVertexDominationRule2(b *testing.B) {
-	g := TestGraph(10000, 100000, false)
-	g.RemoveDuplicate()
-	c := make(map[int32]bool)
-
-	name := "approxDoubleVertexDom2"
 
 	f, err := makeProfile(name)
 	if err != nil {

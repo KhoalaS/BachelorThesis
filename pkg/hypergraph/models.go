@@ -248,14 +248,14 @@ func ModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph 
 			for _, cId := range cArr {
 				dSum := 0
 				for _, v := range c[cId] {
-					dSum += int(g.VDeg[v])
+					dSum += int(g.Deg(v))
 				}
 
 				roll := rand.Intn(dSum)
 				dCounter := 0
 
 				for _, v := range c[cId] {
-					dCounter += int(g.VDeg[v])
+					dCounter += int(g.Deg(v))
 					if roll <= dCounter {
 						eps[v] = true
 						break
@@ -369,15 +369,15 @@ func selectEndpoints(g *HyperGraph, size int32) []int32 {
 	}
 
 	for i := 0; i < int(size); i++ {
-		pSum := make([]int32, len(ids))
-		pSum[0] = g.VDeg[ids[0]]
+		pSum := make([]int, len(ids))
+		pSum[0] = g.Deg(ids[0])
 
 		// recalculate the cumulative probability array
 		for j := 1; j < len(ids); j++ {
-			pSum[j] = pSum[j-1] + g.VDeg[ids[j]]
+			pSum[j] = pSum[j-1] + g.Deg(ids[j])
 		}
 
-		r := rand.Int31n(pSum[len(pSum)-1])
+		r := rand.Intn(pSum[len(pSum)-1])
 
 		for k := 0; k < len(pSum); k++ {
 			if r <= pSum[k] {

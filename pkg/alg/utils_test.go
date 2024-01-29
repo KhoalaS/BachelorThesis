@@ -3,6 +3,8 @@ package alg
 import (
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestShuffle(t *testing.T) {
@@ -18,8 +20,6 @@ func TestShuffle(t *testing.T) {
 	Shuffle[int](arr)
 
 	for i:=0; i<6; i++{
-		if arr[i] != perm[i] {		
-			t.Errorf("Expected %d got %d", perm[i], arr[i])	
-		}
+		assert.Equal(t, arr[i], perm[i])
 	}
 }
