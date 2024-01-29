@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/james-bowman/sparse"
 )
 
 // General TODO:
@@ -428,11 +430,13 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 				count := make(map[int32]int)
 				need := 2
+				target := 0
 
 				for v := range e.V {
 					if v == a {
 						continue
 					}
+					target += g.Deg(v)
 					if adjCount[v][a] == int32(g.Deg(v)) {
 						need--
 					} else {
@@ -500,6 +504,120 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 							}
 						}
 						g.RemoveEdge(e)
+					}
+				}
+			}
+		}
+	}
+
+	return exec
+}
+
+func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
+	
+	exec := 0
+	incDokMatrix := sparse.NewDOK(len(g.Vertices), len(g.Edges))
+	for v, inc := range g.IncMap {
+		for e := range inc {
+			incDokMatrix.Set(int(v), int(e), 1)
+		}
+	}
+
+	incCSRMatrix := incDokMatrix.ToCSR()
+	if logging {
+		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule3")
+	}
+
+	for outer := true; outer; {
+		outer = false
+
+		for _, e := range g.Edges {
+			if len(e.V) != 3 {
+				continue
+			}
+
+			found := false
+			var a int32 = -1
+			var b int32 = -1
+
+			for u := range e.V {
+				a = u
+				count := make(map[int]int)
+				need := 2
+				target := 0
+				aSum := 0
+
+				for v := range e.V {
+					if v == a {
+						continue
+					}
+					target += g.Deg(v)
+
+					inc := make(map[int]bool)
+
+					incCSRMatrix.DoRowNonZero(int(v), func(i, j int, v float64) {
+						inc[j] = true
+					})
+
+					aCount := 0
+
+					for f := range inc {
+						if incCSRMatrix.At(int(a), f) == 1.0 {
+							aCount++
+						}else{
+							for w := range g.Edges[int32(f)].V {
+								if !e.V[w] {
+									count[int(w)]++
+								}
+							}
+						}
+					}
+
+					aSum += aCount
+					if aCount == g.Deg(v) {
+						need--
+					}
+
+				}
+
+				if need == 0 {
+					//dom condition met
+					maxDeg := 0
+					for v := range count {
+						if int(a) == v {
+							continue
+						}
+						d := g.Deg(int32(v))
+						if d > maxDeg {
+							maxDeg = d
+							b = int32(v)
+						}
+					}
+					found = true
+					break
+				} else {
+					for v, val := range count {
+						if aSum + val == target {
+							found = true
+							b = int32(v)
+							break
+						}
+					}
+				}
+				if found {
+					break
+				}
+
+			}
+
+			if found {
+				exec++
+				solution := [2]int32{a, b}
+				for _, w := range solution {
+					c[w] = true
+					for e := range g.IncMap[w] {
+						g.RemoveEdge(e)
+						incCSRMatrix.Set(int(w), int(e), 0)
 					}
 				}
 			}
