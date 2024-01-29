@@ -129,7 +129,7 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 	assert.Equal(0, len(g.Vertices))
 	assert.Equal(0, len(g.IncMap))
 	assert.Equal(0, len(g.Edges))
-
+	assert.Equal(true, c[3])
 }
 
 func TestSmallTriangleRule(t *testing.T) {
