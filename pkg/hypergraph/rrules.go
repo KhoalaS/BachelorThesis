@@ -515,7 +515,6 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 	adjList := make(map[int32]map[int32]bool)
 	remVertices := make(map[int32]bool)
-	remEdges := make(map[int32]bool)
 	exec := 0
 
 	// Time Compelxity: |E|
@@ -568,21 +567,10 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	for id, e := range g.Edges {
-		for v := range e.V {
-			if remVertices[v] {
-				remEdges[id] = true
-				break
-			}
+	for v := range remVertices {
+		for e := range g.IncMap[v] {
+			g.RemoveEdge(e)
 		}
-	}
-
-	for eId := range remEdges {
-		g.RemoveEdge(eId)
-	}
-
-	for vId := range remVertices {
-		g.RemoveVertex(vId)
 	}
 
 	return exec
