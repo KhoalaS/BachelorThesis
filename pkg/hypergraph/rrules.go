@@ -430,7 +430,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 			for u := range e.V {
 				a = u
-	
+
 				count := make(map[int32]int)
 				need := 2
 
@@ -648,7 +648,7 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 				}
 			}
 
-			if s3Edge+s2Edge < 0 {
+			if s3Edge == -1 || s2Edge == -1 {
 				continue
 			}
 
