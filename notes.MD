@@ -366,10 +366,10 @@ T &= |E| \cdot 3\cdot \log (3) + (|E| \cdot (11 + 24 \cdot \log(3))) \\
 $$
 
 \begin{lemma}
-\hyperref[edom]{Algorithm 3} finds all edges of G that are dominated, iff G has no size one edges.
+Algorithm \ref{edom} finds all edges of G that are dominated, iff G has no size one edges.
 \end{lemma}
 
-_Proof._ Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. 
+_Proof._ Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. $\square$
 
 This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
 
@@ -504,10 +504,7 @@ $outer \gets true$\;
         \For{$w \in sol$}{
             $C\gets C\cup \{ w \}$\;
             \For{$e$ incident to $w$}{
-                \For{$x \in e$}{
-                    \If{$x = w$}{
-                        \textbf{continue}\;
-                    }
+                \For{$x \in e\setminus \{ w \}$}{
                     \For{$y \in e\setminus x$}{
                         $adjCount[x][y] \gets adjCount[x][y]-1$\;
                     }
@@ -536,18 +533,25 @@ $$
     into the hitting set that we produce.
 
 $\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start be generating a $adjCount$ map, analogous to the one used in the approximative vertex domination rule. We then iterate over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
-
 $$
 \begin{align*}
-    deg(x)= adjCount[x][a]+ adjCount[x][b] \\
-    deg(y)= adjCount[y][a]+ adjCount[y][b]
+    deg(x)\leq adjCount[x][a]+ adjCount[x][b] \\
+    deg(y)\leq adjCount[y][a]+ adjCount[y][b]
 \end{align*}
 $$
+Note that when $deg(x)= adjCount[x][a]$ or $deg(y)= adjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead. 
 
-Note that when both $deg(x)= adjCount[x][a]$ and $deg(y)= adjCount[y][a]$ are already satisfied, we can select any vertex in $adjCount[x]$ or $adjCount[y]$ but not in $e$ as $b$.
+\begin{lemma}
+Algorithm \ref{apdvdom} is correct.
+\end{lemma}
 
-\todo{Proof}
+_Proof_. Let $G=(V,E)$ be a hypergraph, $e=\{ a,x,y \}$ be a size $3$ edge. Assume that the approximative double vertex domination rule applies to this edge, i.e. all edges incident to $x$ and $y$ contain either $a$ or another vertex $b$. Since every edge incident to $v \in \{ x,y \}$ contains either $a$ or $b$, the amount of times $a$ and $b$ are adjacent to $v$ has to be at least $deg(v)$. Thus the following non-strict inequality holds,
+$$
+deg(v) \leq adjCount[v][a] + adjCount[v][b]
+$$
+$\square$
 
+\todo{add strict constraint that $need == 2$}
 $$
 \begin{algorithm}
 \nllabel{apdvdom}
@@ -576,29 +580,26 @@ $outer \gets true$\;
         \For{$u \in e$}{
             $a \gets u$\;
             $count \gets \texttt{map}[V]\mathbb{N}$\;
-            $need \gets 2$\;
+            $vd \gets false$\;
 
             \For{$v \in e\setminus \{a\}$}{
-                \eIf{$adjCount[v][a] = deg(w)$}{
-                    $need \gets need - 1$\;
-                }{
-                    \For{$(w,val) \in adjCount[v]$}{
-                        \If{$w \in e$}{
-                            \textbf{continue}\;
-                        }
-                        \If{$adjCount[v][a] + val = deg(v)$}{
-                            $count[w] \gets count[w] +1$\;
-                        }
+                \If{$adjCount[v][a] = deg(w)$}{
+                    $vd\gets true$\;
+                    \textbf{break}\;
+                }
+                \For{$(w,val) \in adjCount[v]$}{
+                    \If{$w \in e$}{
+                        \textbf{continue}\;
+                    }
+                    \If{$adjCount[v][a] + val = deg(v)$}{
+                        $count[w] \gets count[w] +1$\;
                     }
                 }
+                
             }
-            \eIf{$need = 0$}{
-                $b \gets \argmax_{v\in N(e\setminus \{ a \})\setminus \{ a \}} deg(v)$\;
-                $found \gets true$\;
-                \textbf{break}\;
-            }{
+            \If{\textbf{not} vd}{
                 \For{$(v, val) \in count$}{
-                    \If{$val = need$}{
+                    \If{$val = 2$}{
                         $found \gets true$\;
                         $b \gets v$\;
                         \textbf{break}\;
@@ -635,8 +636,8 @@ This last step will introduce the quadratic complexity, since in the worst case,
 
 -   small edge degree 2: Let v be a vertex of degree 2, and let the two hyperedges
     containing $v$ be $e = \{x, v\}$ and $f = \{v, y, z\}$. Then we can select a hyperedge $g$
-    that contains one of the neighbors of $v$ in $f$ but not $x$, for example $g = \{u, w, z\}
-$(when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
+    that contains one of the neighbors of $v$ in $f$ but not $x$, for example $g = \{u, w, z\}$
+    (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
 
 #### Outline
