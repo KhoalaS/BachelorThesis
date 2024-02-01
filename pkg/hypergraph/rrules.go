@@ -6,6 +6,8 @@ import (
 	"log"
 	"math/rand"
 	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -291,6 +293,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+// naive
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
@@ -390,9 +393,10 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+// adjCount version
 func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 	if logging {
-		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
+		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule2")
 	}
 
 	adjCount := make(map[int32]map[int32]int32)
@@ -429,50 +433,31 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 				a = u
 
 				count := make(map[int32]int)
-				need := 2
-				target := 0
+				vd := false
 
 				for v := range e.V {
 					if v == a {
 						continue
 					}
-					target += g.Deg(v)
 					if adjCount[v][a] == int32(g.Deg(v)) {
-						need--
-					} else {
-						for w, val := range adjCount[v] {
-							if e.V[w] {
-								continue
-							}
-							if adjCount[v][a]+val == int32(g.Deg(v)) {
-								count[w]++
-							}
-						}
+						vd = true
+						break
 					}
-				}
 
-				if need == 0 {
-					//dom condition met
-					maxDeg := 0
-					for v := range e.V {
-						if v == a {
+					for w, val := range adjCount[v] {
+						if e.V[w] {
 							continue
 						}
-						for w := range adjCount[v] {
-							if w == a {
-								continue
-							}
-							if g.Deg(w) > maxDeg {
-								maxDeg = g.Deg(w)
-								b = v
-							}
+						if adjCount[v][a]+val == int32(g.Deg(v)) {
+							count[w]++
 						}
 					}
-					found = true
-					break
-				} else {
+
+				}
+
+				if !vd {
 					for v, val := range count {
-						if val == need {
+						if val == 2 {
 							found = true
 							b = v
 							break
@@ -515,7 +500,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 
 // CSR version
 func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
-	
+
 	exec := 0
 	incDokMatrix := sparse.NewDOK(len(g.Vertices), len(g.Edges))
 	for v, inc := range g.IncMap {
@@ -553,12 +538,6 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 						continue
 					}
 					target += g.Deg(v)
-
-					inc := make(map[int]bool)
-
-					incCSRMatrix.DoRowNonZero(int(v), func(i, j int, v float64) {
-						inc[j] = true
-					})
 
 					aCount := 0
 
