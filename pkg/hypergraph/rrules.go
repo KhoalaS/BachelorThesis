@@ -628,6 +628,96 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+// Two-Sum adjCount
+func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
+	if logging {
+		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule4")
+	}
+
+	adjCount := make(map[int32]map[int32]int32)
+	exec := 0
+
+	// Time Complexity: |E| * d^2
+	for _, e := range g.Edges {
+		for v := range e.V {
+			if _, ex := adjCount[v]; !ex {
+				adjCount[v] = make(map[int32]int32)
+			}
+
+			for w := range e.V {
+				if v != w {
+					adjCount[v][w]++
+				}
+			}
+		}
+	}
+
+	for outer := true; outer; {
+		outer = false
+
+		for _, e := range g.Edges {
+			if len(e.V) != 3 {
+				continue
+			}
+
+			found := false
+			var sol [2]int32
+
+			hashes := make(map[string]int)
+
+			for v := range e.V {
+				twoSumAll(adjCount[v], int32(g.Deg(v)), func(x0, x1 int32) {
+					if x0 > x1 {
+						temp := x1
+						x1 = x0
+						x0 = temp
+					}
+					if (e.V[x0] || e.V[x1]) && !(e.V[x0] && e.V[x1]) {
+						hashes[strconv.Itoa(int(x0))+"|"+strconv.Itoa(int(x1))]++
+					}
+				})
+			}
+
+			for hash, val := range hashes {
+				if val >= 2 {
+					found = true
+					spl := strings.Split(hash, "|")
+					for i := 0; i < 2; i++ {
+						x, _ := strconv.ParseInt(spl[i], 10, 32)
+						y := int32(x)
+						sol[i] = y
+					}
+					break
+				}
+			}
+
+			if found {
+				exec++
+				for _, w := range sol {
+					c[w] = true
+					for e := range g.IncMap[w] {
+						for x := range g.Edges[e].V {
+							if x == w {
+								continue
+							}
+							subEdge, _ := SetMinus(g.Edges[e], x)
+							for _, y := range subEdge {
+								adjCount[x][y]--
+								if adjCount[x][y] == 0 {
+									delete(adjCount[x], y)
+								}
+							}
+						}
+						g.RemoveEdge(e)
+					}
+				}
+			}
+		}
+	}
+
+	return exec
+}
+
 func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "SmallTriangleRule")
