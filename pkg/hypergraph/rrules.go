@@ -513,6 +513,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+// CSR version
 func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 	
 	exec := 0
@@ -561,17 +562,17 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 
 					aCount := 0
 
-					for f := range inc {
-						if incCSRMatrix.At(int(a), f) == 1.0 {
+					incCSRMatrix.DoRowNonZero(int(v), func(i, j int, v float64) {
+						if incCSRMatrix.At(int(a), j) == 1.0 {
 							aCount++
-						}else{
-							for w := range g.Edges[int32(f)].V {
+						} else {
+							for w := range g.Edges[int32(j)].V {
 								if !e.V[w] {
 									count[int(w)]++
 								}
 							}
 						}
-					}
+					})
 
 					aSum += aCount
 					if aCount == g.Deg(v) {
@@ -597,7 +598,7 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 					break
 				} else {
 					for v, val := range count {
-						if aSum + val == target {
+						if aSum+val == target {
 							found = true
 							b = int32(v)
 							break
