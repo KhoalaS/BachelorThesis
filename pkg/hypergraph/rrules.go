@@ -702,7 +702,7 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 		defer LogTime(time.Now(), "SmallTriangleRule")
 	}
 	adjList := make(map[int32]map[int32]bool)
-	remVertices := make(map[int32]bool)
+	rem := make(map[int32]bool)
 	exec := 0
 
 	// Time Compelxity: |E|
@@ -724,38 +724,35 @@ func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	// Time Compelxity: |V|^2
-	for x, val := range adjList {
+	for z, val := range adjList {
 		if len(val) < 2 {
 			continue
 		}
 		arr := setToSlice(val)
 		subsets := list.New()
-		s := 2
-		getSubsetsRec(arr, s, subsets)
+		getSubsetsRec(arr, 2, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
-			subset := item.Value.([]int32)
+			s := item.Value.([]int32)
 			//y := subset[0] and z := subset[1]
 			// triangle condition
-			if adjList[subset[0]][subset[1]] || adjList[subset[1]][subset[0]] {
+			if adjList[s[0]][s[1]] || adjList[s[1]][s[0]] {
 				exec++
-				remSet := map[int32]bool{subset[0]: true, subset[1]: true, x: true}
-				for y := range remSet {
-					c[y] = true
-					remVertices[y] = true
-					for z := range adjList[y] {
-						for u := range remSet {
-							delete(adjList[z], u)
-						}
+				remSet := map[int32]bool{s[0]: true, s[1]: true, z: true}
+				for u := range remSet {
+					c[u] = true
+					rem[u] = true
+					for v := range adjList[u] {
+						delete(adjList[v], u)
 					}
-					delete(adjList, y)
+					delete(adjList, u)
 				}
 				break
 			}
 		}
 	}
 
-	for v := range remVertices {
+	for v := range rem {
 		for e := range g.IncMap[v] {
 			g.RemoveEdge(e)
 		}
