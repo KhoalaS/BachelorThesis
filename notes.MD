@@ -547,7 +547,7 @@ Algorithm \ref{apdvdom} is correct.
 
 _Proof_. Let $G=(V,E)$ be a hypergraph, $e=\{ a,x,y \}$ be a size $3$ edge. Assume that the approximative double vertex domination rule applies to this edge, i.e. all edges incident to $x$ and $y$ contain either $a$ or another vertex $b$. Since every edge incident to $v \in \{ x,y \}$ contains either $a$ or $b$, the amount of times $a$ and $b$ are adjacent to $v$ has to be at least $deg(v)$. Thus the following non-strict inequality holds,
 $$
-deg(v) \leq adjCount[v][a] + adjCount[v][b]
+deg(v) \leq adjCount[v][a] + adjCount[v][b],\quad \text{for } v\in \{ x,y \}
 $$
 $\square$
 
@@ -628,9 +628,65 @@ $$
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
-$O(|E|+|V|^2)$ __Algorithm__. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an edge-adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $\texttt{adjList[v]}$ we compute all subsets of size two of the entry. If both vertices of the subset are vertex-adjacent to each other, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are vertex-adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $\texttt{adjList\lbrack}w\texttt{\rbrack}$.
+$O(|E|+|V|^2)$ __Algorithm__. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
+
+$$
+\begin{algorithm}
+\nllabel{tri}
+
+\KwIn{A hypergraph $G = (V, E)$, a set $C$}
+\KwOut{An integer denoting the number of rule applications.}
+\BlankLine
+
+$adjList \gets \texttt{map}[V]2^V$\;
+$rem \gets \emptyset$\;
+$exec \gets 0$\;
+
+\For{$e\in E$}{
+    \If{$|e| \neq 2$}{
+        \textbf{continue}\;
+    }
+    $\{ x,y \} \gets e$\;
+    $adjList[x] \gets adjList[x] \cup \{ y \}$\;
+    $adjList[y] \gets adjList[y] \cup \{ x \}$\;
+}
+
+\For{$(z, val) \in adjList$}{
+    \If{$|val| < 2$}{
+        \textbf{continue}\;
+    }
+    $subsets \gets \texttt{getSubsetsRec(val, 2)}$\;
+    \For{$s\in subsets$}{
+        $\{x,y\} \gets s$\;
+        \If{$y \in adjList[x]$ \textnormal{\textbf{or}} $x\in adjList[y]$}{
+            $exec \gets exec +1$\;
+            $C\gets C \cup \{ x,y,z \}$\;
+            $rem \gets rem \cup \{ x,y,z \}$\;
+            \For{$u \in \{ x,y,z \}$}{
+                \For{$v\in adjList[u]$}{
+                    $adjList[v] \gets adjList[v]\setminus \{ u \}$\;
+                }
+                $delete(adjList, u)$
+            }
+            \textbf{break};
+        }
+    }
+}   
+
+\For{$v \in rem$}{
+    $V\gets V\setminus \{ v \}$\;
+    \For{$e$ incident to $v$}{
+        $E\gets E\setminus \{ e \}$\;
+    }
+}
+
+\KwRet $exec$\;
+
+\caption{: Algorithm for exhaustive application of Small Triangle Rule}
+\end{algorithm}
+$$
 
 ### Small Edge Degree 2 Rule
 
