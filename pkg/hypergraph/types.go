@@ -11,6 +11,7 @@ type HyperGraph struct {
 	Edges       map[int32]Edge
 	edgeCounter int32
 	IncMap      map[int32]map[int32]bool
+	MaxLayer int
 }
 
 type Vertex struct {
@@ -20,6 +21,7 @@ type Vertex struct {
 
 type Edge struct {
 	V map[int32]bool
+	Layer int
 }
 
 func (g *HyperGraph) AddVertex(id int32, data any) {
@@ -54,6 +56,21 @@ func (g *HyperGraph) AddEdge(eps ...int32) {
 
 func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	e := Edge{V: make(map[int32]bool)}
+
+	for ep := range eps {
+		e.V[ep] = true
+		if _, ex := g.IncMap[ep]; !ex {
+			g.IncMap[ep] = make(map[int32]bool)
+		}
+		g.IncMap[ep][g.edgeCounter] = true
+	}
+
+	g.Edges[g.edgeCounter] = e
+	g.edgeCounter++
+}
+
+func (g *HyperGraph) AddEdgeMapWLayer(eps map[int32]bool, l int) {
+	e := Edge{V: make(map[int32]bool), Layer: l}
 
 	for ep := range eps {
 		e.V[ep] = true
