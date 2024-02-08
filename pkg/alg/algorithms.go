@@ -106,14 +106,14 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 
 	os.Mkdir(outdir, 0700)
 
-	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv",outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
+	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv", outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
 	logfile, err := os.Create(logfilename)
 	if err != nil {
 		log.Fatalf("Could not create file %s", logfilename)
 	}
 	logWriter := bufio.NewWriter(logfile)
 
-	fMasterFilename := fmt.Sprintf("%s/%s",outdir, masterfilename)
+	fMasterFilename := fmt.Sprintf("%s/%s", outdir, masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
