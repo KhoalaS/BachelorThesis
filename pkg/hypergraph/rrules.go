@@ -2,7 +2,6 @@ package hypergraph
 
 import (
 	"container/list"
-	"fmt"
 	"log"
 	"math/rand"
 	"runtime"
@@ -17,7 +16,7 @@ import (
 // General TODO:
 // Build an interface ontop of the HyperGraph class and inplement the "crud" there
 
-const logging = true
+const logging = false
 
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
@@ -774,6 +773,7 @@ func F3Rule(g *HyperGraph, c map[int32]bool) int {
 			i++
 		}
 	}
+
 	if i > 0 {
 		r := rand.Intn(i)
 		for v := range g.Edges[s3Arr[r]].V {
@@ -1077,125 +1077,6 @@ func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 	return 1
-}
-
-func F3TargetLowDegree2(g *HyperGraph, c map[int32]bool) (int, int) {
-	if logging {
-		defer LogTime(time.Now(), "detectLowDegreeEdge")
-	}
-	closest := 1000000
-	var closestId int32 = -1
-	var remEdge int32 = -1
-
-	for vId := range g.IncMap {
-		deg := g.Deg(vId)
-		if deg < closest && deg > 1 {
-			closest = deg
-			closestId = vId
-		}
-		if deg == 2 {
-			found := false
-			for e := range g.IncMap[closestId] {
-				for v := range g.Edges[e].V {
-					if v == closestId {
-						continue
-					}
-					for f := range g.IncMap[v] {
-						if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
-							found = true
-							remEdge = f
-							break
-						}
-						if found {
-							break
-						}
-					}
-					if found {
-						break
-					}
-				}
-				if found {
-					break
-				}
-			}
-			if found {
-				h := GetFrontierGraph(g, 2, remEdge)
-				c_h := make(map[int32]bool)
-				bestRatio := 3.0
-				rule := 0
-				for i := 1; i < 10; i++ {
-					execs := make(map[string]int)
-					applyRules(h, c_h, execs, i)
-					r := getRatio(execs)
-					if r < bestRatio {
-						bestRatio = r
-						rule = i
-						fmt.Println("deg2", i, r, execs)
-					}
-				}
-
-				for v := range g.Edges[remEdge].V {
-					c[v] = true
-					for e := range g.IncMap[v] {
-						g.RemoveEdge(e)
-					}
-				}
-				return 1, rule
-			}
-		}
-	}
-
-	for e := range g.IncMap[closestId] {
-		found := false
-		for v := range g.Edges[e].V {
-			if v == closestId {
-				continue
-			}
-			for f := range g.IncMap[v] {
-				if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
-					found = true
-					remEdge = f
-					break
-				}
-				if found {
-					break
-				}
-			}
-			if found {
-				break
-			}
-		}
-		if found {
-			break
-		}
-	}
-
-	if remEdge < 0 {
-		return F3Rule(g, c), 0
-	}
-
-	h := GetFrontierGraph(g, 2, remEdge)
-	c_h := make(map[int32]bool)
-	bestRatio := 3.0
-	rule := 0
-	for i := 1; i < 10; i++ {
-		execs := make(map[string]int)
-		applyRules(h, c_h, execs, i)
-		r := getRatio(execs)
-		if r < bestRatio {
-			bestRatio = r
-			rule = i
-			fmt.Println(fmt.Sprintf("deg%d", closest), i, r, execs)
-		}
-	}
-
-	for v := range g.Edges[remEdge].V {
-		c[v] = true
-		for e := range g.IncMap[v] {
-			g.RemoveEdge(e)
-		}
-	}
-	return 1, rule
 }
 
 func setToSlice[K comparable, V any](m map[K]V) []K {
