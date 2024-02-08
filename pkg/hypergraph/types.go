@@ -16,7 +16,7 @@ type HyperGraph struct {
 
 type Vertex struct {
 	Id   int32
-	Data any
+	Data int
 }
 
 type Edge struct {
@@ -24,7 +24,7 @@ type Edge struct {
 	Layer int
 }
 
-func (g *HyperGraph) AddVertex(id int32, data any) {
+func (g *HyperGraph) AddVertex(id int32, data int) {
 	if _, ex := g.Vertices[id]; !ex {
 		g.Vertices[id] = Vertex{id, data}
 	}

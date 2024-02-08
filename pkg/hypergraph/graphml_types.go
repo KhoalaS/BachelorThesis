@@ -22,7 +22,7 @@ type MLNode struct {
 type MLData struct {
 	XMLName xml.Name `xml:"data"`
 	Key string `xml:"key,attr"`
-	Value any `xml:",chardata"` 
+	Value int `xml:",chardata"` 
 }
 
 type MLHyperEdge struct {
