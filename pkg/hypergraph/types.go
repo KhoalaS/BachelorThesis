@@ -11,7 +11,7 @@ type HyperGraph struct {
 	Edges       map[int32]Edge
 	edgeCounter int32
 	IncMap      map[int32]map[int32]bool
-	MaxLayer int
+	MaxLayer    int
 }
 
 type Vertex struct {
@@ -20,7 +20,7 @@ type Vertex struct {
 }
 
 type Edge struct {
-	V map[int32]bool
+	V     map[int32]bool
 	Layer int
 }
 
@@ -69,19 +69,14 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	g.edgeCounter++
 }
 
-func (g *HyperGraph) AddEdgeMapWLayer(eps map[int32]bool, l int) {
+func (g *HyperGraph) AddEdgeMapWLayer(eps map[int32]bool, l int, id int32) {
 	e := Edge{V: make(map[int32]bool), Layer: l}
 
 	for ep := range eps {
 		e.V[ep] = true
-		if _, ex := g.IncMap[ep]; !ex {
-			g.IncMap[ep] = make(map[int32]bool)
-		}
-		g.IncMap[ep][g.edgeCounter] = true
 	}
 
-	g.Edges[g.edgeCounter] = e
-	g.edgeCounter++
+	g.Edges[id] = e
 }
 
 func (g *HyperGraph) RemoveEdge(e int32) bool {
@@ -99,6 +94,21 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 	}
 
 	delete(g.Edges, e)
+	return true
+}
+
+func (g *HyperGraph) F_RemoveEdge(eId int32, e Edge) bool {
+
+	for v := range e.V {
+		delete(g.IncMap[v], eId)
+
+		if len(g.IncMap[v]) == 0 {
+			delete(g.IncMap, v)
+			g.RemoveVertex(v)
+		}
+	}
+
+	delete(g.Edges, eId)
 	return true
 }
 
@@ -162,10 +172,14 @@ func (g HyperGraph) String() string {
 			}
 			ids = append(ids, id)
 		}
-		s += fmt.Sprintf("\t%d:%d\n", eId, ids)
+		s += fmt.Sprintf("\t%d:%d, Layer:%d\n", eId, ids, e.Layer)
 	}
 	s += "--------------------------\n"
 	return s
+}
+
+func (g *HyperGraph) SetMaxLayer(layer int) {
+	g.MaxLayer = layer
 }
 
 func NewHyperGraph() *HyperGraph {
