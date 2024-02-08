@@ -203,6 +203,98 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 	return execs
 }
 
+func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
+	// TODO: keep track of all frontier vertices and edges
+	execs := MakeExecs()
+	ApplyRules(g, c, execs, 0)
+	expDepth := 100
+
+	if len(g.Edges) == 0 {
+		return execs
+	}
+	fmt.Println(execs)
+
+	e := hypergraph.F3TargetLowDegreeDetect(g)
+	if e != -1 {
+		execs["kFallback"] += 1
+		for v := range g.Edges[e].V {
+			c[v] = true
+		}
+	}
+
+	gf := hypergraph.GetFrontierGraph(g, expDepth, e)
+	fmt.Println(len(gf.Edges))
+
+	for len(gf.IncMap) > 0 {
+		if len(gf.Edges) == 0 {
+			for _, inc := range gf.IncMap {
+				for e := range inc {
+					gf.AddEdgeMapWLayer(g.Edges[e].V, 0, e)
+					gf.SetMaxLayer(0)
+					hypergraph.ExpandFrontier(gf, g, 2)
+					ApplyRules(gf, c, execs, 0)
+					break
+				}
+				break
+			}
+		}
+		maxLayerReached := ApplyRulesFrontier(gf, g, c, execs)
+		if maxLayerReached {
+			//oldMax := gf.MaxLayer
+			hypergraph.ExpandFrontier(gf, g, 2)
+			fmt.Println("Expand", len(gf.Edges), len(gf.IncMap))
+			continue
+		}
+
+		// dont do this
+		// instead search for a new low deg vertex
+		k, outerLayer, _ := hypergraph.S_F3TargetLowDegree(gf, g, c)
+		execs["kFallback"] += k
+
+		if outerLayer {
+			fmt.Println("F3 in outer layer")
+			hypergraph.ExpandFrontier(gf, g, 3)
+			continue
+		}
+		fmt.Println(len(gf.Edges), len(gf.IncMap))
+	}
+	return execs
+}
+
+func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int) bool {
+	maxLayerReached := false
+	for {
+		kTiny, l0 := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY)
+		kEdgeDom, l1 := hypergraph.S_EdgeDominationRule(gf)
+		kVertDom, l2 := hypergraph.S_VertexDominationRule(gf, c)
+		kTiny2, l3 := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY)
+		//kApVertDom, l4 := hypergraph.S_ApproxVertexDominationRule(g, c)
+		kApDoubleVertDom, l5 := hypergraph.S_ApproxDoubleVertexDominationRule(gf, g, c)
+		//kSmallEdgeDegTwo := hypergraph.S_SmallEdgeDegreeTwoRule(g, c)
+		kTri, l6 := hypergraph.S_SmallTriangleRule(gf, g, c)
+		kExtTri, l7 := hypergraph.S_ExtendedTriangleRule(gf, g, c)
+		kSmall, l8 := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL)
+
+		execs["kTiny"] += kTiny
+		execs["kTiny"] += kTiny2
+		execs["kVertDom"] += kVertDom
+		execs["kEdgeDom"] += kEdgeDom
+		execs["kTri"] += kTri
+		execs["kExtTri"] += kExtTri
+		execs["kSmall"] += kSmall
+		//execs["kApVertDom"] += kApVertDom
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		//execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+		if l0 || l1 || l2 || l3 || l5 || l6 || l7 || l8 {
+			maxLayerReached = true
+		}
+		if kTiny+kTri+kSmall+kApDoubleVertDom+kEdgeDom+kVertDom+kExtTri == 0 {
+			break
+		}
+	}
+	return maxLayerReached
+}
+
 func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
 
 	switch prio {
