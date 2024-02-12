@@ -207,7 +207,7 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	// TODO: keep track of all frontier vertices and edges
 	execs := MakeExecs()
 	ApplyRules(g, c, execs, 0)
-	expDepth := 100
+	expDepth := 2
 
 	if len(g.Edges) == 0 {
 		return execs
@@ -226,38 +226,53 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	fmt.Println(len(gf.Edges))
 
 	for len(gf.IncMap) > 0 {
-		if len(gf.Edges) == 0 {
-			for _, inc := range gf.IncMap {
-				for e := range inc {
-					gf.AddEdgeMapWLayer(g.Edges[e].V, 0, e)
-					gf.SetMaxLayer(0)
-					hypergraph.ExpandFrontier(gf, g, 2)
-					ApplyRules(gf, c, execs, 0)
-					break
-				}
-				break
-			}
-		}
 		maxLayerReached := ApplyRulesFrontier(gf, g, c, execs)
 		if maxLayerReached {
 			//oldMax := gf.MaxLayer
-			hypergraph.ExpandFrontier(gf, g, 2)
+			hypergraph.ExpandFrontier(gf, g, 3)
 			fmt.Println("Expand", len(gf.Edges), len(gf.IncMap))
 			continue
 		}
 
-		// dont do this
-		// instead search for a new low deg vertex
-		k, outerLayer, _ := hypergraph.S_F3TargetLowDegree(gf, g, c)
-		execs["kFallback"] += k
-
-		if outerLayer {
-			fmt.Println("F3 in outer layer")
-			hypergraph.ExpandFrontier(gf, g, 3)
+		e := hypergraph.F3TargetLowDegreeDetect(g)
+		if e == -1 {
+			fmt.Println("Could not find size 3 edge")
 			continue
 		}
-		fmt.Println(len(gf.Edges), len(gf.IncMap))
+		outerLayer := false
+		for v := range g.Edges[e].V {
+			if gf.VertexFrontier[v] {
+				outerLayer = true
+			}
+			c[v] = true
+		}
+
+		if _, ex := gf.Edges[e]; !ex {
+			fmt.Println("F3 not in gf")
+			hypergraph.F3_ExpandFrontier(gf, g, e, expDepth)
+		} else if outerLayer {
+			fmt.Println("F3 in outer layer")
+			for v := range g.Edges[e].V {
+				for f := range gf.IncMap[v] {
+					gf.F_RemoveEdge(f, g)
+				}
+			}
+			hypergraph.ExpandFrontier(gf, g, 2)
+		} else {
+			fmt.Println("F3 in gf")
+			for v := range g.Edges[e].V {
+				for f := range gf.IncMap[v] {
+					gf.F_RemoveEdge(f, g)
+				}
+			}
+		}
+
+		execs["kFallback"] += 1
+
+		fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges), execs["kFallback"])
 	}
+	fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges))
+
 	return execs
 }
 
