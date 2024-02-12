@@ -697,6 +697,14 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 **Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
+# Algorithms
+
+## Sequential Algorithm
+
+## Frontier Algorithm
+
+
+
 # Applications and Results
 
 ## Triangle Vertex Deletion
