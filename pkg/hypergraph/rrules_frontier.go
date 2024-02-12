@@ -4,15 +4,15 @@ import (
 	"container/list"
 	"fmt"
 	"math/rand"
+	"os"
 	"runtime"
 	"sync"
 	"time"
-
 )
 
 // Time Complexity: |E| * d^3
 
-func S_EdgeDominationRule(g *HyperGraph) (int, bool) {
+func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph) (int, bool) {
 	var wg sync.WaitGroup
 	if logging {
 		defer LogTime(time.Now(), "S_EdgeDomination")
@@ -22,7 +22,7 @@ func S_EdgeDominationRule(g *HyperGraph) (int, bool) {
 	domEdges := []int32{}
 	exec := 0
 
-	for eId, e := range g.Edges {
+	for eId, e := range gf.Edges {
 		if len(e.V) == 2 {
 			eHash := e.getHash()
 			subEdges[eHash] = true
@@ -54,7 +54,7 @@ func S_EdgeDominationRule(g *HyperGraph) (int, bool) {
 		if lDom-end < batchSize {
 			end = lDom
 		}
-		go batchSubComp(&wg, g, subEdges, domEdges[start:end], channel)
+		go batchSubComp(&wg, gf, subEdges, domEdges[start:end], channel)
 	}
 
 	wg.Wait()
@@ -64,10 +64,13 @@ func S_EdgeDominationRule(g *HyperGraph) (int, bool) {
 	for msg := range channel {
 		for eId := range msg {
 			exec++
-			if g.Edges[eId].Layer == g.MaxLayer {
-				remOuterLayer = true
+			for v := range gf.Edges[eId].V {
+				if gf.VertexFrontier[v] {
+					remOuterLayer = true
+					break
+				}
 			}
-			g.RemoveEdge(eId)
+			gf.F_RemoveEdge(eId, g)
 		}
 	}
 	return exec, remOuterLayer
@@ -95,11 +98,14 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int) (i
 		for v := range gf.Edges[e].V {
 			c[v] = true
 			for f := range gf.IncMap[v] {
-				if gf.Edges[f].Layer == gf.MaxLayer {
-					remOuterLayer = true
+				for v := range g.Edges[f].V {
+					if gf.VertexFrontier[v] {
+						remOuterLayer = true
+						break
+					}
 				}
 				delete(rem, f)
-				gf.F_RemoveEdge(f, g.Edges[f])
+				gf.F_RemoveEdge(f, g)
 			}
 		}
 	}
@@ -108,26 +114,24 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int) (i
 
 func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, bool) {
 	if logging {
-		defer LogTime(time.Now(), "ApproxVertexDominationRule")
+		defer LogTime(time.Now(), "S_ApproxVertexDominationRule")
 	}
 
 	adjCount := make(map[int32]map[int32]int32)
 	exec := 0
 
 	// Time Complexity: |E| * d^2
-	for _, e := range gf.Edges {
-		if e.Layer == gf.MaxLayer {
-			continue
-		}
+	
+	for _, e := range g.Edges {
 		for v := range e.V {
-			if _, ex := adjCount[v]; !ex {
-				adjCount[v] = make(map[int32]int32)
-			}
-
 			for w := range e.V {
-				if v != w {
-					adjCount[v][w]++
+				if w == v {
+					continue
 				}
+				if _,ex := adjCount[v]; !ex {
+					adjCount[v] = make(map[int32]int32)
+				}
+				adjCount[v][w]++
 			}
 		}
 	}
@@ -138,7 +142,8 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 	for solFound := true; solFound; {
 		solFound = false
 
-		for vId, count := range adjCount {
+		for vId := range gf.Vertices {
+			count := adjCount[vId]
 			solution, ex := twoSum(count, int32(gf.Deg(vId)+1))
 			if !ex {
 				continue
@@ -149,11 +154,11 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 
 			for _, w := range solution {
 				c[w] = true
-				if gf.Vertices[w].Data >= gf.MaxLayer {
+				if gf.VertexFrontier[w] {
 					remOuterLayer = true
 				}
 				for e := range gf.IncMap[w] {
-					for x := range gf.Edges[e].V {
+					for x := range g.Edges[e].V {
 						if x == w {
 							continue
 						}
@@ -166,7 +171,7 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 							}
 						}
 					}
-					gf.F_RemoveEdge(e, g.Edges[e])
+					gf.F_RemoveEdge(e, g)
 				}
 				delete(adjCount, w)
 			}
@@ -176,19 +181,16 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 	return exec, remOuterLayer
 }
 
-func S_VertexDominationRule(gf *HyperGraph, c map[int32]bool) (int, bool) {
+func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, bool) {
 	if logging {
-		defer LogTime(time.Now(), "VertexDominationRule")
+		defer LogTime(time.Now(), "S_VertexDominationRule")
 	}
 	exec := 0
 	remOuterLayer := false
 
 	for outer := true; outer; {
 		outer = false
-		for v, vStr := range gf.Vertices {
-			if vStr.Data > gf.MaxLayer{
-				continue
-			}
+		for v := range gf.Vertices {
 			vCount := make(map[int32]int)
 			for e := range gf.IncMap[v] {
 				for w := range gf.Edges[e].V {
@@ -209,11 +211,11 @@ func S_VertexDominationRule(gf *HyperGraph, c map[int32]bool) (int, bool) {
 			}
 
 			if dom {
-				if vStr.Data >= gf.MaxLayer {
+				if gf.VertexFrontier[v] {
 					remOuterLayer = true
 				}
 				outer = true
-				gf.RemoveElem(v)
+				gf.F_RemoveElem(v, g)
 				exec++
 			}
 		}
@@ -228,27 +230,23 @@ func S_VertexDominationRule(gf *HyperGraph, c map[int32]bool) (int, bool) {
 // adjCount version
 func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, bool) {
 	if logging {
-		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule2")
+		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule2")
 	}
 
 	adjCount := make(map[int32]map[int32]int32)
 	exec := 0
 	remOuterLayer := false
 
-	// Time Complexity: |E| * d^2
-	for _, e := range gf.Edges {
-		if e.Layer == gf.MaxLayer {
-			continue
-		}
-		for v := range e.V {
-			if _, ex := adjCount[v]; !ex {
-				adjCount[v] = make(map[int32]int32)
-			}
-
-			for w := range e.V {
-				if v != w {
-					adjCount[v][w]++
+	for v := range g.Vertices {
+		for e := range g.IncMap[v] {
+			for w := range g.Edges[e].V {
+				if w == v {
+					continue
 				}
+				if _,ex := adjCount[v]; !ex {
+					adjCount[v] = make(map[int32]int32)
+				}
+				adjCount[v][w]++
 			}
 		}
 	}
@@ -264,7 +262,6 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 			found := false
 			var a int32 = -1
 			var b int32 = -1
-
 			for u := range e.V {
 				a = u
 
@@ -311,11 +308,11 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 				solution := [2]int32{a, b}
 				for _, w := range solution {
 					c[w] = true
-					if gf.Vertices[w].Data >= gf.MaxLayer {
+					if gf.VertexFrontier[w] {
 						remOuterLayer = true
 					}
 					for e := range gf.IncMap[w] {
-						for x := range gf.Edges[e].V {
+						for x := range g.Edges[e].V {
 							if x == w {
 								continue
 							}
@@ -327,11 +324,12 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 								}
 							}
 						}
-						gf.F_RemoveEdge(e, g.Edges[e])
+						gf.F_RemoveEdge(e, g)
 					}
 				}
 			}
 		}
+
 	}
 
 	return exec, remOuterLayer
@@ -382,7 +380,7 @@ func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 				exec++
 				remSet := map[int32]bool{s[0]: true, s[1]: true, z: true}
 				for u := range remSet {
-					if gf.Vertices[u].Data >= gf.MaxLayer {
+					if gf.VertexFrontier[u] {
 						remOuterLayer = true
 					}
 					c[u] = true
@@ -399,7 +397,7 @@ func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 
 	for v := range rem {
 		for e := range gf.IncMap[v] {
-			gf.F_RemoveEdge(e, g.Edges[e])
+			gf.F_RemoveEdge(e, g)
 		}
 	}
 
@@ -422,11 +420,16 @@ func S_F3Rule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, bool, int32
 	if i > 0 {
 		r := rand.Intn(i)
 		remEdge = s3Arr[r]
-		remOuterLayer = gf.Edges[s3Arr[r]].Layer == gf.MaxLayer
+		for v := range gf.Edges[s3Arr[r]].V {
+			if gf.VertexFrontier[v] {
+				remOuterLayer = true
+				break
+			}
+		}
 		for v := range gf.Edges[s3Arr[r]].V {
 			c[v] = true
 			for e := range gf.IncMap[v] {
-				gf.F_RemoveEdge(e, g.Edges[e])
+				gf.F_RemoveEdge(e, g)
 			}
 		}
 	} else {
@@ -447,7 +450,7 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (in
 		outer := false
 		for _, e := range gf.Edges {
 			found := false
-			if len(e.V) != 2 || e.Layer == gf.MaxLayer {
+			if len(e.V) != 2 {
 				continue
 			}
 			// e has size 2
@@ -469,24 +472,24 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (in
 				// iterate over edges f incident to y
 				for f := range gf.IncMap[y] {
 					// ensure f has size 3
-					if len(gf.Edges[f].V) != 3 {
+					if len(g.Edges[f].V) != 3 {
 						continue
 					}
 
 					// if z in f, then |e ∩ f| != 1
-					if gf.Edges[f].V[z] {
+					if g.Edges[f].V[z] {
 						continue
 					}
 
 					// iterate over edges _g incident to z
 					for _g := range gf.IncMap[z] {
 						cond := true
-						for ep := range gf.Edges[_g].V {
+						for ep := range g.Edges[_g].V {
 							if ep == z {
 								continue
 							}
 							// check if the other vertices of g are in f
-							if !gf.Edges[f].V[ep] {
+							if !g.Edges[f].V[ep] {
 								cond = false
 								break
 							}
@@ -506,22 +509,26 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (in
 
 				if found {
 					exec++
-					if gf.Edges[f_0].Layer == gf.MaxLayer {
-						remOuterLayer = true
-					}
-					for a := range gf.Edges[f_0].V {
-						c[a] = true
-						for h := range gf.IncMap[a] {
-							gf.F_RemoveEdge(h, g.Edges[h])
+					for v := range g.Edges[f_0].V {
+						if gf.VertexFrontier[v] {
+							remOuterLayer = true
+							break
 						}
 					}
 
-					if gf.Vertices[z].Data >= gf.MaxLayer {
+					for a := range g.Edges[f_0].V {
+						c[a] = true
+						for h := range gf.IncMap[a] {
+							gf.F_RemoveEdge(h, g)
+						}
+					}
+
+					if gf.VertexFrontier[z] {
 						remOuterLayer = true
 					}
 					c[z] = true
 					for h := range gf.IncMap[z] {
-						gf.F_RemoveEdge(h, g.Edges[h])
+						gf.F_RemoveEdge(h, g)
 					}
 					break
 				}
@@ -548,8 +555,8 @@ func S_F3TargetLowDegree(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 	var remEdge int32 = -1
 	remOuterLayer := false
 
-	for vId, vStr := range gf.Vertices {
-		if vStr.Data == gf.MaxLayer {
+	for vId := range gf.Vertices {
+		if gf.VertexFrontier[vId] {
 			continue
 		}
 		deg := gf.Deg(vId)
@@ -568,7 +575,7 @@ func S_F3TargetLowDegree(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 						if f == e {
 							continue
 						}
-						if !gf.Edges[f].V[closestId] && len(gf.Edges[f].V) == 3 && gf.Edges[f].Layer != gf.MaxLayer{
+						if !gf.Edges[f].V[closestId] && len(gf.Edges[f].V) == 3 {
 							found = true
 							remEdge = f
 							break
@@ -583,13 +590,17 @@ func S_F3TargetLowDegree(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 				}
 			}
 			if found {
-				if gf.Edges[remEdge].Layer == gf.MaxLayer-1 {
-					remOuterLayer = true
+				for v := range gf.Edges[remEdge].V {
+					if gf.VertexFrontier[v] {
+						remOuterLayer = true
+						break
+					}
 				}
+
 				for v := range gf.Edges[remEdge].V {
 					c[v] = true
 					for e := range gf.IncMap[v] {
-						gf.F_RemoveEdge(e, g.Edges[e])
+						gf.F_RemoveEdge(e, g)
 					}
 				}
 				return 1, remOuterLayer, remEdge
@@ -604,7 +615,7 @@ func S_F3TargetLowDegree(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 				continue
 			}
 			for f := range gf.IncMap[v] {
-				if !gf.Edges[f].V[closestId] && len(gf.Edges[f].V) == 3 && gf.Edges[f].Layer != gf.MaxLayer {
+				if !gf.Edges[f].V[closestId] && len(gf.Edges[f].V) == 3 {
 					found = true
 					remEdge = f
 					break
@@ -626,18 +637,21 @@ func S_F3TargetLowDegree(gf *HyperGraph, g *HyperGraph, c map[int32]bool) (int, 
 		return S_F3Rule(gf, g, c)
 	}
 
-	if gf.Edges[remEdge].Layer == gf.MaxLayer-1 {
-		remOuterLayer = true
+	for v := range gf.Edges[remEdge].V {
+		if gf.VertexFrontier[v] {
+			remOuterLayer = true
+			break
+		}
 	}
+
 	for v := range gf.Edges[remEdge].V {
 		c[v] = true
 		for e := range gf.IncMap[v] {
-			gf.F_RemoveEdge(e, g.Edges[e])
+			gf.F_RemoveEdge(e, g)
 		}
 	}
 	return 1, remOuterLayer, remEdge
 }
-
 
 func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 	closest := 1000000000
