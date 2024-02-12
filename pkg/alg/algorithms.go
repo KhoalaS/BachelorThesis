@@ -178,7 +178,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule2(g, c)
-		kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
+		//kSmallEdgeDegTwo := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
 		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
@@ -191,9 +191,9 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		execs["kSmall"] += kSmall
 		execs["kApVertDom"] += kApVertDom
 		execs["kApDoubleVertDom"] += kApDoubleVertDom
-		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+		//execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
 
-		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
+		if kTiny+kTri+kSmall+kApVertDom+kApDoubleVertDom+kEdgeDom+kVertDom+kExtTri == 0 {
 			break
 		}
 	}
