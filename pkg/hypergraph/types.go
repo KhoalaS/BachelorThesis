@@ -7,22 +7,30 @@ import (
 )
 
 type HyperGraph struct {
-	Vertices    map[int32]Vertex
-	Edges       map[int32]Edge
-	edgeCounter int32
-	IncMap      map[int32]map[int32]bool
+	Vertices       map[int32]Vertex
+	Edges          map[int32]Edge
+	edgeCounter    int32
+	IncMap         map[int32]map[int32]bool
+	EdgeFrontier   map[int32]bool
+	VertexFrontier map[int32]bool
 }
 
 type Vertex struct {
 	Id   int32
-	Data any
+	Data int
 }
 
 type Edge struct {
-	V map[int32]bool
+	V     map[int32]bool
 }
 
-func (g *HyperGraph) AddVertex(id int32, data any) {
+func (g *HyperGraph) ClearVertexFront(){
+	for k := range g.VertexFrontier {
+		delete(g.VertexFrontier, k)
+	}
+}
+
+func (g *HyperGraph) AddVertex(id int32, data int) {
 	if _, ex := g.Vertices[id]; !ex {
 		g.Vertices[id] = Vertex{id, data}
 	}
@@ -67,6 +75,16 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	g.edgeCounter++
 }
 
+func (g *HyperGraph) AddEdgeMapWLayer(eps map[int32]bool, id int32) {
+	e := Edge{V: make(map[int32]bool)}
+
+	for ep := range eps {
+		e.V[ep] = true
+	}
+
+	g.Edges[id] = e
+}
+
 func (g *HyperGraph) RemoveEdge(e int32) bool {
 	if _, ex := g.Edges[e]; !ex {
 		return false
@@ -82,6 +100,23 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 	}
 
 	delete(g.Edges, e)
+	return true
+}
+
+func (gf *HyperGraph) F_RemoveEdge(eId int32, g *HyperGraph) bool {
+
+	for v := range g.Edges[eId].V {
+		delete(g.IncMap[v], eId)
+
+		if len(g.IncMap[v]) == 0 {
+			delete(g.IncMap, v)
+			g.RemoveVertex(v)
+			gf.RemoveVertex(v)
+		}
+	}
+
+	delete(g.Edges, eId)
+	delete(gf.Edges, eId)
 	return true
 }
 
@@ -106,8 +141,47 @@ func (g *HyperGraph) RemoveElem(elem int32) bool {
 	return true
 }
 
+
+func (gf *HyperGraph) F_RemoveElem(elem int32, g *HyperGraph) bool {
+	if _, ex := gf.Vertices[elem]; !ex {
+		return false
+	}
+
+	if _, ex := gf.IncMap[elem]; !ex {
+		return false
+	}
+
+	for e := range gf.IncMap[elem] {
+		delete(gf.Edges[e].V, elem)
+		delete(g.Edges[e].V, elem)
+
+		if len(gf.Edges[e].V) == 0 {
+			gf.F_RemoveEdge(e, g)
+		}
+	}
+
+	gf.RemoveVertex(elem)
+	g.RemoveVertex(elem)
+
+	delete(g.IncMap, elem)
+	delete(gf.IncMap, elem)
+
+	return true
+}
+
+
 func (g *HyperGraph) Deg(v int32) int {
 	return len(g.IncMap[v])
+}
+
+func (g *HyperGraph) F_Deg(v int32) int {
+	d := 0
+	for e := range g.IncMap[v] {
+		if _, ex := g.Edges[e]; ex {
+			d++
+		}
+	}
+	return d
 }
 
 // not final
@@ -120,6 +194,10 @@ func (g *HyperGraph) Copy() *HyperGraph {
 		edges[eId] = Edge{V: make(map[int32]bool)}
 		for v := range e.V {
 			edges[eId].V[v] = true
+			if _,ex:= IncMap[v]; !ex {
+				IncMap[v] = make(map[int32]bool)
+			}
+			IncMap[v][eId] = true
 		}
 	}
 
@@ -155,7 +233,10 @@ func NewHyperGraph() *HyperGraph {
 	vertices := make(map[int32]Vertex)
 	edges := make(map[int32]Edge)
 	incMap := make(map[int32]map[int32]bool)
-	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap}
+	vertexFrontier := make(map[int32]bool)
+	edgeFrontier := make(map[int32]bool)
+
+	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap, VertexFrontier: vertexFrontier, EdgeFrontier: edgeFrontier}
 }
 
 func (g *HyperGraph) IsSimple() bool {

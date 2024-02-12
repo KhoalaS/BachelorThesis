@@ -122,7 +122,7 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 					fmt.Printf("Add edge %d\r", exec)
 					g.AddEdge(remSet...)
 					for _, v := range remSet {
-						g.AddVertex(v, uint8(0))
+						g.AddVertex(v, 0)
 					}
 					hashes[hash] = true
 				}
