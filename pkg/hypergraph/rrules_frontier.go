@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"fmt"
 	"math/rand"
-	"os"
 	"runtime"
 	"sync"
 	"time"
