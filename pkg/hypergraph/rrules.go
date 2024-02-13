@@ -16,7 +16,7 @@ import (
 // General TODO:
 // Build an interface ontop of the HyperGraph class and inplement the "crud" there
 
-const logging = true
+const logging = false
 
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
@@ -31,13 +31,9 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 			epArr = append(epArr, ep)
 		}
 
-		// compute all subsets of edge with id eId
+		// compute all size 2 subsets of edge with id eId
 		subsets := list.New()
-
-		// TODO: only compute size 2 subsets
-		for s := 2; s > 0; s-- {
-			getSubsetsRec(epArr, s, subsets)
-		}
+		getSubsetsRec(epArr, 2, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
 			hash := GetHash(item.Value.([]int32))
