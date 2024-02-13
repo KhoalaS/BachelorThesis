@@ -110,12 +110,10 @@ func (gf *HyperGraph) F_RemoveEdge(eId int32, g *HyperGraph) bool {
 
 		if len(g.IncMap[v]) == 0 {
 			delete(g.IncMap, v)
-			g.RemoveVertex(v)
 			gf.RemoveVertex(v)
 		}
 	}
 
-	delete(g.Edges, eId)
 	delete(gf.Edges, eId)
 	return true
 }
@@ -156,14 +154,14 @@ func (gf *HyperGraph) F_RemoveElem(elem int32, g *HyperGraph) bool {
 		delete(g.Edges[e].V, elem)
 
 		if len(gf.Edges[e].V) == 0 {
-			gf.F_RemoveEdge(e, g)
+			gf.RemoveEdge(e)
+			g.RemoveEdge(e)
 		}
 	}
 
 	gf.RemoveVertex(elem)
 	g.RemoveVertex(elem)
 
-	delete(g.IncMap, elem)
 	delete(gf.IncMap, elem)
 
 	return true
