@@ -277,6 +277,20 @@ func (g *HyperGraph) RemoveDuplicate() {
 	}
 }
 
+func (gf *HyperGraph) F_RemoveDuplicate(g *HyperGraph) {
+	hashes := make(map[string]bool)
+
+	for eId, e := range gf.Edges {
+		hash := e.getHash()
+		if hashes[hash] {
+			delete(gf.Edges, eId)
+			g.RemoveEdge(eId)
+		} else {
+			hashes[hash] = true
+		}
+	}
+}
+
 func (g *HyperGraph) Draw() {
 
 }
