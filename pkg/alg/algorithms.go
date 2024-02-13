@@ -148,6 +148,93 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	return execs
 }
 
+func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
+
+	header := "Ratio;"
+	header += strings.Join(Labels, ";") + "\n"
+
+	os.Mkdir(outdir, 0700)
+
+	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv", outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
+	logfile, err := os.Create(logfilename)
+	if err != nil {
+		log.Fatalf("Could not create file %s", logfilename)
+	}
+	logWriter := bufio.NewWriter(logfile)
+
+	fMasterFilename := fmt.Sprintf("%s/%s", outdir, masterfilename)
+	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			masterfile, _ = os.Create(fMasterFilename)
+			masterfile.WriteString(header)
+		} else {
+			log.Fatalf("Could not open file %s", fMasterFilename)
+		}
+	}
+
+	defer logfile.Close()
+	defer masterfile.Close()
+
+	logWriter.WriteString(header)
+
+	msg := ""
+
+	execs := MakeExecs()
+	ApplyRules(g, c, execs, 0)
+	expDepth := 2
+
+	if len(g.Edges) == 0 {
+		return execs
+	}
+	fmt.Println(execs)
+
+	e := hypergraph.F3TargetLowDegreeDetect(g)
+	if e != -1 {
+		execs["kFallback"] += 1
+		for v := range g.Edges[e].V {
+			c[v] = true
+		}
+	}
+
+	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
+	fmt.Println(len(gf.Edges))
+
+	for len(g.Edges) > 0 {
+		expand := make(map[int32]bool)
+		ApplyRulesFrontier(gf, g, c, execs, expand)
+		if len(expand) > 0 {
+			fmt.Println("Expand")
+			fmt.Println(execs)
+			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
+			continue
+		}
+
+		e := hypergraph.F3TargetLowDegreeDetect(g)
+		if e == -1 {
+			fmt.Println("Could not find size 3 edge")
+			continue
+		}
+
+		for v := range g.Edges[e].V {
+			c[v] = true
+		}
+
+		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
+		execs["kFallback"] += 1
+
+		msg = fmt.Sprintf("%f;", GetRatio(execs))
+		for _, v := range Labels {
+			msg += fmt.Sprintf("%d;", execs[v])
+		}
+		msg = msg[:len(msg)-1] + "\n"
+		logWriter.WriteString(msg)
+	}
+	masterfile.WriteString(msg)
+	logWriter.Flush()
+	return execs
+}
+
 func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) map[string]int {
 	execs := MakeExecs()
 	f3 := 0

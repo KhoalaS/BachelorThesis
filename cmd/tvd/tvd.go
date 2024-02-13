@@ -31,6 +31,7 @@ func main() {
 	logging := flag.Int("log", 1, "log the number of rule executions, do log many runs")
 	outdir := flag.String("d", "./data", "output directory")
 	profile := flag.Bool("prof", false, "make pprof profile")
+	frontier := flag.Bool("fr", false, "use frontier algorithm")
 
 	flag.Parse()
 
@@ -101,11 +102,22 @@ func main() {
 		}
 
 		fmt.Println("Start 3-HS algorithm")
-		if flagPassed("log") {
-			execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
-		} else {
-			execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
+
+		if *frontier{
+			if flagPassed("log") {
+				execs = alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
+			} else {
+				execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
+			}
+		}else{
+			if flagPassed("log") {
+				execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
+			} else {
+				execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
+			}
 		}
+
+		
 		pprof.StopCPUProfile()
 		fmt.Println(execs)
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
