@@ -148,21 +148,10 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 	for outer := true; outer; {
 		outer = false
 		for v := range gf.Vertices {
-			vCount := make(map[int32]int)
-			for e := range g.IncMap[v] {
-				for w := range g.Edges[e].V {
-					vCount[w]++
-				}
-			}
-			delete(vCount, v)
-
 			dom := false
-			//var vDom int32 = -1
-
-			for _, value := range vCount {
-				if value == g.Deg(v) {
+			for _, value := range g.AdjCount[v] {
+				if int(value) == g.Deg(v) {
 					dom = true
-					//	vDom = key
 					break
 				}
 			}
@@ -414,9 +403,6 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 						}
 					}
 
-					if gf.VertexFrontier[z] {
-						expand[z] = true
-					}
 					c[z] = true
 					for h := range g.IncMap[z] {
 						for w := range g.Edges[h].V {

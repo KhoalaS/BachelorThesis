@@ -225,21 +225,10 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	for outer := true; outer; {
 		outer = false
 		for v := range g.Vertices {
-			vCount := make(map[int32]int)
-			for e := range g.IncMap[v] {
-				for w := range g.Edges[e].V {
-					vCount[w]++
-				}
-			}
-			delete(vCount, v)
-
 			dom := false
-			//var vDom int32 = -1
-
-			for _, value := range vCount {
-				if value == g.Deg(v) {
+			for _, value := range g.AdjCount[v] {
+				if int(value) == g.Deg(v) {
 					dom = true
-					//	vDom = key
 					break
 				}
 			}
