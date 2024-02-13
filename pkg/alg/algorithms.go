@@ -224,7 +224,7 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
 	fmt.Println(len(gf.Edges))
 
-	for len(gf.IncMap) > 0 {
+	for len(g.Edges) > 0 {
 		expand := make(map[int32]bool)
 		ApplyRulesFrontier(gf, g, c, execs, expand)
 		if len(expand) > 0 {
