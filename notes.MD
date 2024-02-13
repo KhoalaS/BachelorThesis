@@ -45,20 +45,26 @@ This simulates a _Set_ datatype while allowing faster access times than simple a
 
 ```go
 type HyperGraph struct {
-	Vertices map[int32]Vertex
-	Edges map[int32]Edge
-	edgeCounter int32
-	IncMap map[int32]map[int32]bool
+	Vertices       map[int32]Vertex
+	Edges          map[int32]Edge
+	edgeCounter    int32
+	IncMap         map[int32]map[int32]bool
+	AdjCount       map[int32]map[int32]int32
 }
 ```
 
-The $\texttt{HyperGraph}$ datatype has four fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
+\todo[backgroundcolor=green]{add new AdjCount field}
+
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
 
 We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type.
 
 The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges.
 
 The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map.
+
+And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
+\todo[backgroundcolor=green]{add AdjCount explanation}
 
 # Misc. Algorithms/Utilities
 
@@ -382,7 +388,7 @@ This also allows us to parallelize the main part of the algorithm, where we chec
     delete $x$ from the vertex set and from all edges it belongs to.
 
 $O(|V| \cdot |E|)$ **Algorithm**
-We iterate over the vertices of the graph. For the current vertex $v$, we compute a map $vCount$. This map keeps track of the amount of times a vertex $w$ is adjacent to $v$. The vertex $v$ is dominated, if one of the entries in $vCount$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
+The vertex $v$ is dominated, if one of the entries in $\texttt{AdjCount}[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
 \begin{algorithm}
@@ -398,16 +404,8 @@ $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
     \For{$v \in V$}{
-        $vCount \gets \texttt{map}[V]\mathbb{N}$\;
-        \For{$e$ incident to $v$}{
-            \For{$w \in e$}{
-                $vCount[w] \gets vCount[w]+1$\;
-            }
-        }
-        $delete(vCount, v)$\;
-        \BlankLine
         $dom \gets false$\;
-        \For{$(\_, val) \in vCount$}{
+        \For{$(\_, val) \in AdjCount[v]$}{
             \If{$val = vDeg[v]$}{
                 $dom = true$\;
                 $\textbf{break}$\;
@@ -431,31 +429,16 @@ $$
 
 ### Approximative Vertex Domination Rule
 
+\todo[backgroundcolor=green]{remove explicit AdjCount generation, use the one provided by the graph struct}
+
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
 $O(|V|\cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
-We first construct the following map:
-
--   $adjCount$: this map associates a vertex $v$ with the amount of times another vertex is adjacent to $v$.
-
-Example:
-
-Let $E=\{ \{ 1,2,3 \}, \{ 1,2,4 \} \}$. Then $adjCount$ will look as follows,
+We start by iterating other the $AdjCount$ map of the graph, refering to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
 
 $$
-\begin{align*}
-adjCount = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
- &2: \{ 1: 2, \quad 3:1, \quad 4:1\}, \\
- &3: \{ 1: 1, \quad 2:1\}, \\
- &4: \{ 1: 1, \quad 2:1\} \quad \}
-\end{align*}
-$$
-
-We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for $(a,b)$ holds,
-
-$$
-adjCount[v][a] + adjCount[v][b] = vDeg[v]+1
+AdjCount[v][a] + AdjCount[v][b] = vDeg[v]+1
 $$
 
 If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds that, either $a\in f$ or $b\in f$.
@@ -463,11 +446,11 @@ If such a pair exists, then we conclude that for every edge $f$ such that $v \in
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our map $adjCount$. Let $v$ be an entry in $adjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ implementation on $adjCount[v]$ with a target sum of $n=deg(v)+1$.
+_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our map $AdjCount$. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ implementation on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
 
 _Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
-Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $adjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
+Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
 
 Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ can not exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaniously. $\square$
 
@@ -481,23 +464,12 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
-$adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
 $exec \gets 0$\;
-
-\For{$e \in E$}{
-    \For{$v \in e$}{
-        \For{$w \in e$}{
-            \If{$w \neq v$}{
-                $adjCount[v][w] \gets adjCount[v][w]+1$\;
-            }
-        }
-    }
-}
 
 $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
-    \For{$(v, count) \in adjCount$}{
+    \For{$(v, count) \in AdjCount$}{
         $sol, ex \gets \textsc{Two-Sum}(count, deg(v)+1)$\;
         \If{\textbf{not} $ex$}{
             \textbf{continue}\;
@@ -507,16 +479,10 @@ $outer \gets true$\;
 
         \For{$w \in sol$}{
             $C\gets C\cup \{ w \}$\;
+            $V \gets V\setminus \{ w \}$\;
             \For{$e$ incident to $w$}{
-                \For{$x \in e\setminus \{ w \}$}{
-                    \For{$y \in e\setminus x$}{
-                        $adjCount[x][y] \gets adjCount[x][y]-1$\;
-                    }
-                }
                 $E \gets E\setminus \{ e \}$\;
             }
-            $V \gets V\setminus \{ w \}$\;
-			$delete(adjCount, w)$\;
         }
     }
 }
@@ -531,21 +497,23 @@ $$
 
 ### Approximative Double Vertex Domination Rule
 
+\todo[backgroundcolor=green]{remove explicit AdjCount generation, use the one provided by the graph struct}
+
 -   approximative double vertex domination: Assume there is a hyperedge $e =
 \{x, y, a\}$ and another vertex $b$ such that, whenever $x$ or $y$ belong to some
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|E| + |E|^2)$ **Algorithm**. We start be generating a $adjCount$ map, analogous to the one used in the approximative vertex domination rule. We then iterate over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
+$\mathcal{O}(|E| + |E|^2)$ **Algorithm**. We start by iterating over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
 
 $$
 \begin{align*}
-    deg(x)\leq adjCount[x][a]+ adjCount[x][b] \\
-    deg(y)\leq adjCount[y][a]+ adjCount[y][b]
+    deg(x)\leq AdjCount[x][a]+ AdjCount[x][b] \\
+    deg(y)\leq AdjCount[y][a]+ AdjCount[y][b]
 \end{align*}
 $$
 
-Note that when $deg(x)= adjCount[x][a]$ or $deg(y)= adjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead.
+Note that when $deg(x)= AdjCount[x][a]$ or $deg(y)= AdjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead.
 
 \begin{lemma}
 Algorithm \ref{apdvdom} is correct.
@@ -554,7 +522,7 @@ Algorithm \ref{apdvdom} is correct.
 _Proof_. Let $G=(V,E)$ be a hypergraph, $e=\{ a,x,y \}$ be a size $3$ edge. Assume that the approximative double vertex domination rule applies to this edge, i.e. all edges incident to $x$ and $y$ contain either $a$ or another vertex $b$. Since every edge incident to $v \in \{ x,y \}$ contains either $a$ or $b$, the amount of times $a$ and $b$ are adjacent to $v$ has to be at least $deg(v)$. Thus the following non-strict inequality holds,
 
 $$
-deg(v) \leq adjCount[v][a] + adjCount[v][b],\quad \text{for } v\in \{ x,y \}
+deg(v) \leq AdjCount[v][a] + AdjCount[v][b],\quad \text{for } v\in \{ x,y \}
 $$
 
 $\square$
@@ -569,8 +537,6 @@ $$
 
 $adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
 $exec \gets 0$\;
-
-\tcc{Build adjCount analogous to Apr. Vertex Domination}
 
 $outer \gets true$\;
 \For{$outer$}{
@@ -590,15 +556,15 @@ $outer \gets true$\;
             $vd \gets false$\;
 
             \For{$v \in e\setminus \{a\}$}{
-                \If{$adjCount[v][a] = deg(w)$}{
+                \If{$AdjCount[v][a] = deg(w)$}{
                     $vd\gets true$\;
                     \textbf{break}\;
                 }
-                \For{$(w,val) \in adjCount[v]$}{
+                \For{$(w,val) \in AdjCount[v]$}{
                     \If{$w \in e$}{
                         \textbf{continue}\;
                     }
-                    \If{$adjCount[v][a] + val = deg(v)$}{
+                    \If{$AdjCount[v][a] + val = deg(v)$}{
                         $count[w] \gets count[w] +1$\;
                     }
                 }
@@ -620,7 +586,13 @@ $outer \gets true$\;
 
         \If{found}{
             $exec \gets exec+1$\;
-            \tcc{Mutate adjCount analogous to Apr. Vertex Domination}
+            \For{$w \in \{ a,b \}$}{
+                $C\gets C\cup \{ w \}$\;
+                $V \gets V\setminus \{ w \}$\;
+                \For{$e$ incident to $w$}{
+                    $E \gets E\setminus \{ e \}$\;
+                }
+            }
         }
     }
 }
@@ -703,7 +675,7 @@ $$
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
 
-#### Outline
+**Outline**
 
 -   find deg 2 vertex
 -   Check for at least one adjacent size two edge
@@ -756,13 +728,13 @@ Note that the reduction rules alone are sufficient to compute a Hitting-Set for 
 
 We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
 
-**Factor-3 Rule Function**. Instead of only executing the Factor-3 Rule exactly one time, we could consider using a function instead. This function would compute a value based on the current iteration. Experiments with linear,exponential and square root functions were quite promising in regards to execution time and approximation factor. Linear and exponential functions perform faster than the square root function, while the linear and square root function offer a better estimated approximation factor than the exponential one.
-
+\todo[backgroundcolor=red]{Remove Factor-3 Rule function paragraph}
 **Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
 # Algorithms
 
-## Sequential Algorithm
+## Main Algorithm
+\todo{TODO}
 
 ## Frontier Algorithm
 
@@ -770,11 +742,10 @@ As experienced with the DBLP coauthor graph, there are some graph instances that
 
 We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
 
-We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding the vertices $e$. We then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. This expansion step is dependent on the user of the algorithm. The loop that will run until there are no edges left in the graph is explained next.
+We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. We then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
-\todo{targeted frontier expansion in impl is missing, whole frontier will be extended as of now}
-
-We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the removed vertices that were part of the frontier. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, then we apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. If the to be removed edge is in $H$, we only expand if the edge contains a frontier vertex.
+We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices that were part of a modified or removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, then we apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
+\todo[backgroundcolor=green]{add new Frontier section}
 
 $$
 \begin{algorithm}[H]
@@ -788,27 +759,28 @@ Apply all reduction rules exhaustively mutating $G$ and $C$\;
 $l\gets 2$\;
 
 \If{$|E| = 0$}{
-    \KwRet $C$\;    
+    \KwRet $C$\;
 }
 
 $e\gets \texttt{F3TargetLowDegree}(G)$\;
 
 $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
-\tcc{$H$ is reusing the old incidence map of $G$}\;
+\tcc{$H$ will act as a mask over $G$, the rules will only be applied to vertices/edges in $H$}
 
 
-\For{$|H.IncMap| > 0$}{
-    Apply all reduction rules exhaustively mutating $H$ and $C$\;
-    $exp\gets \textnormal{ vertices removed in previous rule applications that are in the frontier}$\;
+\For{$|E| > 0$}{
+    Apply all reduction rules exhaustively on $H$ mutating $H$,$G$ and $C$\;
+    $exp\gets \textnormal{ vertices in edges that were removed or modified by rules }$\;
     \If{$|exp| > 0$}{
-        $\texttt{ExpandFrontier}(H, exp)$\;
+        $H\gets \texttt{ExpandFrontier}(G, l, exp)$\;
         \textbf{continue}\;
     }
 
     $e\gets \texttt{F3TargetLowDegree}(G)$\;
-    \If{$e \notin H.E \textnormal{\textbf{ or }} e \textnormal{ contains vertices in frontier}$}{
-        $\texttt{ExpandFrontier}(H, e)$\;
+    \If{$e = \emptyset$}{
+        \textbf{continue}\;
     }
+    $H\gets \texttt{ExpandFrontier}(G, l, e)$\;
 }
 
 \KwRet $C$\;
@@ -831,7 +803,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $1.845276$.
+The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about 200 seconds.\todo{update the ratio and chart with frontier algorithm}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
@@ -877,4 +849,6 @@ Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements t
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
 
 # References
+
+$$
 $$
