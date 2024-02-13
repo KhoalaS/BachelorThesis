@@ -73,16 +73,16 @@ func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 	return g2
 }
 
-func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int) {
-	frontier := make(map[int32]bool)
+func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int, expand map[int32]bool) {
+	oldFrontier := make(map[int32]bool)
 
-	for v := range gf.VertexFrontier {
-		frontier[v] = true
+	for v := range expand {
+		oldFrontier[v] = true
 	}
 
 	for i := 0; i < level; i++ {
 		nextFrontier := make(map[int32]bool)
-		for v := range frontier {
+		for v := range expand {
 			for e := range gf.IncMap[v] {
 				if _, ex := gf.Edges[e]; !ex {
 					gf.AddEdgeMapWLayer(g.Edges[e].V, e)
@@ -96,17 +96,18 @@ func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int) {
 			}
 		}
 		if len(nextFrontier) == 0 {
-			gf.ClearVertexFront()
-			for v := range frontier {
-				gf.VertexFrontier[v] = true
+			for v := range expand {
+				delete(gf.VertexFrontier, v)
 			}
 			break
 		}
-		frontier = nextFrontier
+		expand = nextFrontier
 		if i == level-1 {
-			gf.ClearVertexFront()
-			for v := range frontier {
+			for v := range expand {
 				gf.VertexFrontier[v] = true
+			}
+			for v := range oldFrontier {
+				delete(gf.VertexFrontier, v)
 			}
 		}
 	}
@@ -117,6 +118,7 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 	remEdge := g.Edges[remId]
 
 	for v := range remEdge.V {
+		delete(gf.VertexFrontier, v)
 		for e := range g.IncMap[v] {
 			for w := range g.Edges[e].V {
 				if !remEdge.V[w] {
@@ -136,7 +138,7 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 	for i := 0; i < level; i++ {
 		nextFrontier := make(map[int32]bool)
 		for v := range frontier {
-			for e := range gf.IncMap[v] {
+			for e := range g.IncMap[v] {
 				if _, ex := gf.Edges[e]; !ex {
 					gf.AddEdgeMapWLayer(g.Edges[e].V, e)
 					for w := range g.Edges[e].V {
@@ -148,11 +150,7 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 				}
 			}
 		}
-		//g2.SetMaxLayer(i)
 		if len(nextFrontier) == 0 {
-			for v := range frontier {
-				gf.VertexFrontier[v] = true
-			}
 			break
 		}
 		frontier = nextFrontier

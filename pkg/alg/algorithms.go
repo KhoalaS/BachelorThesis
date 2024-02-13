@@ -204,7 +204,6 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 }
 
 func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
-	// TODO: keep track of all frontier vertices and edges
 	execs := MakeExecs()
 	ApplyRules(g, c, execs, 0)
 	expDepth := 2
@@ -226,11 +225,12 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	fmt.Println(len(gf.Edges))
 
 	for len(gf.IncMap) > 0 {
-		maxLayerReached := ApplyRulesFrontier(gf, g, c, execs)
-		if maxLayerReached {
-			//oldMax := gf.MaxLayer
-			hypergraph.ExpandFrontier(gf, g, 3)
-			fmt.Println("Expand", len(gf.Edges), len(gf.IncMap))
+		expand := make(map[int32]bool)
+		ApplyRulesFrontier(gf, g, c, execs, expand)
+		if len(expand) > 0 {
+			oldSizeE := len(gf.Edges)
+			hypergraph.ExpandFrontier(gf, g, expDepth, expand)
+			fmt.Printf("Expand added %d new edges\n", len(gf.Edges)-oldSizeE)
 			continue
 		}
 
@@ -239,34 +239,32 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 			fmt.Println("Could not find size 3 edge")
 			continue
 		}
-		outerLayer := false
+
+		expand = make(map[int32]bool)
+
 		for v := range g.Edges[e].V {
 			if gf.VertexFrontier[v] {
-				outerLayer = true
+				expand[v] = true
 			}
 			c[v] = true
 		}
 
 		if _, ex := gf.Edges[e]; !ex {
-			fmt.Println("F3 not in gf")
 			hypergraph.F3_ExpandFrontier(gf, g, e, expDepth)
-		} else if outerLayer {
-			fmt.Println("F3 in outer layer")
+		} else if len(expand) > 0 {
+			hypergraph.ExpandFrontier(gf, g, expDepth, expand)
 			for v := range g.Edges[e].V {
-				for f := range gf.IncMap[v] {
-					gf.F_RemoveEdge(f, g)
+				for e := range g.IncMap[v] {
+					gf.F_RemoveEdge(e, g)
 				}
 			}
-			hypergraph.ExpandFrontier(gf, g, 2)
 		} else {
-			fmt.Println("F3 in gf")
 			for v := range g.Edges[e].V {
-				for f := range gf.IncMap[v] {
-					gf.F_RemoveEdge(f, g)
+				for e := range g.IncMap[v] {
+					gf.F_RemoveEdge(e, g)
 				}
 			}
 		}
-
 		execs["kFallback"] += 1
 
 		fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges), execs["kFallback"])
@@ -276,18 +274,17 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	return execs
 }
 
-func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int) bool {
-	maxLayerReached := false
+func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
 	for {
-		kVertDom, l2 := hypergraph.S_VertexDominationRule(gf,g, c)
-		kTiny, l0 := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY)
-		kEdgeDom, l1 := hypergraph.S_EdgeDominationRule(gf, g)
-		kApVertDom, l4 := hypergraph.S_ApproxVertexDominationRule(gf, g, c)
-		kApDoubleVertDom, l5 := hypergraph.S_ApproxDoubleVertexDominationRule(gf, g, c)
+		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
+		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
+		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
+		kApDoubleVertDom := hypergraph.S_ApproxDoubleVertexDominationRule(gf, g, c, expand)
 		//kSmallEdgeDegTwo, l9 := hypergraph.S_SmallEdgeDegreeTwoRule(gf,g, c)
-		kTri, l6 := hypergraph.S_SmallTriangleRule(gf, g, c)
-		kExtTri, l7 := hypergraph.S_ExtendedTriangleRule(gf, g, c)
-		kSmall, l8 := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL)
+		kTri := hypergraph.S_SmallTriangleRule(gf, g, c, expand)
+		kExtTri := hypergraph.S_ExtendedTriangleRule(gf, g, c, expand)
+		kSmall := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -298,14 +295,10 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		execs["kApVertDom"] += kApVertDom
 		execs["kApDoubleVertDom"] += kApDoubleVertDom
 		//execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
-		if l0 || l1 || l2 || l4 || l5 || l6 || l7 || l8 {
-			maxLayerReached = true
-		}
 		if kTiny+kTri+kSmall+kEdgeDom+kVertDom+kExtTri+kApVertDom+kApDoubleVertDom == 0 {
 			break
 		}
 	}
-	return maxLayerReached
 }
 
 func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
