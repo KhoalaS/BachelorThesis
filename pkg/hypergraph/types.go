@@ -12,7 +12,6 @@ type HyperGraph struct {
 	edgeCounter    int32
 	IncMap         map[int32]map[int32]bool
 	AdjCount       map[int32]map[int32]int32
-	VertexFrontier map[int32]bool
 }
 
 type Vertex struct {
@@ -22,12 +21,6 @@ type Vertex struct {
 
 type Edge struct {
 	V map[int32]bool
-}
-
-func (g *HyperGraph) ClearVertexFront() {
-	for k := range g.VertexFrontier {
-		delete(g.VertexFrontier, k)
-	}
 }
 
 func (g *HyperGraph) AddVertex(id int32, data int) {
@@ -249,10 +242,9 @@ func NewHyperGraph() *HyperGraph {
 	vertices := make(map[int32]Vertex)
 	edges := make(map[int32]Edge)
 	incMap := make(map[int32]map[int32]bool)
-	vertexFrontier := make(map[int32]bool)
 	adjCount := make(map[int32]map[int32]int32)
 
-	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap, VertexFrontier: vertexFrontier, AdjCount: adjCount}
+	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap, AdjCount: adjCount}
 }
 
 func (g *HyperGraph) IsSimple() bool {

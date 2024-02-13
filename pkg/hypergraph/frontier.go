@@ -92,11 +92,6 @@ func ExpandFrontier(g *HyperGraph, level int, expand map[int32]bool) *HyperGraph
 			break
 		}
 		expand = nextFrontier
-		if i == level-1 {
-			for v := range expand {
-				gNew.VertexFrontier[v] = true
-			}
-		}
 	}
 	gNew.IncMap = g.IncMap
 	gNew.AdjCount = g.AdjCount

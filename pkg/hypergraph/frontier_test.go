@@ -24,11 +24,10 @@ func TestGetFrontierGraph(t *testing.T) {
 	// Since we want to go 2 levels deep, only the edges (2,3) and (3,4) should be in
 	// in the new graph gf.
 	expand := make(map[int32]bool)
-	gf := GetFrontierGraph(g, 2, 0)
+	gf := F3_ExpandFrontier(g, 2, 0)
 	ExpandFrontier(g, 2, expand)
 	t.Log(gf)
 	for _, v := range gf.Vertices {
 		fmt.Println(v.Id, v.Data)
 	}
-	t.Log(gf.VertexFrontier)
 }
