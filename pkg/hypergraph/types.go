@@ -135,25 +135,7 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 
 func (gf *HyperGraph) F_RemoveEdge(e int32, g *HyperGraph) bool {
 
-	for v := range g.Edges[e].V {
-		delete(g.IncMap[v], e)
-
-		if len(g.IncMap[v]) == 0 {
-			delete(g.IncMap, v)
-			gf.RemoveVertex(v)
-		}
-
-		for w := range g.Edges[e].V {
-			if v == w {
-				continue
-			}
-			g.AdjCount[w][v]--
-			if g.AdjCount[w][v] == 0 {
-				delete(g.AdjCount[w], v)
-			}
-		}
-	}
-
+	g.RemoveEdge(e)
 	delete(gf.Edges, e)
 	return true
 }
@@ -200,32 +182,17 @@ func (gf *HyperGraph) F_RemoveElem(elem int32, g *HyperGraph) bool {
 		return false
 	}
 
-	for e := range gf.IncMap[elem] {
-		for v := range g.Edges[e].V {
-			if v == elem {
-				continue
+	for e := range g.IncMap[elem] {
+		if _, ex := gf.Edges[e]; ex {
+			delete(gf.Edges[e].V, elem)
+			if len(g.Edges[e].V) == 0 {
+				g.RemoveEdge(e)
 			}
-			g.AdjCount[v][elem]--
-			if g.AdjCount[v][elem] == 0{
-				delete(g.AdjCount[v], elem)
-			}
-		}
-
-		delete(gf.Edges[e].V, elem)
-		delete(g.Edges[e].V, elem)
-
-		if len(gf.Edges[e].V) == 0 {
-			gf.RemoveEdge(e)
-			g.RemoveEdge(e)
 		}
 	}
 
+	g.RemoveElem(elem)
 	gf.RemoveVertex(elem)
-	g.RemoveVertex(elem)
-
-	delete(gf.IncMap, elem)
-	delete(gf.AdjCount, elem)
-
 	return true
 }
 
