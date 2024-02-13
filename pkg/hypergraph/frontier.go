@@ -31,7 +31,7 @@ func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 		for v := range frontier {
 			for e := range g.IncMap[v] {
 				if _, ex := g2.Edges[e]; !ex {
-					g2.AddEdgeMapWLayer(g.Edges[e].V, e)
+					g2.AddEdgeMapWithId(g.Edges[e].V, e)
 					for w := range g.Edges[e].V {
 						if _, ex2 := g2.Vertices[w]; !ex2 {
 							g2.AddVertex(w, 0)
@@ -85,7 +85,7 @@ func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int, expand map[int32]b
 		for v := range expand {
 			for e := range gf.IncMap[v] {
 				if _, ex := gf.Edges[e]; !ex {
-					gf.AddEdgeMapWLayer(g.Edges[e].V, e)
+					gf.AddEdgeMapWithId(g.Edges[e].V, e)
 					for w := range g.Edges[e].V {
 						if _, ex2 := gf.Vertices[w]; !ex2 {
 							gf.AddVertex(w, 0)
@@ -140,7 +140,7 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 		for v := range frontier {
 			for e := range g.IncMap[v] {
 				if _, ex := gf.Edges[e]; !ex {
-					gf.AddEdgeMapWLayer(g.Edges[e].V, e)
+					gf.AddEdgeMapWithId(g.Edges[e].V, e)
 					for w := range g.Edges[e].V {
 						if _, ex2 := gf.Vertices[w]; !ex2 {
 							gf.AddVertex(w, 0)

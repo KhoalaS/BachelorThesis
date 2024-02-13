@@ -75,7 +75,7 @@ func (g *HyperGraph) AddEdgeMap(eps map[int32]bool) {
 	g.edgeCounter++
 }
 
-func (g *HyperGraph) AddEdgeMapWLayer(eps map[int32]bool, id int32) {
+func (g *HyperGraph) AddEdgeMapWithId(eps map[int32]bool, id int32) {
 	e := Edge{V: make(map[int32]bool)}
 
 	for ep := range eps {
