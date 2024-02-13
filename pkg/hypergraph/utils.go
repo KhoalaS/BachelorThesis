@@ -60,18 +60,6 @@ func binomialCoefficient(n int, k int) int {
 	return int(math.Ceil(c))
 }
 
-
-func getRatio(execs map[string]int) float64 {
-	var nom float64 = 0
-	var denom float64 = 0
-
-	for key, val := range execs {
-		nom += float64(Ratios[key].A * val)
-		denom += float64(Ratios[key].B * val)
-	}
-	return nom / denom
-}
-
 var Ratios = map[string]IntTuple{
 	"kTiny":            {A: 1, B: 1},
 	"kSmall":           {A: 2, B: 1},
