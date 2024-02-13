@@ -3,6 +3,7 @@
     link-citations: true
 
 ...
+
 \RestyleAlgo{ruled}
 \DontPrintSemicolon
 \SetAlgoVlined
@@ -10,7 +11,7 @@
 
 # Programming Language
 
-We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop. 
+We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
 
 # Datastructures
 
@@ -147,7 +148,7 @@ $lookup \gets \texttt{map}[\mathbb{N}]\mathbb{N}$\;
     }
     \Else{
         $lookup[arr[i]] \gets i$\;
-    } 
+    }
 }
 \KwRet $nil, false$\;
 
@@ -157,11 +158,10 @@ $$
 
 We start by creating a map called $lookup$. We then iterate other the elements of $arr$, checking if the entry $lookup[t-arr[i]]$ exists.
 
--   If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value  $true$ since we found a solution.
+-   If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value $true$ since we found a solution.
 -   If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value.
 
-If no solution was found, we return $nil$ and the boolean value $false$.   
-
+If no solution was found, we return $nil$ and the boolean value $false$.
 
 This algorithm is an ingredient for the implementation of one of the reduction rules, specifically the Approximative Vertex Domination Rule. The actual implementation is accepting a map instead of an array as its first parameter.
 
@@ -236,25 +236,26 @@ We prioritize time complexity over memory complexity when implementing rules, wh
 
 ## Executions
 
-The proposed rules are meant to be applied exhaustively. A one to one implementation of a rule will only find one of the structures the rule is targeting. Calling such a rule implementation exhaustively will take polynomial time, but will be very inefficient in regards to memory writes and execution time. It is therefor necessary to design the algorithms for the rules with the aspect of exhaustive application in mind. 
+The proposed rules are meant to be applied exhaustively. A one to one implementation of a rule will only find one of the structures the rule is targeting. Calling such a rule implementation exhaustively will take polynomial time, but will be very inefficient in regards to memory writes and execution time. It is therefor necessary to design the algorithms for the rules with the aspect of exhaustive application in mind.
 
 The general outline of an algorithm will look as follows,
 
-1. Construct auxilliary data structures that are used to find parts of the graph, for which the rule can be applied. 
+1. Construct auxilliary data structures that are used to find parts of the graph, for which the rule can be applied.
 2. As long as we can apply rules do:
-   
-    Iterate over the auxilliary data structure, or the vertices/edges themselves.
-      - Identify targets of the rule.
-      - Mutate the graph according to the rule.
-      - Mutate the auxilliary data structure according to the rule.
 
-This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxilliary data structure at the same time. 
+    Iterate over the auxilliary data structure, or the vertices/edges themselves.
+
+    - Identify targets of the rule.
+    - Mutate the graph according to the rule.
+    - Mutate the auxilliary data structure according to the rule.
+
+This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxilliary data structure at the same time.
 
 ## Algorithms
 
 The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings.
 
-We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol. 
+We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol.
 
 ### Tiny/Small Edge Rule
 
@@ -431,7 +432,7 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|V|\cdot |E|)$ __Algorithm__. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
+$O(|V|\cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
 We first construct the following map:
 
@@ -450,10 +451,12 @@ adjCount = \{\quad&1: \{ 2: 2, \quad 3:1, \quad 4:1\},\\
 \end{align*}
 $$
 
-We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for $(a,b)$ holds, 
+We then iterate other $adjCount$, refering to the current value in the iteration as $adjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $adjCount[v]$, s.t. for $(a,b)$ holds,
+
 $$
 adjCount[v][a] + adjCount[v][b] = vDeg[v]+1
 $$
+
 If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds that, either $a\in f$ or $b\in f$.
 
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
@@ -532,26 +535,29 @@ $$
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|E| + |E|^2)$ __Algorithm__. We start be generating a $adjCount$ map, analogous to the one used in the approximative vertex domination rule. We then iterate over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
+$\mathcal{O}(|E| + |E|^2)$ **Algorithm**. We start be generating a $adjCount$ map, analogous to the one used in the approximative vertex domination rule. We then iterate over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
+
 $$
 \begin{align*}
     deg(x)\leq adjCount[x][a]+ adjCount[x][b] \\
     deg(y)\leq adjCount[y][a]+ adjCount[y][b]
 \end{align*}
 $$
-Note that when $deg(x)= adjCount[x][a]$ or $deg(y)= adjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead. 
+
+Note that when $deg(x)= adjCount[x][a]$ or $deg(y)= adjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead.
 
 \begin{lemma}
 Algorithm \ref{apdvdom} is correct.
 \end{lemma}
 
 _Proof_. Let $G=(V,E)$ be a hypergraph, $e=\{ a,x,y \}$ be a size $3$ edge. Assume that the approximative double vertex domination rule applies to this edge, i.e. all edges incident to $x$ and $y$ contain either $a$ or another vertex $b$. Since every edge incident to $v \in \{ x,y \}$ contains either $a$ or $b$, the amount of times $a$ and $b$ are adjacent to $v$ has to be at least $deg(v)$. Thus the following non-strict inequality holds,
+
 $$
 deg(v) \leq adjCount[v][a] + adjCount[v][b],\quad \text{for } v\in \{ x,y \}
 $$
+
 $\square$
 
-\todo{add strict constraint that $need == 2$}
 $$
 \begin{algorithm}
 \nllabel{apdvdom}
@@ -595,7 +601,7 @@ $outer \gets true$\;
                         $count[w] \gets count[w] +1$\;
                     }
                 }
-                
+
             }
             \If{\textbf{not} vd}{
                 \For{$(v, val) \in count$}{
@@ -628,7 +634,7 @@ $$
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
-$O(|E|+|V|^2)$ __Algorithm__. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
+$O(|E|+|V|^2)$ **Algorithm**. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
 
@@ -673,7 +679,7 @@ $exec \gets 0$\;
             \textbf{break};
         }
     }
-}   
+}
 
 \For{$v \in rem$}{
     $V\gets V\setminus \{ v \}$\;
@@ -759,14 +765,63 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 ## Frontier Algorithm
 
+As experienced with the DBLP coauthor graph, there are some graph instances that do not work well with the prior algorithm. These instances do not admit a lot of rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule was applied.
 
+We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
+
+We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding the vertices $e$. We then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. This expansion step is dependent on the user of the algorithm. The loop that will run until there are no edges left in the graph is explained next.
+
+\todo{targeted frontier expansion in impl is missing, whole frontier will be extended as of now}
+
+We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the removed vertices that were part of the frontier. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, then we apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. If the to be removed edge is in $H$, we only expand if the edge contains a frontier vertex.
+
+$$
+\begin{algorithm}[H]
+\nllabel{3hs_frontier}
+
+\KwIn{Hypergraph $G = (V, E)$, and a partial hitting set $C$}
+\KwOut{A hitting set $C$}
+\BlankLine
+
+Apply all reduction rules exhaustively mutating $G$ and $C$\;
+$l\gets 2$\;
+
+\If{$|E| = 0$}{
+    \KwRet $C$\;    
+}
+
+$e\gets \texttt{F3TargetLowDegree}(G)$\;
+
+$H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
+\tcc{$H$ is reusing the old inidence map of $G$}\;
+
+
+\For{$|H.IncMap| > 0$}{
+    Apply all reduction rules exhaustively mutating $H$ and $C$\;
+    \If{$\textnormal{vertices in the frontier were removed from $H$}$}{
+        $\texttt{ExpandFrontier}(H, e)$\;
+        \textbf{continue}\;
+    }
+
+    $e\gets \texttt{F3TargetLowDegree}(G)$\;
+    \If{$e \notin H.E \textnormal{\textbf{ or }} e \textnormal{ contains vertices in frontier}$}{
+        $\texttt{ExpandFrontier}(H, e)$\;
+    }
+}
+
+\KwRet $C$\;
+
+\caption{}
+\end{algorithm}
+$$
 
 # Applications and Results
 
 ## Triangle Vertex Deletion
+
 [PROBLEM DEFINITION]
 
-\textsc{Triangle Vertex Deletion} can be reduced to the \textsc{3-Hitting Set} problem. Triangles in the input graph will be represented as size 3 edges in a hypergraph, containing the vertices that make up the triangle. 
+\textsc{Triangle Vertex Deletion} can be reduced to the \textsc{3-Hitting Set} problem. Triangles in the input graph will be represented as size 3 edges in a hypergraph, containing the vertices that make up the triangle.
 
 We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component, due to RAM limitations of the test rig. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
 
@@ -776,12 +831,11 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 The algorithm achieved a estimated approximation ratio of $1.845276$.
 
-Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR. 
+Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
 ![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
 
 ![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=10](img/er_tvd_rules_1.png)
-
 
 ![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=20](img/er_tvd_rules_2.png)
 
@@ -821,3 +875,4 @@ Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements t
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
 
 # References
+$$
