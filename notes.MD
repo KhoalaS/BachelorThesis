@@ -8,6 +8,7 @@
 \DontPrintSemicolon
 \SetAlgoVlined
 \LinesNumbered
+\listoftodos
 
 # Programming Language
 
@@ -793,13 +794,14 @@ $l\gets 2$\;
 $e\gets \texttt{F3TargetLowDegree}(G)$\;
 
 $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
-\tcc{$H$ is reusing the old inidence map of $G$}\;
+\tcc{$H$ is reusing the old incidence map of $G$}\;
 
 
 \For{$|H.IncMap| > 0$}{
     Apply all reduction rules exhaustively mutating $H$ and $C$\;
-    \If{$\textnormal{vertices in the frontier were removed from $H$}$}{
-        $\texttt{ExpandFrontier}(H, e)$\;
+    $exp\gets \textnormal{ vertices removed in previous rule applications that are in the frontier}$\;
+    \If{$|exp| > 0$}{
+        $\texttt{ExpandFrontier}(H, exp)$\;
         \textbf{continue}\;
     }
 
