@@ -221,16 +221,16 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 		}
 	}
 
-	gf := hypergraph.GetFrontierGraph(g, expDepth, e)
+	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
 	fmt.Println(len(gf.Edges))
 
 	for len(gf.IncMap) > 0 {
 		expand := make(map[int32]bool)
 		ApplyRulesFrontier(gf, g, c, execs, expand)
 		if len(expand) > 0 {
-			oldSizeE := len(gf.Edges)
-			hypergraph.ExpandFrontier(gf, g, expDepth, expand)
-			fmt.Printf("Expand added %d new edges\n", len(gf.Edges)-oldSizeE)
+			fmt.Println("Expand")
+			fmt.Println(execs)
+			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			continue
 		}
 
@@ -240,31 +240,11 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 			continue
 		}
 
-		expand = make(map[int32]bool)
-
 		for v := range g.Edges[e].V {
-			if gf.VertexFrontier[v] {
-				expand[v] = true
-			}
 			c[v] = true
 		}
 
-		if _, ex := gf.Edges[e]; !ex {
-			hypergraph.F3_ExpandFrontier(gf, g, e, expDepth)
-		} else if len(expand) > 0 {
-			hypergraph.ExpandFrontier(gf, g, expDepth, expand)
-			for v := range g.Edges[e].V {
-				for e := range g.IncMap[v] {
-					gf.F_RemoveEdge(e, g)
-				}
-			}
-		} else {
-			for v := range g.Edges[e].V {
-				for e := range g.IncMap[v] {
-					gf.F_RemoveEdge(e, g)
-				}
-			}
-		}
+		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
 		execs["kFallback"] += 1
 
 		fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges), execs["kFallback"])

@@ -42,9 +42,6 @@ func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 			}
 		}
 		if len(nextFrontier) == 0 {
-			for v := range frontier {
-				g2.VertexFrontier[v] = true
-			}
 			break
 		}
 		frontier = nextFrontier
@@ -73,22 +70,18 @@ func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 	return g2
 }
 
-func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int, expand map[int32]bool) {
-	oldFrontier := make(map[int32]bool)
-
-	for v := range expand {
-		oldFrontier[v] = true
-	}
+func ExpandFrontier(g *HyperGraph, level int, expand map[int32]bool) *HyperGraph{
+	gNew := NewHyperGraph()
 
 	for i := 0; i < level; i++ {
 		nextFrontier := make(map[int32]bool)
 		for v := range expand {
-			for e := range gf.IncMap[v] {
-				if _, ex := gf.Edges[e]; !ex {
-					gf.AddEdgeMapWithId(g.Edges[e].V, e)
+			for e := range g.IncMap[v] {
+				if _, ex := gNew.Edges[e]; !ex {
+					gNew.AddEdgeMapWithId(g.Edges[e].V, e)
 					for w := range g.Edges[e].V {
-						if _, ex2 := gf.Vertices[w]; !ex2 {
-							gf.AddVertex(w, 0)
+						if _, ex2 := gNew.Vertices[w]; !ex2 {
+							gNew.AddVertex(w, 0)
 							nextFrontier[w] = true
 						}
 					}
@@ -96,29 +89,25 @@ func ExpandFrontier(gf *HyperGraph, g *HyperGraph, level int, expand map[int32]b
 			}
 		}
 		if len(nextFrontier) == 0 {
-			for v := range expand {
-				delete(gf.VertexFrontier, v)
-			}
 			break
 		}
 		expand = nextFrontier
 		if i == level-1 {
 			for v := range expand {
-				gf.VertexFrontier[v] = true
-			}
-			for v := range oldFrontier {
-				delete(gf.VertexFrontier, v)
+				gNew.VertexFrontier[v] = true
 			}
 		}
 	}
+	gNew.IncMap = g.IncMap
+	gNew.AdjCount = g.AdjCount
+	return gNew
 }
 
-func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
+func F3_ExpandFrontier(g *HyperGraph, remId int32, level int) *HyperGraph{
 	frontier := make(map[int32]bool)
 	remEdge := g.Edges[remId]
 
 	for v := range remEdge.V {
-		delete(gf.VertexFrontier, v)
 		for e := range g.IncMap[v] {
 			for w := range g.Edges[e].V {
 				if !remEdge.V[w] {
@@ -130,34 +119,9 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 
 	// remove the edges adjacent to remEdge
 	for v := range remEdge.V {
-		for e := range gf.IncMap[v] {
-			gf.F_RemoveEdge(e, g)
+		for e := range g.IncMap[v] {
+			g.RemoveEdge(e)
 		}
 	}
-
-	for i := 0; i < level; i++ {
-		nextFrontier := make(map[int32]bool)
-		for v := range frontier {
-			for e := range g.IncMap[v] {
-				if _, ex := gf.Edges[e]; !ex {
-					gf.AddEdgeMapWithId(g.Edges[e].V, e)
-					for w := range g.Edges[e].V {
-						if _, ex2 := gf.Vertices[w]; !ex2 {
-							gf.AddVertex(w, 0)
-							nextFrontier[w] = true
-						}
-					}
-				}
-			}
-		}
-		if len(nextFrontier) == 0 {
-			break
-		}
-		frontier = nextFrontier
-		if i == level-1 {
-			for v := range frontier {
-				gf.VertexFrontier[v] = true
-			}
-		}
-	}
+	return ExpandFrontier(g, level, frontier)
 }

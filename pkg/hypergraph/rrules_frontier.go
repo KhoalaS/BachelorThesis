@@ -53,7 +53,7 @@ func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph, expand map[int32]bool) 
 		if lDom-end < batchSize {
 			end = lDom
 		}
-		go batchSubComp(&wg, gf, subEdges, domEdges[start:end], channel)
+		go batchSubComp(&wg, g, subEdges, domEdges[start:end], channel)
 	}
 
 	wg.Wait()
@@ -63,10 +63,7 @@ func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph, expand map[int32]bool) 
 		for eId := range msg {
 			exec++
 			for v := range g.Edges[eId].V {
-				_, ex := gf.Vertices[v]
-				if gf.VertexFrontier[v] || !ex {
-					expand[v] = true
-				}
+				expand[v] = true
 			}
 			gf.F_RemoveEdge(eId, g)
 		}
@@ -96,10 +93,7 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, ex
 			c[v] = true
 			for f := range g.IncMap[v] {
 				for w := range g.Edges[f].V {
-					_, ex := gf.Vertices[w]
-					if gf.VertexFrontier[w] || !ex {
-						expand[w] = true
-					}
+					expand[w] = true
 				}
 				delete(rem, f)
 				gf.F_RemoveEdge(f, g)
@@ -134,10 +128,7 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 				c[w] = true
 				for e := range g.IncMap[w] {
 					for x := range g.Edges[e].V {
-						_, ex := gf.Vertices[x]
-						if gf.VertexFrontier[x] || !ex {
-							expand[x] = true
-						}
+						expand[x] = true
 					}
 					gf.F_RemoveEdge(e, g)
 				}
@@ -177,9 +168,10 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 			}
 
 			if dom {
-				_, ex := gf.Vertices[v]
-				if gf.VertexFrontier[v] || !ex {
-					expand[v] = true
+				for f := range g.IncMap[v] {
+					for w := range g.Edges[f].V {
+						expand[w] = true
+					}
 				}
 				outer = true
 				gf.F_RemoveElem(v, g)
@@ -261,10 +253,7 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 					c[w] = true
 					for e := range g.IncMap[w] {
 						for x := range g.Edges[e].V {
-							_, ex := gf.Vertices[x]
-							if gf.VertexFrontier[x] || !ex {
-								expand[x] = true
-							}
+							expand[x] = true
 						}
 						gf.F_RemoveEdge(e, g)
 					}
@@ -336,10 +325,7 @@ func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand
 	for v := range rem {
 		for e := range g.IncMap[v] {
 			for w := range g.Edges[e].V {
-				_, ex := gf.Vertices[w]
-				if gf.VertexFrontier[w] || !ex {
-					expand[w] = true
-				}
+				expand[w] = true
 			}
 			gf.F_RemoveEdge(e, g)
 		}
@@ -422,10 +408,7 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 						c[a] = true
 						for h := range g.IncMap[a] {
 							for w := range g.Edges[h].V {
-								_, ex := gf.Vertices[w]
-								if gf.VertexFrontier[w] || !ex {
-									expand[w] = true
-								}
+								expand[w] = true
 							}
 							gf.F_RemoveEdge(h, g)
 						}
@@ -437,10 +420,7 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 					c[z] = true
 					for h := range g.IncMap[z] {
 						for w := range g.Edges[h].V {
-							_, ex := gf.Vertices[w]
-							if gf.VertexFrontier[w] || !ex {
-								expand[w] = true
-							}
+							expand[w] = true
 						}
 						gf.F_RemoveEdge(h, g)
 					}
