@@ -25,7 +25,7 @@ func TestGetFrontierGraph(t *testing.T) {
 	// in the new graph gf.
 	expand := make(map[int32]bool)
 	gf := GetFrontierGraph(g, 2, 0)
-	ExpandFrontier(gf, g, 2, expand)
+	ExpandFrontier(g, 2, expand)
 	t.Log(gf)
 	for _, v := range gf.Vertices {
 		fmt.Println(v.Id, v.Data)
