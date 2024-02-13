@@ -92,7 +92,7 @@ func main() {
 		if flagPassed("log") {
 			execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
 		} else {
-			execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
+			execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
 		}
 		fmt.Println(execs)
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
