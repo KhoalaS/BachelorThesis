@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"time"
@@ -28,6 +30,7 @@ func main() {
 	evr := flag.Float64("evr", 0.0, "targetted edge/vertex ratio, takes priority over p")
 	logging := flag.Int("log", 1, "log the number of rule executions, do log many runs")
 	outdir := flag.String("d", "./data", "output directory")
+	profile := flag.Bool("prof", false, "make pprof profile")
 
 	flag.Parse()
 
@@ -88,12 +91,22 @@ func main() {
 
 		var execs map[string]int
 
+		if *profile {
+			fmt.Println("Start CPU profile...")
+			f, err := os.Create("./default.pgo")
+			if err != nil {
+				return
+			}
+			pprof.StartCPUProfile(f)
+		}
+
 		fmt.Println("Start 3-HS algorithm")
 		if flagPassed("log") {
 			execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
 		} else {
 			execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
 		}
+		pprof.StopCPUProfile()
 		fmt.Println(execs)
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
 	}
