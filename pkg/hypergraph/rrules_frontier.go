@@ -114,31 +114,14 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 		defer LogTime(time.Now(), "S_ApproxVertexDominationRule")
 	}
 
-	adjCount := make(map[int32]map[int32]int32)
 	exec := 0
-
-	// Time Complexity: |E| * d^2
-
-	for v, inc := range g.IncMap {
-		for e := range inc {
-			for w := range g.Edges[e].V {
-				if w == v {
-					continue
-				}
-				if _, ex := adjCount[v]; !ex {
-					adjCount[v] = make(map[int32]int32)
-				}
-				adjCount[v][w]++
-			}
-		}
-	}
 
 	// Time Complexity: |V| * (|V| + 4c)
 	for solFound := true; solFound; {
 		solFound = false
 
 		for vId := range gf.Vertices {
-			count := adjCount[vId]
+			count := g.AdjCount[vId]
 			solution, ex := twoSum(count, int32(g.Deg(vId)+1))
 			if !ex {
 				continue
@@ -155,20 +138,9 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 						if gf.VertexFrontier[x] || !ex {
 							expand[x] = true
 						}
-						if x == w {
-							continue
-						}
-						subEdge, _ := SetMinus(g.Edges[e], x)
-						for _, y := range subEdge {
-							adjCount[x][y]--
-							if adjCount[x][y] == 0 {
-								delete(adjCount[x], y)
-							}
-						}
 					}
 					gf.F_RemoveEdge(e, g)
 				}
-				delete(adjCount, w)
 			}
 		}
 	}
@@ -228,22 +200,7 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule2")
 	}
 
-	adjCount := make(map[int32]map[int32]int32)
 	exec := 0
-
-	for v, inc := range g.IncMap {
-		for e := range inc {
-			for w := range g.Edges[e].V {
-				if w == v {
-					continue
-				}
-				if _, ex := adjCount[v]; !ex {
-					adjCount[v] = make(map[int32]int32)
-				}
-				adjCount[v][w]++
-			}
-		}
-	}
 
 	for outer := true; outer; {
 		outer = false
@@ -266,16 +223,16 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 					if v == a {
 						continue
 					}
-					if adjCount[v][a] == int32(g.Deg(v)) {
+					if g.AdjCount[v][a] == int32(g.Deg(v)) {
 						vd = true
 						break
 					}
 
-					for w, val := range adjCount[v] {
+					for w, val := range g.AdjCount[v] {
 						if e.V[w] {
 							continue
 						}
-						if adjCount[v][a]+val == int32(g.Deg(v)) {
+						if g.AdjCount[v][a]+val == int32(g.Deg(v)) {
 							count[w]++
 						}
 					}
@@ -307,16 +264,6 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 							_, ex := gf.Vertices[x]
 							if gf.VertexFrontier[x] || !ex {
 								expand[x] = true
-							}
-							if x == w {
-								continue
-							}
-							subEdge, _ := SetMinus(g.Edges[e], x)
-							for _, y := range subEdge {
-								adjCount[x][y]--
-								if adjCount[x][y] == 0 {
-									delete(adjCount[x], y)
-								}
 							}
 						}
 						gf.F_RemoveEdge(e, g)

@@ -54,13 +54,13 @@ func GetFrontierGraph(g *HyperGraph, level int, remId int32) *HyperGraph {
 			}
 		}
 	}
-	g2.IncMap = nil
 	g2.IncMap = g.IncMap
+	g2.AdjCount = g.AdjCount
 
 	for v := range g2.VertexFrontier {
 		cond := true
 		for e := range g2.IncMap[v] {
-			if _ ,ex := g2.Edges[e]; !ex {
+			if _, ex := g2.Edges[e]; !ex {
 				cond = false
 				break
 			}
@@ -154,7 +154,7 @@ func F3_ExpandFrontier(gf *HyperGraph, g *HyperGraph, remId int32, level int) {
 			break
 		}
 		frontier = nextFrontier
-		if i == level -1{
+		if i == level-1 {
 			for v := range frontier {
 				gf.VertexFrontier[v] = true
 			}
