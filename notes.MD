@@ -163,7 +163,7 @@ $lookup \gets \texttt{map}[\mathbb{N}]\mathbb{N}$\;
 \end{algorithm}
 $$
 
-We start by creating a map called $lookup$. We then iterate other the elements of $arr$, checking if the entry $lookup[t-arr[i]]$ exists.
+We start by creating a map called $lookup$. Iterating other the elements of $arr$, we check if the entry $lookup[t-arr[i]]$ exists.
 
 -   If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value $true$ since we found a solution.
 -   If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value.
@@ -384,7 +384,7 @@ This also allows us to parallelize the main part of the algorithm, where we chec
     delete $x$ from the vertex set and from all edges it belongs to.
 
 $O(|V| \cdot |E|)$ **Algorithm**
-The vertex $v$ is dominated, if one of the entries in $\texttt{AdjCount}[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
+A vertex $v$ is dominated, if one of the entries in $\texttt{AdjCount}[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
 \begin{algorithm}
@@ -603,7 +603,7 @@ $$
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
-$O(|E|+|V|^2)$ **Algorithm**. Again the quadratic exponent in $|V|$ looks scarier than it is. This happens beacause we have to remove the triangle. We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
+$O(|E|+|V|^2)$ **Algorithm** We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
 
@@ -799,7 +799,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about 200 seconds.\todo{update the ratio and chart with frontier algorithm}
+The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about 80 seconds.\todo{update the ratio and chart with frontier algorithm}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
@@ -845,6 +845,3 @@ Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements t
 Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
 
 # References
-
-$$
-$$
