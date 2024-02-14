@@ -270,7 +270,7 @@ We further introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges adjacent to vertices in $e$ from the graph.  
+$O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges adjacent to vertices in $e$ from the graph.
 
 $$
 \begin{algorithm}
@@ -610,7 +610,7 @@ This last step will introduce the quadratic complexity, since in the worst case,
 $$
 \begin{algorithm}
 \nllabel{tri}
-
+\SetKwFunction{subsets}{getSubsetsRec}
 \KwIn{A hypergraph $G = (V, E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
@@ -632,7 +632,7 @@ $exec \gets 0$\;
     \If{$|val| < 2$}{
         \textbf{continue}\;
     }
-    $subsets \gets \texttt{getSubsetsRec(val, 2)}$\;
+    $subsets \gets \subsets{val, 2}$\;
     \For{$s\in subsets$}{
         $\{x,y\} \gets s$\;
         \If{$y \in adjList[x]$ \textnormal{\textbf{or}} $x\in adjList[y]$}{
@@ -662,6 +662,11 @@ $exec \gets 0$\;
 \caption{: Algorithm for exhaustive application of Small Triangle Rule}
 \end{algorithm}
 $$
+
+### Extended Triangle Rule
+
+- Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
+there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
 
 ### Small Edge Degree 2 Rule
 
@@ -730,6 +735,7 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 # Algorithms
 
 ## Main Algorithm
+
 \todo{TODO}
 
 ## Frontier Algorithm
@@ -799,7 +805,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about 80 seconds.\todo{update the ratio and chart with frontier algorithm}
+The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes.\todo{update the ratio and chart with frontier algorithm}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
