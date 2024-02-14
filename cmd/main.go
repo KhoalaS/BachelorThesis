@@ -90,7 +90,6 @@ func main() {
 		pprof.StartCPUProfile(f)
 	}
 
-	prio := 0
 	var execs map[string]int
 
 	if *logging > 0 {
@@ -101,7 +100,7 @@ func main() {
 		t := time.Now().Unix()
 		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
 		for i := 0; i < *logging; i++ {
-			alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
+			alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
 			if i == *logging - 1 {
 				break
 			}
@@ -109,7 +108,7 @@ func main() {
 			c = make(map[int32]bool)
 		}
 	} else {
-		execs = alg.ThreeHS_F3ApprPoly(g, c, prio)
+		execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
 		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(c))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", alg.GetRatio(execs))
 		fmt.Println(execs)
