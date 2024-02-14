@@ -403,6 +403,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 			}
 
 			if found {
+				outer = true
 				exec++
 				solution := [2]int32{a, b}
 				for _, w := range solution {
