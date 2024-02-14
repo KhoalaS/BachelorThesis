@@ -113,11 +113,10 @@ func EdgeDominationRule(g *HyperGraph) int {
 
 func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 	if logging {
-		defer LogTime(time.Now(), "RemoveEdgeRule")
+		defer LogTime(time.Now(), fmt.Sprintf("RemoveEdgeRule-%d", t))
 	}
 
 	exec := 0
-	//defer LogTime(time.Now(), fmt.Sprintf("RemoveEdgeRule-%d", t))
 
 	for _, e := range g.Edges {
 		if len(e.V) == t {
