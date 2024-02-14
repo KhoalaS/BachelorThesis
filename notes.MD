@@ -270,7 +270,7 @@ We further introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E| + |E|^2)$ **Algortihm**. Iterate over all edges of the graph and mark all edges of size $t$ in a set $rem$. We then iterate over all edges in $rem$. We put the endpoints of the current edge $e$ in our partial solution. Finally we delete all edges that are edge-adjacent to $e$ from $rem$ and our graph.
+$O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges adjacent to vertices in $e$ from the graph.  
 
 $$
 \begin{algorithm}
@@ -285,21 +285,17 @@ $exec \gets 0$\;
 
 \For{$e \in E$}{
     \If{$|e| = t$}{
-        $rem \gets rem \cup \{e\}$
-    }
-}
-
-\For{$e \in rem$}{
-    $exec \gets exec+1$\;
-    \For{$v \in e$}{
-        $C \gets C \cup \{v\}$\;
-        $V \gets V\setminus \{v\}$\;
-        \For{$f$ incident to $v$}{
-            $rem \gets rem\setminus \{f\}$\;
-            $E \gets E\setminus \{f\}$\;
+        $exec \gets exec+1$\;
+        \For{$v \in e$}{
+            $C \gets C \cup \{v\}$\;
+            $V \gets V\setminus \{v\}$\;
+            \For{$f$ incident to $v$}{
+                $E \gets E\setminus \{f\}$\;
+            }
         }
     }
 }
+
 \KwRet $exec$\;
 
 \caption{Algorithm for exhaustive application of Tiny/Small Edge Rule}

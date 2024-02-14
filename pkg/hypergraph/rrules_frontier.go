@@ -78,28 +78,23 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, ex
 		defer LogTime(time.Now(), fmt.Sprintf("S_RemoveEdgeRule-%d", t))
 	}
 
-	rem := make(map[int32]bool)
 	exec := 0
 
-	for eId, e := range gf.Edges {
+	for _, e := range gf.Edges {
 		if len(e.V) == t {
-			rem[eId] = true
-		}
-	}
-
-	for e := range rem {
-		exec++
-		for v := range g.Edges[e].V {
-			c[v] = true
-			for f := range g.IncMap[v] {
-				for w := range g.Edges[f].V {
-					expand[w] = true
+			exec++
+			for v := range e.V {
+				c[v] = true
+				for f := range g.IncMap[v] {
+					for w := range g.Edges[f].V {
+						expand[w] = true
+					}
+					gf.F_RemoveEdge(f, g)
 				}
-				delete(rem, f)
-				gf.F_RemoveEdge(f, g)
 			}
 		}
 	}
+
 	return exec
 }
 
