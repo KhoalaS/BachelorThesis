@@ -2,6 +2,7 @@ package hypergraph
 
 import (
 	"container/list"
+	"fmt"
 	"log"
 	"math/rand"
 	"runtime"
@@ -141,8 +142,8 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	exec := 0
 
 	// Time Complexity: |V| * (|V| + 4c)
-	for solFound := true; solFound; {
-		solFound = false
+	for outer := true; outer; {
+		outer = false
 
 		for vId, count := range g.AdjCount {
 			solution, ex := twoSum(count, int32(g.Deg(vId)+1))
@@ -150,7 +151,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 				continue
 			}
 
-			solFound = true
+			outer = true
 			exec++
 
 			for _, w := range solution {
@@ -816,8 +817,8 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 	}
 	exec := 0
 
-	for {
-		outer := false
+	for outer := true; outer; {
+		outer = false
 		for _, e := range g.Edges {
 			found := false
 			if len(e.V) != 2 {
@@ -878,6 +879,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 				}
 
 				if found {
+					outer = true
 					exec++
 					if f_0 == -1 {
 						log.Panic("uhhh this should not happen")
@@ -896,13 +898,6 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 					break
 				}
 			}
-			if found {
-				outer = true
-			}
-		}
-
-		if !outer {
-			break
 		}
 	}
 
