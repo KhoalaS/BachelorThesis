@@ -102,7 +102,7 @@ func main() {
 		}
 
 		fmt.Println("Start 3-HS algorithm")
-
+		hypergraph.LogTime(time.Now(), "Main Algorithm")
 		if *frontier{
 			if flagPassed("log") {
 				execs = alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
