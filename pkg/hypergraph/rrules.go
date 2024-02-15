@@ -709,7 +709,6 @@ func F3Rule(g *HyperGraph, c map[int32]bool) int {
 	return 1
 }
 
-// TODO: redo s2 and s3 edge selection
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
@@ -717,11 +716,10 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 
 	exec := 0
 
-	for {
-		outer := false
+	for outer := true; outer; {
+		outer = false
 		for v := range g.IncMap {
-			deg := g.Deg(v)
-			if deg != 2 {
+			if g.Deg(v) != 2 {
 				continue
 			}
 
@@ -751,10 +749,6 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 				outer = true
 				exec++
 			}
-		}
-
-		if !outer {
-			break
 		}
 	}
 	return exec
