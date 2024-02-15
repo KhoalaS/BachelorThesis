@@ -215,6 +215,12 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 			fmt.Println("Expand")
 			fmt.Println(execs)
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
+			msg = fmt.Sprintf("%f;", GetRatio(execs))
+			for _, v := range Labels {
+				msg += fmt.Sprintf("%d;", execs[v])
+			}
+			msg = msg[:len(msg)-1] + "\n"
+			logWriter.WriteString(msg)
 			continue
 		}
 
