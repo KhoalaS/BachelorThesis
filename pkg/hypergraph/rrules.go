@@ -14,9 +14,6 @@ import (
 	"github.com/james-bowman/sparse"
 )
 
-// General TODO:
-// Build an interface ontop of the HyperGraph class and inplement the "crud" there
-
 const logging = false
 
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
@@ -166,6 +163,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	return exec
 }
 
+// Deprecated: Do not use this.
 func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxVertexDominationRule")
@@ -243,6 +241,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 // naive
+// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
@@ -421,6 +420,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 }
 
 // CSR version
+// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
 func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 
 	exec := 0
@@ -530,6 +530,7 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 }
 
 // Two-Sum adjCount
+// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
 func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule4")
@@ -997,9 +998,4 @@ func setToSlice[K comparable, V any](m map[K]V) []K {
 	}
 
 	return arr
-}
-
-type IdValueHolder struct {
-	Id    int32
-	Value int32
 }
