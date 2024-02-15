@@ -665,8 +665,8 @@ $$
 
 ### Extended Triangle Rule
 
-- Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
-there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
+-   Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
+    there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
 
 ### Small Edge Degree 2 Rule
 
@@ -677,9 +677,10 @@ there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, 
     and $w$ (when existing) into the hitting set.
 
 \todo[backgroundcolor=green]{add algorithm for SmallEdgeDeg2}
+
 $$
 \begin{algorithm}[H]
-\nllabel{label}
+\nllabel{smallEdgeDegTwo}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -696,10 +697,10 @@ $outer \gets true$\;
 
         $s2,s3 \gets -1$\;
         \For{$e\textnormal{ incident to }v$}{
-            \uIf{|e| = 3}{
+            \uIf{$|e| = 3$}{
                 $s3 \gets e$\;
             }
-            \uElse{|e| = 2}{
+            \uElse{$|e| = 2$}{
                 $s2 \gets e$\;
             }
         }
@@ -739,7 +740,7 @@ $outer \gets true$\;
     }
 }
 
-\caption{}
+\caption{Algorithm for exhaustive application of Small Edge Degree 2 Rule}
 \end{algorithm}
 $$
 
@@ -844,7 +845,7 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 
 \KwRet $C$\;
 
-\caption{}
+\caption{Incremental 3-approximation algorithm for 3-HS}
 \end{algorithm}
 $$
 
@@ -862,7 +863,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes. 
+The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes.
 \todo{update the ratio and chart with frontier algorithm}
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$.  
