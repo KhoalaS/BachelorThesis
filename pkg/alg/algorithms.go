@@ -184,17 +184,23 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	ApplyRules(g, c, execs, 0)
 	expDepth := 2
 
-	if len(g.Edges) == 0 {
-		return execs
-	}
-	fmt.Println(execs)
-
 	e := hypergraph.F3TargetLowDegreeDetect(g)
 	if e != -1 {
 		execs["kFallback"] += 1
 		for v := range g.Edges[e].V {
 			c[v] = true
 		}
+	}
+
+	msg = fmt.Sprintf("%f;", GetRatio(execs))
+	for _, v := range Labels {
+		msg += fmt.Sprintf("%d;", execs[v])
+	}
+	msg = msg[:len(msg)-1] + "\n"
+	logWriter.WriteString(msg)
+
+	if len(g.Edges) == 0 {
+		return execs
 	}
 
 	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
@@ -348,7 +354,7 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
 		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
 		kApDoubleVertDom := hypergraph.S_ApproxDoubleVertexDominationRule(gf, g, c, expand)
-		kSmallEdgeDegTwo := hypergraph.S_SmallEdgeDegreeTwoRule(gf,g, c, expand)
+		kSmallEdgeDegTwo := hypergraph.S_SmallEdgeDegreeTwoRule(gf, g, c, expand)
 		kTri := hypergraph.S_SmallTriangleRule(gf, g, c, expand)
 		kExtTri := hypergraph.S_ExtendedTriangleRule(gf, g, c, expand)
 		kSmall := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
