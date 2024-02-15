@@ -2,5 +2,5 @@
 
 for i in {10..20}
 do
-  go run cmd/tvd/tvd.go -n=1000 -evr=$i -log=100 -d=data/er_"$i"_1K
+  ./tvd -fr -n=1000 -evr=$i -log=100 -d=data/er_"$i"_1K
 done
