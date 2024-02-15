@@ -705,7 +705,7 @@ $outer \gets true$\;
             }
         }
 
-        \If{$s2 = nil \textnormal{\textbf{ or }} s2 =nil$}{
+        \If{$s2 = nil \textnormal{\textbf{ or }} s3 =nil$}{
             \textbf{continue}
         }
 
