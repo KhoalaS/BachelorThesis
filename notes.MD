@@ -691,11 +691,11 @@ $outer \gets true$\;
 
 \For{outer}{
     \For{$v \in V$}{
-        \If{$deg(v) != 2$}{
+        \If{$deg(v) \neq 2$}{
             \textbf{continue}\;
         }
 
-        $s2,s3 \gets -1$\;
+        $s2,s3 \gets nil$\;
         \For{$e\textnormal{ incident to }v$}{
             \uIf{$|e| = 3$}{
                 $s3 \gets e$\;
@@ -705,11 +705,11 @@ $outer \gets true$\;
             }
         }
 
-        \If{$s2 = -1 \textnormal{\textbf{ or }} s2 =-1$}{
+        \If{$s2 = nil \textnormal{\textbf{ or }} s2 =nil$}{
             \textbf{continue}
         }
 
-        $\{ x,_ \} \gets s2$\;
+        $\{ x,\_ \} \gets s2$\;
         $found \gets false$\;
         $rem \gets nil$\;
 
@@ -830,7 +830,7 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 
 \For{$|E| > 0$}{
     Apply all reduction rules exhaustively on $H$ mutating $H$,$G$ and $C$\;
-    $exp\gets \textnormal{ vertices in edges that were removed or modified by rules }$\;
+    $exp\gets \textnormal{ vertices of edges adjacent to removed or modified edge }$\;
     \If{$|exp| > 0$}{
         $H\gets \texttt{ExpandFrontier}(G, l, exp)$\;
         \textbf{continue}\;
