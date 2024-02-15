@@ -676,16 +676,72 @@ there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, 
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
 
-**Outline**
+\todo[backgroundcolor=green]{add algorithm for SmallEdgeDeg2}
+$$
+\begin{algorithm}[H]
+\nllabel{label}
 
--   find deg 2 vertex
--   Check for at least one adjacent size two edge
--   iterate over the size 3 edge neighbors $w$ of $v$, or if both are size 2 try both
--   select a edge adjacent to $w$ that does not contain $x$
+\KwIn{A hypergraph $G=(V,E)$, a set $C$}
+\KwOut{An integer denoting the number of rule applications.}
+\BlankLine
 
-data structures:
-degMap
-incMap
+$exec \gets 0$\;
+$outer \gets true$\;
+
+\For{outer}{
+    \For{$v \in V$}{
+        \If{$deg(v) != 2$}{
+            \textbf{continue}\;
+        }
+
+        $s2,s3 \gets -1$\;
+        \For{$e\textnormal{ incident to }v$}{
+            \uIf{|e| = 3}{
+                $s3 \gets e$\;
+            }
+            \uElse{|e| = 2}{
+                $s2 \gets e$\;
+            }
+        }
+
+        \If{$s2 = -1 \textnormal{\textbf{ or }} s2 =-1$}{
+            \textbf{continue}
+        }
+
+        $\{ x,_ \} \gets s2$\;
+        $found \gets false$\;
+        $rem \gets nil$\;
+
+        \For{$w\in s3\setminus \{ v \} $}{
+            \For{$f \textnormal{ incident to } w$}{
+                \eIf{$x \in f \textnormal{\textbf{ or }} s3 = f$}{
+                    \textbf{continue}
+                }{
+                    $found \gets true$\;
+                    $rem\gets f$\;
+                    \textbf{break}\;
+                }
+            }
+            \If{$found$}{
+                \textbf{break}\;
+            }
+        }
+        \If{$found$}{
+            $outer \gets true$\;
+            $exec \gets exec +1$\;
+            \For{$a \in \{ x \}\cup f$}{
+                $C\gets C\cup \{ a \}$\;
+                \For{$h \textnormal{ incident to } a$}{
+                    $E\gets E \setminus \{ h \}$\;
+                }
+            }
+        }
+    }
+}
+
+\caption{}
+\end{algorithm}
+$$
 
 ## Self-Monitoring
 
@@ -738,15 +794,16 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 \todo{TODO}
 
-## Frontier Algorithm
+## Incremental Frontier Algorithm
 
 As experienced with the DBLP coauthor graph, there are some graph instances that do not work well with the prior algorithm. These instances do not admit a lot of rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule was applied.
 
 We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
 
-We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. We then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
+We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
-We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices that were part of a modified or removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, then we apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
+We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices that were part of a modified or removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
+
 \todo[backgroundcolor=green]{add new Frontier section}
 
 $$
@@ -805,7 +862,11 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $1.845276$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes.\todo{update the ratio and chart with frontier algorithm}
+The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes. 
+\todo{update the ratio and chart with frontier algorithm}
+
+This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$.  
+\todo{Needs proof?}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
@@ -831,7 +892,7 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 
 # Testing
 
-Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution and the amount of edges left in the graph.
+Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
 
 # Branching Algorithm
 
