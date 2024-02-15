@@ -200,6 +200,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	logWriter.WriteString(msg)
 
 	if len(g.Edges) == 0 {
+		logWriter.Flush()
+		masterfile.WriteString(msg)
 		return execs
 	}
 
