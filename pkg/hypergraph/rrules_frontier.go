@@ -422,6 +422,108 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 	return exec
 }
 
+func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
+	if logging {
+		LogTime(time.Now(), "S_SmallEdgeDegreeTwoRule")
+	}
+
+	exec := 0
+
+	for outer := true; outer; {
+		outer = false
+		for v := range gf.Vertices {
+			if g.Deg(v) != 2 {
+				continue
+			}
+
+			// assert that deg(v) = 2
+
+			var s2Edge int32 = -1
+			var s3Edge int32 = -1
+
+			for e := range g.IncMap[v] {
+				l := len(g.Edges[e].V)
+				if l == 3 {
+					s3Edge = e
+				} else if l == 2 {
+					s2Edge = e
+				}
+			}
+
+			if s3Edge == -1 || s2Edge == -1 {
+				continue
+			}
+
+			found := false
+
+			found = S_smallDegreeTwoSub(gf, g, c, v, s2Edge, s3Edge, expand)
+
+			if found {
+				outer = true
+				exec++
+			}
+		}
+	}
+	return exec
+}
+
+func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32, expand map[int32]bool) bool {
+	var x int32 = -1
+	var remEdge int32 = -1
+
+	// extract x from s2Edge
+	for w := range g.Edges[s2Edge].V {
+		if w == vId {
+			continue
+		}
+		x = w
+	}
+
+	found := false
+
+	for w := range g.Edges[s3Edge].V {
+		if w == vId {
+			continue
+		}
+
+		for f := range g.IncMap[w] {
+			if g.Edges[f].V[x] || s3Edge == f {
+				continue
+			} else {
+				remEdge = f
+				found = true
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+
+	if found {
+		// should be possible to delete immidietly
+		c[x] = true
+		for h := range g.IncMap[x] {
+			for w := range g.Edges[h].V {
+				expand[w] = true
+			}
+			gf.F_RemoveEdge(h, g)
+		}
+
+		for u := range g.Edges[remEdge].V {
+			c[u] = true
+			for h := range g.IncMap[u] {
+				for w := range g.Edges[h].V {
+					expand[w] = true
+				}
+				gf.F_RemoveEdge(h, g)
+			}
+		}
+
+	}
+	return found
+}
+
 func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 	closest := 1000000000
 	var closestId int32 = -1
