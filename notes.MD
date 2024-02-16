@@ -859,12 +859,12 @@ $$
 
 We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component, due to RAM limitations of the test rig. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
 
-![Triangle Vertex Deletion on a DBLP coauthor graph, the ratio was calculated after every execution of the F3 rule](img/dblp_tvd_ratio.png)
+![Triangle Vertex Deletion on a DBLP coauthor graph, the ratio was calculated after every recalculation of $H$](img/dblp_tvd_ratio.png)
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
 The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes.
-\todo{update the ratio and chart with frontier algorithm}
+\todo[backgroundcolor=green]{update the ratio and chart with frontier algorithm}
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$.  
 \todo{Needs proof?}
@@ -875,7 +875,7 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 
 ![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=10](img/er_tvd_rules_1.png)
 
-![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=20](img/er_tvd_rules_2.png)
+![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=25](img/er_tvd_rules_2.png)
 
 ## Cluster Vertex Deletion
 
@@ -885,7 +885,7 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 ![](img/pa_rules_02.png)
 ![](img/pa_rules_05.png)
 
-## 3-Unifrom ER Hypergraphs
+## 3-Uniform ER Hypergraphs
 
 ![](img/eru3_ratio.png)
 ![](img/eru3_rules_1.png)
