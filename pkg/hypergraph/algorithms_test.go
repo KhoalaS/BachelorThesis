@@ -33,7 +33,7 @@ func TestGetSubsetsRec(t *testing.T) {
 	assert.Equal(t, 3, subsets.Len())
 
 	for item := subsets.Front(); item != nil; item = item.Next() {
-		assert.Equal(t, true, sol[GetHash(item.Value.([]int32))])
+		assert.Equal(t, true, sol[GetHash(item.Value.([]int32)...)])
 	}
 }
 
