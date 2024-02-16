@@ -86,7 +86,7 @@ func main() {
 		fmt.Println("Start Triangle detection and problem reduction...")
 		g = hypergraph.TriangleDetection(adjList)
 
-		fmt.Printf("Graph had %d many triangles", len(g.Edges))
+		fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
 
 		c := make(map[int32]bool)
 
