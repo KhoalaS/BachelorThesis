@@ -116,7 +116,7 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 		GetSubsetsRec3(arr, s, func(subset []int32) {
 			if adjList[subset[0]][subset[1]] || adjList[subset[1]][subset[0]] {
 				remSet := []int32{subset[0], subset[1], x}
-				hash := GetHash(remSet)
+				hash := GetHash(remSet...)
 				if !hashes[hash] {
 					exec++
 					fmt.Printf("Add edge %d\r", exec)

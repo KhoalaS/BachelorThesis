@@ -34,7 +34,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 		getSubsetsRec(epArr, 2, subsets)
 
 		for item := subsets.Front(); item != nil; item = item.Next() {
-			hash := GetHash(item.Value.([]int32))
+			hash := GetHash(item.Value.([]int32)...)
 			if subEdges[hash] {
 				remEdges[eId] = true
 				break

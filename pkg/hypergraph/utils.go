@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GetHash(arr []int32) string {
+func GetHash(arr ...int32) string {
 	sort.Slice(arr, func(i, j int) bool {
 		return arr[i] < arr[j]
 	})
