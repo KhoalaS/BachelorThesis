@@ -251,6 +251,66 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 	return exec
 }
 
+// Two-Sum version
+func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
+	if logging {
+		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule_New")
+	}
+
+	exec := 0
+	tsHashes := make(map[string]int32)
+
+	for outer := true; outer; {
+		outer = false
+
+		for x := range gf.Vertices {
+			twoSumAll(g.AdjCount[x], int32(g.Deg(x)), func(x0, x1 int32) {
+				hash := GetHash(x0, x1)
+				if _, ex := tsHashes[hash]; ex {
+					y := tsHashes[hash]
+					if y == x {
+						return
+					}
+					h1 := GetHash(x, y, x0)
+					h2 := GetHash(x, y, x1)
+
+					found := false
+
+					for e := range g.IncMap[y] {
+						he := g.Edges[e].getHash()
+						if he == h1 || he == h2 {
+							found = true
+							break
+						}
+					}
+
+					if found {
+						exec++
+						outer = true
+
+						sol := [2]int32{x0, x1}
+
+						for _, a := range sol {
+							c[a] = true
+							for e := range g.IncMap[a] {
+								for w := range g.Edges[e].V {
+									expand[w] = true
+								}
+								gf.F_RemoveEdge(e, g)
+							}
+						}
+						delete(tsHashes, hash)
+					}
+				} else {
+					tsHashes[hash] = x
+				}
+			})
+		}
+	}
+
+	return exec
+}
+
 func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "SmallTriangleRule")

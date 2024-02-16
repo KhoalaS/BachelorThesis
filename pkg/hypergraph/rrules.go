@@ -241,7 +241,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 // naive
-// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
+// Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
@@ -342,6 +342,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 // adjCount version
+// Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule2")
@@ -420,7 +421,7 @@ func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 }
 
 // CSR version
-// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
+// Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 
 	exec := 0
@@ -530,7 +531,7 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 }
 
 // Two-Sum adjCount
-// Deprecated: Use ApproxDoubleVertexDominationRule2 instead.
+// Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
 	if logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule4")
@@ -614,6 +615,63 @@ func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
 					}
 				}
 			}
+		}
+	}
+
+	return exec
+}
+
+// New Two-Sum version
+func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
+	if logging {
+		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule_New")
+	}
+
+	exec := 0
+	tsHashes := make(map[string]int32)
+
+	for outer := true; outer; {
+		outer = false
+
+		for x := range g.Vertices {
+			twoSumAll(g.AdjCount[x], int32(g.Deg(x)), func(x0, x1 int32) {
+				hash := GetHash(x0, x1)
+				if _, ex := tsHashes[hash]; ex {
+					y := tsHashes[hash]
+					if y == x {
+						return
+					}
+					h1 := GetHash(x, y, x0)
+					h2 := GetHash(x, y, x1)
+
+					found := false
+
+					for e := range g.IncMap[y] {
+						he := g.Edges[e].getHash()
+						if he == h1 || he == h2 {
+							found = true
+							break
+						}
+					}
+
+					if found {
+						exec++
+						outer = true
+
+						sol := [2]int32{x0, x1}
+
+						for _, a := range sol {
+							c[a] = true
+							for e := range g.IncMap[a] {
+								g.RemoveEdge(e)
+							}
+						}
+						delete(tsHashes, hash)
+					}
+				} else {
+					tsHashes[hash] = x
+				}
+			})
 		}
 	}
 
