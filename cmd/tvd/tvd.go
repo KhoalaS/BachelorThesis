@@ -83,10 +83,10 @@ func main() {
 			graphtype = "ER"
 		}
 
-		fmt.Println("Start Triangle detection and problem reduction")
+		fmt.Println("Start Triangle detection and problem reduction...")
 		g = hypergraph.TriangleDetection(adjList)
 
-		fmt.Println(len(g.Vertices))
+		fmt.Printf("Graph had %d many triangles", len(g.Edges))
 
 		c := make(map[int32]bool)
 
@@ -101,7 +101,7 @@ func main() {
 			pprof.StartCPUProfile(f)
 		}
 
-		fmt.Println("Start 3-HS algorithm")
+		fmt.Println("Start 3-HS algorithm...")
 		defer hypergraph.LogTime(time.Now(), "Main Algorithm")
 		if *frontier{
 			if flagPassed("log") {

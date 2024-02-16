@@ -2,7 +2,6 @@ package hypergraph
 
 import (
 	"container/list"
-	"fmt"
 )
 
 func getSubsetsRec(arr []int32, s int, subsets *list.List) {
@@ -105,7 +104,6 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 	hashes := make(map[string]bool)
 	exec := 0
 
-	// Time Compelxity: |V|^2
 	for x, val := range adjList {
 		if len(val) < 2 {
 			continue
@@ -119,7 +117,6 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 				hash := GetHash(remSet...)
 				if !hashes[hash] {
 					exec++
-					fmt.Printf("Add edge %d\r", exec)
 					g.AddEdge(remSet...)
 					for _, v := range remSet {
 						g.AddVertex(v, 0)
@@ -129,6 +126,5 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 			}
 		})
 	}
-	fmt.Println()
 	return g
 }
