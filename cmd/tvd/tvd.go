@@ -120,6 +120,7 @@ func main() {
 		
 		pprof.StopCPUProfile()
 		fmt.Println(execs)
+		fmt.Printf("Found a hitting-set with size %d\n", len(c))
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
 	}
 }
