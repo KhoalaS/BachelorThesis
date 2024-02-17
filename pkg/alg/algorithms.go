@@ -361,7 +361,7 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
 		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
 		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
-		kVertDom += hypergraph.S_VertexDominationRule(gf, g, c, expand)
+		//kVertDom += hypergraph.S_VertexDominationRule(gf, g, c, expand)
 		kApDoubleVertDom := hypergraph.S_ApproxDoubleVertexDominationRule2(gf, g, c, expand)
 		kSmallEdgeDegTwo := hypergraph.S_SmallEdgeDegreeTwoRule(gf, g, c, expand)
 		kTri := hypergraph.S_SmallTriangleRule(gf, g, c, expand)
