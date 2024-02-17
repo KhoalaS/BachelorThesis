@@ -3,7 +3,7 @@ package hypergraph
 import (
 	"container/list"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"runtime"
 	"sync"
 	"time"
@@ -585,33 +585,31 @@ func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId in
 }
 
 func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
-	closest := 1000000000
+	closest := 10000000
 	var closestId int32 = -1
-	var remEdge int32 = -1
 
-	for vId := range g.IncMap {
-		deg := g.Deg(vId)
-		if deg < closest && deg > 1 {
-			closest = deg
-			closestId = vId
-		}
+	for x := range g.IncMap {
+		deg := g.Deg(x)
 		if deg == 2 {
-			for e := range g.IncMap[closestId] {
+			for e := range g.IncMap[x] {
 				for v := range g.Edges[e].V {
-					if v == closestId {
+					if v == x {
 						continue
 					}
 					for f := range g.IncMap[v] {
 						if f == e {
 							continue
 						}
-						if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
+						if !g.Edges[f].V[x] && len(g.Edges[f].V) == 3 {
 							return f
 						}
 					}
 
 				}
 			}
+		} else if deg < closest {
+			closest = deg
+			closestId = x
 		}
 	}
 
@@ -628,11 +626,7 @@ func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 		}
 	}
 
-	if remEdge < 0 {
-		return F3RuleDetect(g)
-	}
-
-	return remEdge
+	return F3RuleDetect(g)
 }
 
 func F3RuleDetect(g *HyperGraph) int32 {
@@ -648,7 +642,7 @@ func F3RuleDetect(g *HyperGraph) int32 {
 
 	var remEdge int32 = -1
 	if i > 0 {
-		r := rand.Intn(i)
+		r := rand.IntN(i)
 		remEdge = s3Arr[r]
 		return remEdge
 	} else {
