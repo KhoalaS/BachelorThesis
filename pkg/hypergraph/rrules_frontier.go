@@ -164,9 +164,9 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 		}
 	}
 
-	if exec > 0 {
-		gf.F_RemoveDuplicate(g)
-	}
+	//if exec > 0 {
+	//	gf.F_RemoveDuplicate(g)
+	//}
 	return exec
 }
 
