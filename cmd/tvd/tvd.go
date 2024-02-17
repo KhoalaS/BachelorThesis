@@ -26,7 +26,7 @@ func flagPassed(name string) bool {
 func main() {
 	in := flag.String("i", "", "path to input graph file")
 	n := flag.Int("n", 1000, "number of vertices")
-	p := flag.Float64("p", 0.5, "probability of adding an edge")
+	p := flag.Float64("p", 0.05, "probability of adding an edge")
 	evr := flag.Float64("evr", 0.0, "targetted edge/vertex ratio, takes priority over p")
 	logging := flag.Int("log", 1, "log the number of rule executions, do log many runs")
 	outdir := flag.String("d", "./data", "output directory")

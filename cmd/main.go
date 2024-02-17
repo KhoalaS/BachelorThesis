@@ -59,9 +59,9 @@ func main() {
 	exportSimple := flag.String("os", "", "Export the generated graph to the given filepath.")
 	prefAttach := flag.Float64("pa", 0.0, "Generate a random preferential attachment hypergraph with given float as probablity to add a new vertex.")
 	prefAttachMod := flag.Bool("pamod", false, "")
-	er := flag.Bool("er", false, "")
-	logging := flag.Int("log", 0, "")
-	outdir := flag.String("d", "./data", "")
+	er := flag.Bool("er", false, "Generate a andom Erdös Renyi hypergraph")
+	logging := flag.Int("log", 0, "Amount of logging passes.")
+	outdir := flag.String("d", "./data", "Output directory for log files.")
 
 	flag.Parse()
 
