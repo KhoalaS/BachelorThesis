@@ -651,16 +651,6 @@ func findPotentialTriangle(id int, ctx context.Context, wg *sync.WaitGroup,
 
 func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 	sol := []int32{}
-	incList := make(map[int32]map[int32]bool)
-
-	for eId, e := range g.Edges {
-		for v := range e.V {
-			if _, ex := incList[v]; !ex {
-				incList[v] = make(map[int32]bool)
-			}
-			incList[v][eId] = true
-		}
-	}
 
 	f, err := os.CreateTemp("", "SimpleGraph_*.txt")
 	if err != nil {
@@ -668,11 +658,11 @@ func MinEdgeCover(g *hypergraph.HyperGraph) []int32 {
 	}
 	defer os.Remove(f.Name())
 
-	for v, val := range incList {
-		if len(val) == 2 {
+	for v, inc := range g.IncMap {
+		if len(inc) == 2 {
 
 			e := []int32{}
-			for eId := range incList[v] {
+			for eId := range inc {
 				e = append(e, eId)
 			}
 			f.WriteString(fmt.Sprintf("%d,%d,%d\n", v, e[0], e[1]))
