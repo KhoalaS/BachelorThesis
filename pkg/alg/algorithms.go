@@ -312,7 +312,6 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	if len(g.Edges) == 0 {
 		return execs
 	}
-	fmt.Println(execs)
 
 	e := hypergraph.F3TargetLowDegreeDetect(g)
 	if e != -1 {
@@ -323,14 +322,11 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 	}
 
 	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
-	fmt.Println(len(gf.Edges))
 
 	for len(g.Edges) > 0 {
 		expand := make(map[int32]bool)
 		ApplyRulesFrontier(gf, g, c, execs, expand)
 		if len(expand) > 0 {
-			fmt.Println("Expand")
-			fmt.Println(execs)
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			continue
 		}
@@ -347,11 +343,7 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 
 		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
 		execs["kFallback"] += 1
-
-		fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges), execs["kFallback"])
 	}
-	fmt.Println(len(gf.Edges), len(gf.IncMap), len(g.Edges))
-
 	return execs
 }
 
@@ -361,7 +353,6 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
 		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
 		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
-		//kVertDom += hypergraph.S_VertexDominationRule(gf, g, c, expand)
 		kApDoubleVertDom := hypergraph.S_ApproxDoubleVertexDominationRule2(gf, g, c, expand)
 		kSmallEdgeDegTwo := hypergraph.S_SmallEdgeDegreeTwoRule(gf, g, c, expand)
 		kTri := hypergraph.S_SmallTriangleRule(gf, g, c, expand)
