@@ -249,7 +249,7 @@ func NewHyperGraph() *HyperGraph {
 
 func (g *HyperGraph) IsSimple() bool {
 	for _, inc := range g.IncMap {
-		if len(inc) == 3 {
+		if len(inc) > 2 {
 			return false
 		}
 	}
