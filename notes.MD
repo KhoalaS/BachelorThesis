@@ -493,7 +493,7 @@ $$
 
 ### Approximative Double Vertex Domination Rule
 
-\todo[backgroundcolor=green]{remove explicit AdjCount generation, use the one provided by the graph struct}
+\todo{rewrite with new Two-Sum algorithm}
 
 -   approximative double vertex domination: Assume there is a hyperedge $e =
 \{x, y, a\}$ and another vertex $b$ such that, whenever $x$ or $y$ belong to some
@@ -786,7 +786,7 @@ Note that the reduction rules alone are sufficient to compute a Hitting-Set for 
 
 We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
 
-\todo[backgroundcolor=red]{Remove Factor-3 Rule function paragraph}
+\todo[backgroundcolor=red]{remove Factor-3 Rule function paragraph}
 **Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
 # Algorithms
@@ -863,11 +863,11 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around six hours could be reduced to about two minutes.
+The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the Frontier Algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
 \todo[backgroundcolor=green]{update the ratio and chart with frontier algorithm}
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$.  
-\todo{Needs proof?}
+\todo{needs proof?}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
