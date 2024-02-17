@@ -234,9 +234,9 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 		}
 	}
 
-	if exec > 0 {
-		g.RemoveDuplicate()
-	}
+	//if exec > 0 {
+	//	g.RemoveDuplicate()
+	//}
 	return exec
 }
 
