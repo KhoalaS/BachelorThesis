@@ -86,9 +86,9 @@ func twoSumAll(items map[int32]int32, t int32, callback func(x0 int32, x1 int32)
 	for key, val := range items {
 		if _, ex := lookup[t-val]; ex {
 			for p := range lookup[t-val] {
-				callback(key,  p)
+				callback(key, p)
 			}
-			if _,ex := lookup[val]; ex {
+			if _, ex := lookup[val]; ex {
 				lookup[val][key] = true
 			}
 		} else {
@@ -126,5 +126,33 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 			}
 		})
 	}
+	return g
+}
+
+func P3Detection(adjList map[int32]map[int32]bool) *HyperGraph {
+	g := NewHyperGraph()
+
+	hashes := make(map[string]bool)
+
+	for x, Nx := range adjList {
+		for y := range Nx {
+			for z := range adjList[y] {
+				if z == x {
+					continue
+				}
+				if !Nx[z] {
+					hash := GetHash(x, y, z)
+					if !hashes[hash] {
+						g.AddVertex(x, 0)
+						g.AddVertex(y, 0)
+						g.AddVertex(z, 0)
+						g.AddEdge(x, y, z)
+						hashes[hash] = true
+					}
+				}
+			}
+		}
+	}
+
 	return g
 }
