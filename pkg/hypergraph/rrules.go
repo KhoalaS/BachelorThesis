@@ -14,7 +14,7 @@ import (
 	"github.com/james-bowman/sparse"
 )
 
-const logging = false
+var Logging = false
 
 func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, domEdges []int32, done chan<- map[int32]bool) {
 	runtime.LockOSThread()
@@ -52,7 +52,7 @@ func batchSubComp(wg *sync.WaitGroup, g *HyperGraph, subEdges map[string]bool, d
 
 func EdgeDominationRule(g *HyperGraph) int {
 	var wg sync.WaitGroup
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "EdgeDomination")
 	}
 
@@ -110,7 +110,7 @@ func EdgeDominationRule(g *HyperGraph) int {
 // Time Complexity: |E| * d
 
 func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), fmt.Sprintf("RemoveEdgeRule-%d", t))
 	}
 
@@ -132,7 +132,7 @@ func RemoveEdgeRule(g *HyperGraph, c map[int32]bool, t int) int {
 }
 
 func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxVertexDominationRule")
 	}
 
@@ -141,7 +141,6 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 	// Time Complexity: |V| * (|V| + 4c)
 	for outer := true; outer; {
 		outer = false
-
 		for vId, count := range g.AdjCount {
 			solution, ex := twoSum(count, int32(g.Deg(vId)+1))
 			if !ex {
@@ -165,7 +164,7 @@ func ApproxVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 
 // Deprecated: Do not use this.
 func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxVertexDominationRule")
 	}
 
@@ -210,7 +209,7 @@ func ApproxVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
 }
 
 func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "VertexDominationRule")
 	}
 	exec := 0
@@ -243,7 +242,7 @@ func VertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 // naive
 // Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule")
 	}
 	exec := 0
@@ -344,7 +343,7 @@ func ApproxDoubleVertexDominationRule(g *HyperGraph, c map[int32]bool) int {
 // adjCount version
 // Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule2(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule2")
 	}
 
@@ -433,7 +432,7 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	incCSRMatrix := incDokMatrix.ToCSR()
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule3")
 	}
 
@@ -533,7 +532,7 @@ func ApproxDoubleVertexDominationRule3(g *HyperGraph, c map[int32]bool) int {
 // Two-Sum adjCount
 // Deprecated: Use ApproxDoubleVertexDominationRule5 instead.
 func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ApproxDoubleVertexDominationRule4")
 	}
 
@@ -623,7 +622,7 @@ func ApproxDoubleVertexDominationRule4(g *HyperGraph, c map[int32]bool) int {
 
 // New Two-Sum version
 func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule_New")
 	}
 
@@ -679,7 +678,7 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 }
 
 func SmallTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "SmallTriangleRule")
 	}
 	adjList := make(map[int32]map[int32]bool)
@@ -769,7 +768,7 @@ func F3Rule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
 	}
 
@@ -865,7 +864,7 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 }
 
 func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ExtendedTriangleRule")
 	}
 	exec := 0
@@ -958,7 +957,7 @@ func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {
 }
 
 func F3TargetLowDegree(g *HyperGraph, c map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "detectLowDegreeEdge")
 	}
 	closest := 1000000000

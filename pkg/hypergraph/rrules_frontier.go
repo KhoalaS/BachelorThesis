@@ -13,7 +13,7 @@ import (
 
 func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph, expand map[int32]bool) int {
 	var wg sync.WaitGroup
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_EdgeDomination")
 	}
 
@@ -74,7 +74,7 @@ func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph, expand map[int32]bool) 
 // Time Complexity: |E| * d
 
 func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), fmt.Sprintf("S_RemoveEdgeRule-%d", t))
 	}
 
@@ -99,7 +99,7 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, ex
 }
 
 func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_ApproxVertexDominationRule")
 	}
 
@@ -135,7 +135,7 @@ func S_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]boo
 }
 
 func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_VertexDominationRule")
 	}
 	exec := 0
@@ -172,7 +172,7 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 
 // adjCount version
 func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule2")
 	}
 
@@ -253,7 +253,7 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 
 // Two-Sum version
 func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule_New")
 	}
 
@@ -312,7 +312,7 @@ func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[in
 }
 
 func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "SmallTriangleRule")
 	}
 	adjList := make(map[int32]map[int32]bool)
@@ -380,7 +380,7 @@ func S_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand
 }
 
 func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		defer LogTime(time.Now(), "ExtendedTriangleRule")
 	}
 	exec := 0
@@ -483,7 +483,7 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 }
 
 func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
-	if logging {
+	if Logging {
 		LogTime(time.Now(), "S_SmallEdgeDegreeTwoRule")
 	}
 
