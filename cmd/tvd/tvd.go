@@ -32,9 +32,13 @@ func main() {
 	outdir := flag.String("d", "./data", "output directory")
 	profile := flag.Bool("prof", false, "make pprof profile")
 	frontier := flag.Bool("fr", false, "use frontier algorithm")
+	cvd := flag.Bool("cvd", false, "")
+	debug := flag.Bool("dbg", false, "")
 
 	flag.Parse()
 
+	hypergraph.Logging = *debug
+	
 	adjList := make(map[int32]map[int32]bool)
 
 	graphtype := "CUSTOM"
@@ -83,10 +87,15 @@ func main() {
 			graphtype = "ER"
 		}
 
-		fmt.Println("Start Triangle detection and problem reduction...")
-		g = hypergraph.TriangleDetection(adjList)
-
-		fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
+		if *cvd {
+			fmt.Println("Start P3 detection and problem reduction...")
+			g = hypergraph.P3Detection(adjList)
+			fmt.Printf("Graph had %d many P3's\n", len(g.Edges))
+		}else{
+			fmt.Println("Start Triangle detection and problem reduction...")
+			g = hypergraph.TriangleDetection(adjList)
+			fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
+		}
 
 		c := make(map[int32]bool)
 
