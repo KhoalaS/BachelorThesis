@@ -118,6 +118,9 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 			if g.AdjCount[w][v] == 0 {
 				delete(g.AdjCount[w], v)
 			}
+			if len(g.AdjCount[w]) == 0 {
+				delete(g.AdjCount, w)
+			}
 		}
 	}
 
