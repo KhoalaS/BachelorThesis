@@ -88,13 +88,11 @@ func twoSumAll(items map[int32]int32, t int32, callback func(x0 int32, x1 int32)
 			for p := range lookup[t-val] {
 				callback(key, p)
 			}
-			if _, ex := lookup[val]; ex {
-				lookup[val][key] = true
-			}
-		} else {
-			lookup[val] = make(map[int32]bool)
-			lookup[val][key] = true
 		}
+		if _, ex := lookup[val]; !ex {
+			lookup[val] = make(map[int32]bool)
+		}
+		lookup[val][key] = true
 	}
 }
 
