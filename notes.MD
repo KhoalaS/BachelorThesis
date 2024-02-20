@@ -493,30 +493,21 @@ $$
 
 ### Approximative Double Vertex Domination Rule
 
-\todo{rewrite with new Two-Sum algorithm}
+\todo{change to new Two-Sum algorithm description}
 
 -   approximative double vertex domination: Assume there is a hyperedge $e =
 \{x, y, a\}$ and another vertex $b$ such that, whenever $x$ or $y$ belong to some
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|E| + |E|^2)$ **Algorithm**. We start by iterating over the edges of our graph. If $|e| = 3$ we iterate over the endpoints of $e$ and assign the vertex in the current iteration to $a$ and let $\{ x,y \}$ be the other two endpoints of $e$. There is a approximative double vertex domination situation, if there exists a vertex $b \notin e$, s.t. the following two equations can be satisfied:
+$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists one solution $sol = \{ z_0, z_1 \}$, such that  
 
-$$
-\begin{align*}
-    deg(x)\leq AdjCount[x][a]+ AdjCount[x][b] \\
-    deg(y)\leq AdjCount[y][a]+ AdjCount[y][b]
-\end{align*}
-$$
-
-Note that when $deg(x)= AdjCount[x][a]$ or $deg(y)= AdjCount[y][a]$ are already satisfied, we can apply the vertex domination rule to $x$ or $y$ respectively instead.
 
 \begin{lemma}
 Algorithm \ref{apdvdom} is correct.
 \end{lemma}
 
-_Proof_. Let $G=(V,E)$ be a hypergraph, $e=\{ a,x,y \}$ be a size $3$ edge. Assume that the approximative double vertex domination rule applies to this edge, i.e. all edges incident to $x$ and $y$ contain either $a$ or another vertex $b$. Since every edge incident to $v \in \{ x,y \}$ contains either $a$ or $b$, the amount of times $a$ and $b$ are adjacent to $v$ has to be at least $deg(v)$. Thus the following non-strict inequality holds,
-
+_Proof_. 
 $$
 deg(v) \leq AdjCount[v][a] + AdjCount[v][b],\quad \text{for } v\in \{ x,y \}
 $$
@@ -531,66 +522,48 @@ $$
 \KwOut{An integer denoting the number of rule applications.}
 \BlankLine
 
-$adjCount \gets \texttt{map}[V]\texttt{map}[V]\mathbb{N}$\;
 $exec \gets 0$\;
 
 $outer \gets true$\;
 \For{$outer$}{
     $outer \gets false$\;
-    \For{$e \in E$}{
-        \If{$|e| \neq 3$}{
-            \textbf{continue}\;
-        }
+    $tsHashes \gets \texttt{map}[2^E]V$\;
 
-        $found \gets false$\;
-        $a \gets nil$\;
-        $b \gets nil$\;
-
-        \For{$u \in e$}{
-            $a \gets u$\;
-            $count \gets \texttt{map}[V]\mathbb{N}$\;
-            $vd \gets false$\;
-
-            \For{$v \in e\setminus \{a\}$}{
-                \If{$AdjCount[v][a] = deg(w)$}{
-                    $vd\gets true$\;
-                    \textbf{break}\;
+    \For{$x \in V$}{
+        \For{$sol \in \textnormal{\textsc{Two-SumAll}}(AdjCount[x], deg(x))$}{
+            $\{ z_0, z_1 \} \gets sol$\;
+            \eIf{$\exists y \gets tsHashes[sol]$}{
+                \If{$y = x$}{
+                    \textbf{continue}\;
                 }
-                \For{$(w,val) \in AdjCount[v]$}{
-                    \If{$w \in e$}{
-                        \textbf{continue}\;
-                    }
-                    \If{$AdjCount[v][a] + val = deg(v)$}{
-                        $count[w] \gets count[w] +1$\;
-                    }
-                }
+                $f_0 \gets \{ x,y,z_0 \}$\;
+                $f_1 \gets \{ x,y,z_1 \}$\;
 
-            }
-            \If{\textbf{not} vd}{
-                \For{$(v, val) \in count$}{
-                    \If{$val = 2$}{
+                $found \gets false$\;
+                \For{$e \textnormal{ incident to }y$}{
+                    \If{$e=f_0 \textbf{ or } e=f_1$}{
                         $found \gets true$\;
-                        $b \gets v$\;
                         \textbf{break}\;
                     }
                 }
-            }
-            \If{$found$}{
-                \textbf{break}\;
-            }
-        }
 
-        \If{found}{
-            $exec \gets exec+1$\;
-            \For{$w \in \{ a,b \}$}{
-                $C\gets C\cup \{ w \}$\;
-                $V \gets V\setminus \{ w \}$\;
-                \For{$e$ incident to $w$}{
-                    $E \gets E\setminus \{ e \}$\;
+                \If{found}{
+                    $exec\gets exec + 1$\;
+                    $outer\gets true$\;
+                    $C\gets C \cup sol$\;
+                    \For{$a \in sol$}{
+                        \For{$e \textnormal{ incident to } a$}{
+                            $E\gets E\setminus \{ e \}$\;
+                        }
+                    }
+                    \textbf{break}\;
                 }
+            }{
+                $tsHashes[sol] = x$\;
             }
         }
     }
+
 }
 
 \KwRet $exec$\;
@@ -598,6 +571,7 @@ $outer \gets true$\;
 \caption{Algorithm for exhaustive application of Approximative Double Vertex Domination Rule}
 \end{algorithm}
 $$
+\todo[backgroundcolor=green]{replace with new alg}
 
 ### Small Triangle Rule
 
