@@ -124,12 +124,13 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 	g.AddEdge(0, 3)
 	g.AddEdge(1, 3)
 
-	ApproxDoubleVertexDominationRule2(g, c)
+	ApproxDoubleVertexDominationRule5(g, c)
 	assert.Equal(2, len(c))
 	assert.Equal(0, len(g.Vertices))
 	assert.Equal(0, len(g.IncMap))
 	assert.Equal(0, len(g.Edges))
 	assert.Equal(true, c[3])
+	assert.Equal(true, c[2])
 }
 
 func TestSmallTriangleRule(t *testing.T) {
