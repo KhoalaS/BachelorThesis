@@ -262,9 +262,14 @@ func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[in
 
 	for outer := true; outer; {
 		outer = false
+		skip := false
 
 		for x := range gf.Vertices {
 			twoSumAll(g.AdjCount[x], int32(g.Deg(x)), func(x0, x1 int32) {
+				if skip {
+					return
+				}
+
 				hash := GetHash(x0, x1)
 				if _, ex := tsHashes[hash]; ex {
 					y := tsHashes[hash]
@@ -287,6 +292,7 @@ func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[in
 					if found {
 						exec++
 						outer = true
+						skip = true
 
 						sol := [2]int32{x0, x1}
 
@@ -299,7 +305,6 @@ func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[in
 								gf.F_RemoveEdge(e, g)
 							}
 						}
-						delete(tsHashes, hash)
 					}
 				} else {
 					tsHashes[hash] = x

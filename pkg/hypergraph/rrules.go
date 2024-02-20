@@ -633,7 +633,12 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 		outer = false
 
 		for x := range g.Vertices {
+			skip := false
 			twoSumAll(g.AdjCount[x], int32(g.Deg(x)), func(x0, x1 int32) {
+				if skip {
+					return
+				}
+
 				hash := GetHash(x0, x1)
 				if _, ex := tsHashes[hash]; ex {
 					y := tsHashes[hash]
@@ -656,6 +661,7 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 					if found {
 						exec++
 						outer = true
+						skip = true
 
 						sol := [2]int32{x0, x1}
 
@@ -665,7 +671,6 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 								g.RemoveEdge(e)
 							}
 						}
-						delete(tsHashes, hash)
 					}
 				} else {
 					tsHashes[hash] = x
