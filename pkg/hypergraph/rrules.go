@@ -627,11 +627,12 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 	}
 
 	exec := 0
-	tsHashes := make(map[string]int32)
-
+	
 	for outer := true; outer; {
 		outer = false
-
+		
+		tsHashes := make(map[string]map[int32]bool)
+		
 		for x := range g.Vertices {
 			skip := false
 			twoSumAll(g.AdjCount[x], int32(g.Deg(x)), func(x0, x1 int32) {
@@ -641,39 +642,43 @@ func ApproxDoubleVertexDominationRule5(g *HyperGraph, c map[int32]bool) int {
 
 				hash := GetHash(x0, x1)
 				if _, ex := tsHashes[hash]; ex {
-					y := tsHashes[hash]
-					if y == x {
-						return
-					}
-					h1 := GetHash(x, y, x0)
-					h2 := GetHash(x, y, x1)
-
-					found := false
-
-					for e := range g.IncMap[y] {
-						he := g.Edges[e].getHash()
-						if he == h1 || he == h2 {
-							found = true
-							break
+					for y := range tsHashes[hash] {
+						if y == x {
+							continue
 						}
-					}
+						h1 := GetHash(x, y, x0)
+						h2 := GetHash(x, y, x1)
 
-					if found {
-						exec++
-						outer = true
-						skip = true
+						found := false
 
-						sol := [2]int32{x0, x1}
-
-						for _, a := range sol {
-							c[a] = true
-							for e := range g.IncMap[a] {
-								g.RemoveEdge(e)
+						for e := range g.IncMap[y] {
+							he := g.Edges[e].getHash()
+							if he == h1 || he == h2 {
+								found = true
+								break
 							}
 						}
+
+						if found {
+							exec++
+							outer = true
+							skip = true
+
+							sol := [2]int32{x0, x1}
+
+							for _, a := range sol {
+								c[a] = true
+								for e := range g.IncMap[a] {
+									g.RemoveEdge(e)
+								}
+							}
+							return
+						}
+						tsHashes[hash][x] = true
 					}
 				} else {
-					tsHashes[hash] = x
+					tsHashes[hash] = make(map[int32]bool)
+					tsHashes[hash][x] = true
 				}
 			})
 		}
