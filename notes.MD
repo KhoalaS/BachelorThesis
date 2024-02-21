@@ -493,25 +493,19 @@ $$
 
 ### Approximative Double Vertex Domination Rule
 
-\todo{change to new Two-Sum algorithm description}
-
 -   approximative double vertex domination: Assume there is a hyperedge $e =
 \{x, y, a\}$ and another vertex $b$ such that, whenever $x$ or $y$ belong to some
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists one solution $sol = \{ z_0, z_1 \}$, such that  
-
+$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets if vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.\todo[backgroundcolor=green]{change to new Two-Sum algorithm description}
 
 \begin{lemma}
 Algorithm \ref{apdvdom} is correct.
 \end{lemma}
 
-_Proof_. 
-$$
-deg(v) \leq AdjCount[v][a] + AdjCount[v][b],\quad \text{for } v\in \{ x,y \}
-$$
-
+_Proof_.
+Let $G=(V,E)$ be a hypergraph. Let $x$ be the current vertex in the algorithm's iteration over $V$. If $T = \textsc{Two-SumAll}(AdjCount[x], deg(x))$ is empty, then $x$ will not be able to trigger a approximative double vertex domination situation. If $T$ is not empty, then we know that there exist  sets $\{ a,b \}$, such that all edges incident to $x$ either contain $a$ or $b$. If $tsHashes[\{ a,b \}]$ is empty, then there are currently no other vertices for which $\{ a,b \}$ is a \textsc{Two-Sum} solution. In that case we add $x$ to $tsHashes[\{ a,b \}]$. Otherwise there exist vertices $y$, such that $\{ a,b \}$ is a \textsc{Two-Sum} solution for $y$. All edges incident to $x$ and $y$ either contain $a$ or $b$. If for one of these vertices $y$ there exists a size three edge $\{ x,y,a \}$, or without loss of generality $\{ x,y,b \}$, then we found a approximative double vertex domination situation at $\{ x,y,a \}$ or $\{ x,y,b \}$ respectively. If none of these edges exist, then $x$ could still trigger another approximative double vertex situation with another vertex. Thus we need to add $x$ to $tsHashes[\{ a,b \}]$.
 $\square$
 
 $$
@@ -527,39 +521,42 @@ $exec \gets 0$\;
 $outer \gets true$\;
 \For{$outer$}{
     $outer \gets false$\;
-    $tsHashes \gets \texttt{map}[2^E]V$\;
+    $tsHashes \gets \texttt{map}[2^E]2^V$\;
 
     \For{$x \in V$}{
         \For{$sol \in \textnormal{\textsc{Two-SumAll}}(AdjCount[x], deg(x))$}{
             $\{ z_0, z_1 \} \gets sol$\;
-            \eIf{$\exists y \gets tsHashes[sol]$}{
-                \If{$y = x$}{
-                    \textbf{continue}\;
-                }
-                $f_0 \gets \{ x,y,z_0 \}$\;
-                $f_1 \gets \{ x,y,z_1 \}$\;
-
-                $found \gets false$\;
-                \For{$e \textnormal{ incident to }y$}{
-                    \If{$e=f_0 \textbf{ or } e=f_1$}{
-                        $found \gets true$\;
-                        \textbf{break}\;
+            \eIf{$tsHashes[sol] \neq \emptyset$}{
+                \For{$y \in tsHashes[sol]$}{
+                    \If{$y = x$}{
+                        \textbf{continue}\;
                     }
-                }
+                    $f_0 \gets \{ x,y,z_0 \}$\;
+                    $f_1 \gets \{ x,y,z_1 \}$\;
 
-                \If{found}{
-                    $exec\gets exec + 1$\;
-                    $outer\gets true$\;
-                    $C\gets C \cup sol$\;
-                    \For{$a \in sol$}{
-                        \For{$e \textnormal{ incident to } a$}{
-                            $E\gets E\setminus \{ e \}$\;
+                    $found \gets false$\;
+                    \For{$e \textnormal{ incident to }y$}{
+                        \If{$e=f_0 \textbf{ or } e=f_1$}{
+                            $found \gets true$\;
+                            \textbf{break}\;
                         }
                     }
-                    \textbf{break}\;
+
+                    \If{found}{
+                        $exec\gets exec + 1$\;
+                        $outer\gets true$\;
+                        $C\gets C \cup sol$\;
+                        \For{$a \in sol$}{
+                            \For{$e \textnormal{ incident to } a$}{
+                                $E\gets E\setminus \{ e \}$\;
+                            }
+                        }
+                        \textbf{break}\;
+                    }
+                    $tsHashes[sol] = tsHashes[sol] \cup \{ x \}$\;
                 }
             }{
-                $tsHashes[sol] = x$\;
+                $tsHashes[sol] = tsHashes[sol] \cup \{ x \}$\;
             }
         }
     }
@@ -571,7 +568,6 @@ $outer \gets true$\;
 \caption{Algorithm for exhaustive application of Approximative Double Vertex Domination Rule}
 \end{algorithm}
 $$
-\todo[backgroundcolor=green]{replace with new alg}
 
 ### Small Triangle Rule
 
@@ -777,7 +773,7 @@ We therefore propose a new approach, which involves the usage of a _vertex front
 
 We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
-We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices that were part of a modified or removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
+We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices adjacent to vertices in a modified/removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
 
 \todo[backgroundcolor=green]{add new Frontier section}
 
