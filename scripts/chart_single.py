@@ -56,7 +56,7 @@ for filename in os.listdir(str(args.folder)):
             continue
 
         if is_master_file:
-            rules = row[1:]
+            rules = row[1:-3]
         else:
             ratio = float(row[0])
             if ratio < min_ratio:
