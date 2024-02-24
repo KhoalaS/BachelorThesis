@@ -836,7 +836,7 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 Table: (Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; n=100) \label{dblp_with_edom}
 
-|        |       Ratio |       Tiny |       VDom |       EDom |     Small |    Tri |    ETri |      AVDom |    ADVDom |    SETwo |        F3 |   HittingSet |
+|        |       Ratio |       Tiny |         VD |         ED |     Small |    Tri |    ETri |        AVD |      ADVD |     SED2 |        F3 |   HittingSet |
 |:-------|------------:|-----------:|-----------:|-----------:|----------:|-------:|--------:|-----------:|----------:|---------:|----------:|-------------:|
 | median | 1.75946     | 18735.5    | 75990      | 44870      | 1372      | 3      | 546.5   | 37924.5    | 3621      | 26       | 2922      |  115650      |
 | std    | 0.000504795 |    30.3001 |    68.1996 |    60.3295 |   24.4289 | 0.6618 |  15.543 |    55.3195 |   37.5205 |  4.24096 |   19.8613 |      85.1649 |
@@ -850,12 +850,12 @@ Next we tested some variations of the algorithm. In our first test we disabled t
 
 Table: (Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; no edge domination rule; n=100) \label{dblp_noedom}
 
-|        |       Ratio |    Tiny |    VDom | EDom |   Small | Tri |    ETri |   AVDom | ADVDom |   SETwo |      F3 | HittingSet |
-| :----- | ----------: | ------: | ------: | ---: | ------: | --: | ------: | ------: | -----: | ------: | ------: | ---------: |
-| median |     1.75709 | 18856.5 | 76258.5 |    0 |   790.5 |   0 |   434.5 | 38194.5 | 3718.5 |      15 |  2961.5 |     114948 |
-| std    | 0.000543174 | 36.3495 | 78.0364 |    0 | 16.9971 |   0 | 14.9196 | 59.5428 | 37.314 | 3.30856 | 19.5745 |    78.1683 |
-| min    |       1.756 |   18744 |   76028 |    0 |     738 |   0 |     404 |   38071 |   3620 |       8 |    2910 |     114724 |
-| max    |     1.75875 |   18915 |   76402 |    0 |     828 |   0 |     473 |   38327 |   3791 |      22 |    3014 |     115157 |
+|        |       Ratio |       Tiny |         VD |   ED |    Small |   Tri |     ETri |        AVD |     ADVD |     SED2 |        F3 |   HittingSet |
+|:-------|------------:|-----------:|-----------:|-----:|---------:|------:|---------:|-----------:|---------:|---------:|----------:|-------------:|
+| median | 1.75709     | 18856.5    | 76258.5    |    0 | 790.5    |     0 | 434.5    | 38194.5    | 3718.5   | 15       | 2961.5    |  114948      |
+| std    | 0.000543174 |    36.3495 |    78.0364 |    0 |  16.9971 |     0 |  14.9196 |    59.5428 |   37.314 |  3.30856 |   19.5745 |      78.1683 |
+| min    | 1.756       | 18744      | 76028      |    0 | 738      |     0 | 404      | 38071      | 3620     |  8       | 2910      |  114724      |
+| max    | 1.75875     | 18915      | 76402      |    0 | 828      |     0 | 473      | 38327      | 3791     | 22       | 3014      |  115157      |
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxilliary graph $H$ will even worsen the execution time.
 
