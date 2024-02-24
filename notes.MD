@@ -553,14 +553,13 @@ $outer \gets true$\;
                         }
                         \textbf{break}\;
                     }
-                    $tsHashes[sol] = tsHashes[sol] \cup \{ x \}$\;
+                    $tsHashes[sol] \gets tsHashes[sol] \cup \{ x \}$\;
                 }
             }{
-                $tsHashes[sol] = tsHashes[sol] \cup \{ x \}$\;
+                $tsHashes[sol] \gets \{ x \}$\;
             }
         }
     }
-
 }
 
 \KwRet $exec$\;

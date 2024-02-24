@@ -101,6 +101,9 @@ func ThreeHS_2ApprGeneral(g *hypergraph.HyperGraph, c map[int32]bool, K int, exe
 
 func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
 
+	vSize := len(g.Vertices)
+	eSize := len(g.Edges)
+
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + "\n"
 
@@ -143,12 +146,15 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		msg = msg[:len(msg)-1] + "\n"
 		logWriter.WriteString(msg)
 	}
-	masterfile.WriteString(msg)
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
 	logWriter.Flush()
 	return execs
 }
 
 func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
+
+	vSize := len(g.Vertices)
+	eSize := len(g.Edges)
 
 	header := "Ratio;"
 	header += strings.Join(Labels, ";") + "\n"
@@ -167,7 +173,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
-			masterfile.WriteString(header)
+			masterfile.WriteString(header[0:len(header)-1])
+			masterfile.WriteString(";Vertices;Edges;HittingSet\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
@@ -244,7 +251,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		msg = msg[:len(msg)-1] + "\n"
 		logWriter.WriteString(msg)
 	}
-	masterfile.WriteString(msg)
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
 	logWriter.Flush()
 	return execs
 }

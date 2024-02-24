@@ -125,7 +125,6 @@ func main() {
 				execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
 			}
 		}
-
 		
 		pprof.StopCPUProfile()
 		fmt.Println(execs)
