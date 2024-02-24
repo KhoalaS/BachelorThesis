@@ -34,6 +34,7 @@ func main() {
 	frontier := flag.Bool("fr", false, "use frontier algorithm")
 	cvd := flag.Bool("cvd", false, "")
 	debug := flag.Bool("dbg", false, "")
+	tvdi := flag.String("tvdi", "", "Use graph file that is already a TVD instance")
 
 	flag.Parse()
 
@@ -72,7 +73,9 @@ func main() {
 				adjList[int32(a)][int32(b)] = true
 				adjList[int32(b)][int32(a)] = true
 			})
-		} else {
+		} else if flagPassed("tvdi") {
+			// pass
+		}else {
 			hypergraph.UniformERGraphCallback(*n, *p, *evr, 2, func(edge []int32) {
 				if _, ex := adjList[edge[0]]; !ex {
 					adjList[edge[0]] = make(map[int32]bool)
@@ -91,6 +94,10 @@ func main() {
 			fmt.Println("Start P3 detection and problem reduction...")
 			g = hypergraph.P3Detection(adjList)
 			fmt.Printf("Graph had %d many P3's\n", len(g.Edges))
+		}else if flagPassed("tvdi"){
+			fmt.Println("Read from TVD instance file...")
+			g = hypergraph.ReadFromFileSimple(*tvdi)
+			fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
 		}else{
 			fmt.Println("Start Triangle detection and problem reduction...")
 			g = hypergraph.TriangleDetection(adjList)
