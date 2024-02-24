@@ -834,7 +834,16 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a estimated approximation ratio of $\approx 1.758$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
+Table: (Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; n=100) \label{dblp_with_edom}
+
+|        |       Ratio |       Tiny |       VDom |       EDom |     Small |    Tri |    ETri |      AVDom |    ADVDom |    SETwo |        F3 |   HittingSet |
+|:-------|------------:|-----------:|-----------:|-----------:|----------:|-------:|--------:|-----------:|----------:|---------:|----------:|-------------:|
+| median | 1.75946     | 18735.5    | 75990      | 44870      | 1372      | 3      | 546.5   | 37924.5    | 3621      | 26       | 2922      |  115650      |
+| std    | 0.000504795 |    30.3001 |    68.1996 |    60.3295 |   24.4289 | 0.6618 |  15.543 |    55.3195 |   37.5205 |  4.24096 |   19.8613 |      85.1649 |
+| min    | 1.75778     | 18653      | 75829      | 44753      | 1318      | 1      | 510     | 37804      | 3534      | 16       | 2872      |  115403      |
+| max    | 1.7606      | 18839      | 76195      | 45127      | 1430      | 4      | 588     | 38083      | 3703      | 38       | 2969      |  115836      |
+
+The algorithm achieved a median estimated approximation ratio of $\approx 1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
 \todo[backgroundcolor=green]{update the ratio and chart with frontier algorithm}
 
 Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions.
