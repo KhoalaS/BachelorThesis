@@ -839,28 +839,46 @@ The algorithm achieved a median estimated approximation ratio of $\approx 1.759$
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxilliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions.\todo[backgroundcolor=green]{add new tables with dblp stats}
+Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean,median,minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. \todo[backgroundcolor=green]{add new tables with dblp stats}
 
-Table: (Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; n=100) \label{dblp_with_edom}
+\begin{table}[t]
+\begin{minipage}[c]{0.45\textwidth}
+\centering
+    \begin{tabular}{lrr}
+        \hline
+        & Ratio & $|C|$ \\
+        \hline
+        mean & 1.7595 & 115652.28 \\
+        std & 0.0005 & 85.16 \\
+        min & 1.7578 & 115403.00 \\
+        median & 1.7595 & 115650.00 \\
+        max & 1.7606 & 115836.00 \\
+        \hline
+    \end{tabular}
+\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+\label{dblp_with_edom}
+\end{minipage}
+\hspace{0.1\textwidth}
+\begin{minipage}[c]{0.45\textwidth}
+    \centering
+        \begin{tabular}{lrr}
+        \hline
+        & Ratio & $|C|$ \\
+        \hline
+        mean & 1.7572 & 114953.68 \\
+        std & 0.0005 & 78.17 \\
+        min & 1.7560 & 114724.00 \\
+        median & 1.7571 & 114948.50 \\
+        max & 1.7587 & 115157.00 \\
+        \hline
+        \end{tabular}
+    \caption{Same as Table 1, but no edge domination rule; $n=100$}
+    \label{dblp_noedom}
+\end{minipage}
 
-|        |       Ratio |       Tiny |         VD |         ED |     Small |    Tri |    ETri |        AVD |      ADVD |     SED2 |        F3 |   HittingSet |
-|:-------|------------:|-----------:|-----------:|-----------:|----------:|-------:|--------:|-----------:|----------:|---------:|----------:|-------------:|
-| median | 1.75946     | 18735.5    | 75990      | 44870      | 1372      | 3      | 546.5   | 37924.5    | 3621      | 26       | 2922      |  115650      |
-| std    | 0.00050 |    30.30 |    68.20 |    60.33 |   24.43 | 0.66 |  15.54 |    55.32 |   37.52 |  4.24 |   19.86 |      85.16 |
-| min    | 1.75778     | 18653      | 75829      | 44753      | 1318      | 1      | 510     | 37804      | 3534      | 16       | 2872      |  115403      |
-| max    | 1.7606      | 18839      | 76195      | 45127      | 1430      | 4      | 588     | 38083      | 3703      | 38       | 2969      |  115836      |
-
-Table: (Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; no edge domination rule; n=100) \label{dblp_noedom}
-
-|        |       Ratio |       Tiny |         VD |   ED |    Small |   Tri |     ETri |        AVD |     ADVD |     SED2 |        F3 |   HittingSet |
-|:-------|------------:|-----------:|-----------:|-----:|---------:|------:|---------:|-----------:|---------:|---------:|----------:|-------------:|
-| median | 1.75709     | 18856.5    | 76258.5    |    0 | 790.5    |     0 | 434.5    | 38194.5    | 3718.5   | 15       | 2961.5    |  114948      |
-| std    | 0.00054 |    36.35 |    78.04 |    0 |  17.00 |     0 |  14.92 |    59.54 |   37.31 |  3.31 |   19.57 |      78.17 |
-| min    | 1.756       | 18744      | 76028      |    0 | 738      |     0 | 404      | 38071      | 3620     |  8       | 2910      |  114724      |
-| max    | 1.75875     | 18915      | 76402      |    0 | 828      |     0 | 473      | 38327      | 3791     | 22       | 3014      |  115157      |
+\end{table}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
-
 
 ![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
 
