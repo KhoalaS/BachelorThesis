@@ -393,7 +393,8 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		kEdgeDom := hypergraph.EdgeDominationRule(g)
+		//kEdgeDom := hypergraph.EdgeDominationRule(g)
+		kEdgeDom := 0
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 
@@ -443,10 +444,67 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 		}
 	}
 
-	fmt.Println(execs)
+	return execs
+}
+
+func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) map[string]int {
+
+	for {
+		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+		//kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
+		kEdgeDom := 0
+		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
+		kTiny += hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+
+		kApVertDom := 0
+		kApDoubleVertDom := 0
+		kSmallEdgeDegTwo := 0
+		kTri := 0
+		kExtTri := 0
+		kSmall := 0
+
+		perm := make([]int, 6)
+		for i := range perm {
+			perm[i] = i
+		}
+
+		Shuffle[int](perm)
+
+		for i := 0; i < 6; i++ {
+			switch perm[i] {
+			case 0:
+				kApVertDom = hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
+			case 1:
+				kApDoubleVertDom = hypergraph.S_ApproxDoubleVertexDominationRule2(gf, g, c, expand)
+			case 2:
+				kSmallEdgeDegTwo = hypergraph.S_SmallEdgeDegreeTwoRule(gf, g, c, expand)
+			case 3:
+				kTri = hypergraph.S_SmallTriangleRule(gf, g, c, expand)
+			case 4:
+				kExtTri = hypergraph.S_ExtendedTriangleRule(gf, g, c, expand)
+			case 5:
+				kSmall = hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
+			}
+		}
+
+		execs["kTiny"] += kTiny
+		execs["kVertDom"] += kVertDom
+		execs["kEdgeDom"] += kEdgeDom
+		execs["kTri"] += kTri
+		execs["kExtTri"] += kExtTri
+		execs["kSmall"] += kSmall
+		execs["kApVertDom"] += kApVertDom
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+
+		if kTiny+kEdgeDom+kVertDom+kTri+kSmall+kApVertDom+kApDoubleVertDom+kSmallEdgeDegTwo+kExtTri == 0 {
+			break
+		}
+	}
 
 	return execs
 }
+
 
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
