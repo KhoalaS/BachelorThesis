@@ -173,7 +173,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
-			masterfile.WriteString(header[0:len(header)-1])
+			masterfile.WriteString(header[0 : len(header)-1])
 			masterfile.WriteString(";Vertices;Edges;HittingSet\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
@@ -392,11 +392,6 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 	}
 
 	for {
-		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		//kEdgeDom := hypergraph.EdgeDominationRule(g)
-		kEdgeDom := 0
-		kVertDom := hypergraph.VertexDominationRule(g, c)
-		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 
 		kApVertDom := 0
 		kApDoubleVertDom := 0
@@ -404,15 +399,18 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 		kTri := 0
 		kExtTri := 0
 		kSmall := 0
+		kVertDom := 0
+		kTiny := 0
+		kEdgeDom := 0
 
-		perm := make([]int, 6)
+		perm := make([]int, 9)
 		for i := range perm {
 			perm[i] = i
 		}
 
 		Shuffle[int](perm)
 
-		for i := 0; i < 6; i++ {
+		for i := 0; i < 9; i++ {
 			switch perm[i] {
 			case 0:
 				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c)
@@ -426,6 +424,12 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 				kExtTri = hypergraph.ExtendedTriangleRule(g, c)
 			case 5:
 				kSmall = hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
+			case 6:
+				kVertDom = hypergraph.VertexDominationRule(g, c)
+			case 7:
+				kTiny = hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+			case 8:
+				kEdgeDom = hypergraph.EdgeDominationRule(g)
 			}
 		}
 
@@ -450,11 +454,6 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) map[string]int {
 
 	for {
-		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
-		//kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
-		kEdgeDom := 0
-		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
-		kTiny += hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
 
 		kApVertDom := 0
 		kApDoubleVertDom := 0
@@ -462,15 +461,18 @@ func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph,
 		kTri := 0
 		kExtTri := 0
 		kSmall := 0
+		kVertDom := 0
+		kTiny := 0
+		kEdgeDom := 0
 
-		perm := make([]int, 6)
+		perm := make([]int, 9)
 		for i := range perm {
 			perm[i] = i
 		}
 
 		Shuffle[int](perm)
 
-		for i := 0; i < 6; i++ {
+		for i := 0; i < 9; i++ {
 			switch perm[i] {
 			case 0:
 				kApVertDom = hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
@@ -484,6 +486,13 @@ func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph,
 				kExtTri = hypergraph.S_ExtendedTriangleRule(gf, g, c, expand)
 			case 5:
 				kSmall = hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
+			case 6:
+				kVertDom = hypergraph.S_VertexDominationRule(gf, g, c, expand)
+			case 7:
+				kTiny = hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+			case 8:
+				kEdgeDom = hypergraph.S_EdgeDominationRule(gf, g, expand)
+
 			}
 		}
 
@@ -504,7 +513,6 @@ func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph,
 
 	return execs
 }
-
 
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
