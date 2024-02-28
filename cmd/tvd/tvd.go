@@ -35,11 +35,12 @@ func main() {
 	cvd := flag.Bool("cvd", false, "")
 	debug := flag.Bool("dbg", false, "")
 	tvdi := flag.String("tvdi", "", "Use graph file that is already a TVD instance")
+	gr := flag.Bool("gr", false, "")
 
 	flag.Parse()
 
 	hypergraph.Logging = *debug
-	
+
 	adjList := make(map[int32]map[int32]bool)
 
 	graphtype := "CUSTOM"
@@ -75,7 +76,7 @@ func main() {
 			})
 		} else if flagPassed("tvdi") {
 			// pass
-		}else {
+		} else {
 			hypergraph.UniformERGraphCallback(*n, *p, *evr, 2, func(edge []int32) {
 				if _, ex := adjList[edge[0]]; !ex {
 					adjList[edge[0]] = make(map[int32]bool)
@@ -94,11 +95,11 @@ func main() {
 			fmt.Println("Start P3 detection and problem reduction...")
 			g = hypergraph.P3Detection(adjList)
 			fmt.Printf("Graph had %d many P3's\n", len(g.Edges))
-		}else if flagPassed("tvdi"){
+		} else if flagPassed("tvdi") {
 			fmt.Println("Read from TVD instance file...")
 			g = hypergraph.ReadFromFileSimple(*tvdi)
 			fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
-		}else{
+		} else {
 			fmt.Println("Start Triangle detection and problem reduction...")
 			g = hypergraph.TriangleDetection(adjList)
 			fmt.Printf("Graph had %d many triangles\n", len(g.Edges))
@@ -119,20 +120,22 @@ func main() {
 
 		fmt.Println("Start 3-HS algorithm...")
 		defer hypergraph.LogTime(time.Now(), "Main Algorithm")
-		if *frontier{
+		if *frontier {
 			if flagPassed("log") {
 				execs = alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
 			} else {
 				execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
 			}
-		}else{
+		} else {
 			if flagPassed("log") {
 				execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
+			} else if *gr {
+				alg.GreedyHighDeg(g, c)
 			} else {
 				execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
 			}
 		}
-		
+
 		pprof.StopCPUProfile()
 		fmt.Println(execs)
 		fmt.Printf("Found a hitting-set with size %d\n", len(c))

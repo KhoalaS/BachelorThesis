@@ -514,6 +514,28 @@ func ApplyRulesFrontierRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph,
 	return execs
 }
 
+func GreedyHighDeg(g *hypergraph.HyperGraph, c map[int32]bool) {
+
+	for len(g.Edges) > 0 {
+		max := 0
+		var remVertex int32 = -1
+
+		for v := range g.Vertices {
+			d := g.Deg(v)
+			if d > max {
+				max = d
+				remVertex = v
+			}
+		}
+
+		for e := range g.IncMap[remVertex] {
+			g.RemoveEdge(e)
+		}
+		c[remVertex] = true
+		fmt.Println(len(g.Edges))
+	}
+}
+
 func PotentialTriangle(g *hypergraph.HyperGraph) (int32, bool) {
 	// e = {x, y, z}, f = {x, y, w}, g = {x, w, z}
 	// f,g have to share a vertex

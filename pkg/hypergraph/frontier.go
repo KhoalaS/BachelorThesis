@@ -1,6 +1,6 @@
 package hypergraph
 
-func ExpandFrontier(g *HyperGraph, level int, expand map[int32]bool) *HyperGraph{
+func ExpandFrontier(g *HyperGraph, level int, expand map[int32]bool) *HyperGraph {
 	gNew := NewHyperGraph()
 
 	for i := 0; i < level; i++ {
@@ -28,7 +28,7 @@ func ExpandFrontier(g *HyperGraph, level int, expand map[int32]bool) *HyperGraph
 	return gNew
 }
 
-func F3_ExpandFrontier(g *HyperGraph, remId int32, level int) *HyperGraph{
+func F3_ExpandFrontier(g *HyperGraph, remId int32, level int) *HyperGraph {
 	frontier := make(map[int32]bool)
 	remEdge := g.Edges[remId]
 
