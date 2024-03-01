@@ -247,16 +247,16 @@ The proposed rules are meant to be applied exhaustively. A one to one implementa
 
 The general outline of an algorithm will look as follows,
 
-1. Construct auxilliary data structures that are used to find parts of the graph, for which the rule can be applied.
+1. Construct auxiliary data structures that are used to find parts of the graph, for which the rule can be applied.
 2. As long as we can apply rules do:
 
-    Iterate over the auxilliary data structure, or the vertices/edges themselves.
+    Iterate over the auxiliary data structure, or the vertices/edges themselves.
 
     - Identify targets of the rule.
     - Mutate the graph according to the rule.
-    - Mutate the auxilliary data structure according to the rule.
+    - Mutate the auxiliary data structure according to the rule.
 
-This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxilliary data structure at the same time.
+This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time.
 
 ## Algorithms
 
@@ -837,46 +837,56 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 The algorithm achieved a median estimated approximation ratio of $\approx 1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
 \todo[backgroundcolor=green]{update the ratio and chart with frontier algorithm}
 
-This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxilliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxilliary graph $H$ will even worsen the execution time.\todo{needs proof?}
+This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean,median,minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. \todo[backgroundcolor=green]{add new tables with dblp stats}
+Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions.  \todo[backgroundcolor=green]{add possible explanation for less small edge}
+
+|             | Tiny | VDom | EDom |  Small |  Tri |   ETri |  AVD | ADVD |   SED2 |   F3 |
+| ----------: | ---: | ---: | ---: | -----: | ---: | -----: | ---: | ---: | -----: | ---: |
+| change [\%] | 0.63 | 0.35 | -100 | -42.36 | -100 | -20.47 | 0.69 | 2.74 | -43.00 | 1.42 |
+
+Table: Number of rule executions, percent change after not using edge domination \label{rules_diff}
+
+This leads us to our next experiment. What happens if we do not use edge domination and the small edge rule? 
 
 \begin{table}[t]
 \begin{minipage}[c]{0.45\textwidth}
 \centering
-    \begin{tabular}{lrr}
-        \hline
-        & Ratio & $|C|$ \\
-        \hline
-        mean & 1.7595 & 115652.28 \\
-        std & 0.0005 & 85.16 \\
-        min & 1.7578 & 115403.00 \\
-        median & 1.7595 & 115650.00 \\
-        max & 1.7606 & 115836.00 \\
-        \hline
-    \end{tabular}
+\begin{tabular}{lrr}
+\hline
+& Ratio & $|C|$ \\
+\hline
+mean & 1.7595 & 115652.28 \\
+std & 0.0005 & 85.16 \\
+min & 1.7578 & 115403.00 \\
+median & 1.7595 & 115650.00 \\
+max & 1.7606 & 115836.00 \\
+\hline
+\end{tabular}
 \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
 \label{dblp_with_edom}
 \end{minipage}
 \hspace{0.1\textwidth}
 \begin{minipage}[c]{0.45\textwidth}
-    \centering
-        \begin{tabular}{lrr}
-        \hline
-        & Ratio & $|C|$ \\
-        \hline
-        mean & 1.7572 & 114953.68 \\
-        std & 0.0005 & 78.17 \\
-        min & 1.7560 & 114724.00 \\
-        median & 1.7571 & 114948.50 \\
-        max & 1.7587 & 115157.00 \\
-        \hline
-        \end{tabular}
-    \caption{Same as Table 1, but no edge domination rule; $n=100$}
-    \label{dblp_noedom}
+\centering
+\begin{tabular}{lrr}
+\hline
+& Ratio & $|C|$ \\
+\hline
+mean & 1.7572 & 114953.68 \\
+std & 0.0005 & 78.17 \\
+min & 1.7560 & 114724.00 \\
+median & 1.7571 & 114948.50 \\
+max & 1.7587 & 115157.00 \\
+\hline
+\end{tabular}
+\caption{Same as Table 1, but no edge domination rule; $n=100$}
+\label{dblp_noedom}
 \end{minipage}
 
 \end{table}
+
+
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
@@ -913,7 +923,7 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 If our problem instance is simple, we can solve it in polynomial time using an edge cover algorithm for standard graphs. We transform the hypergraph of our instance to a standard graph as follows:
 
 -   Let $v$ be a hypergraph vertex with $\delta(v)=2$ and $e_0, e_1$ be the two edges that $v$ is incident to.
--   We then add two vertices to the auxilliary graph identified by $e_0$ and $e_1$. At last we add an edge $\{e_0, e_1\}$ identified by $v$.
+-   We then add two vertices to the auxiliary graph identified by $e_0$ and $e_1$. At last we add an edge $\{e_0, e_1\}$ identified by $v$.
 
 ## Possible Optimizations
 
