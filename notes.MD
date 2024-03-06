@@ -35,11 +35,7 @@ type Edge struct {
 }
 ```
 
-The $\texttt{Edge}$ datatype has one field. The field $\texttt{v}$ is a map with keys of type $\texttt{int32}$ and values of type $\texttt{bool}$.
-
-When working with the endpoints of an edge, we are usually not interested in the associated values, since we never mutate the edges.
-
-This simulates a _Set_ datatype while allowing faster access times than simple arrays/slices.
+The $\texttt{Edge}$ datatype has one field. The field $\texttt{v}$ is a map with keys of type $\texttt{int32}$ and values of type $\texttt{bool}$. When working with the endpoints of an edge, we are usually not interested in the associated values, since we never mutate the edges. This simulates a _Set_ datatype while allowing faster access times than simple arrays/slices.
 
 ## Hypergraph
 
@@ -53,18 +49,7 @@ type HyperGraph struct {
 }
 ```
 
-\todo[backgroundcolor=green]{add new AdjCount field}
-
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively.
-
-We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type.
-
-The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges.
-
-The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map.
-
-And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
-\todo[backgroundcolor=green]{add AdjCount explanation}
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
 
 # Misc. Algorithms/Utilities
 
@@ -76,9 +61,7 @@ func getHash(arr []int32) string
 
 Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
 
-We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter $"|"$, returning a string of the form $"|id_0|id_1|\dots|id_n|"$.
-
-Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
+We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter $"|"$, returning a string of the form $"|id_0|id_1|\dots|id_n|"$. Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
 
 ## Compute Subsets of Size $s$
 
@@ -129,9 +112,7 @@ The algorithm is pretty simple. For every element $x$ in $\texttt{arr}$, we eith
 1. If $\texttt{index} = \texttt{s}$, then we copy the contents of $\texttt{data}$ into an array and add it to $\texttt{subsets}$.
 2. If $\texttt{i} \geq \texttt{n}$, then we have considered all elements for the current path of the search tree.
 
-Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists.
-
-For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $\texttt{subsets}$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
+Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $\texttt{subsets}$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
@@ -186,11 +167,7 @@ Let us explain the arguments first:
 -   $\texttt{m}$ is the amount of edges the graph will at most have
 -   $\texttt{tinyEdges}$ when $\texttt{false}$ indicates that we do not want to generate edges of size 1.
 
-We use a very naive approach for generating (pseudo-)random graphs.
-
-We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph.
-
-We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
+We use a very naive approach for generating (pseudo-)random graphs. We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
 
 $$
 size(\texttt{r})=
@@ -201,13 +178,9 @@ size(\texttt{r})=
 \end{cases}
 $$
 
-We then store the result of $size(\texttt{r})$ in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. We then check if an edge containing these vertices already exists. If it does not exist we add it to our graph.
+The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph. 
 
-That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges.
-
-Using an established model like the [Erdős–Rényi Model](https://www.semanticscholar.org/paper/On-random-graphs.-I.-Erdos-R%C3%A9nyi/e77e986f717b353329e2202c384c5499191a0646) would be more favourable. But since we just needed something tangible to start testing, this "model" will suffice for the time being.
-
-One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers.
+That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers.
 
 ## Preferential Attachment Hypergraph Model
 
@@ -237,9 +210,7 @@ The ususal signature of a reduction rule looks as follows:
 func NameRule(g HyperGraph, c map[int32]bool) int32
 ```
 
-We take both a \texttt{HyperGraph} struct \texttt{g} and a _Set_ \texttt{c} as arguments and mutate them. We then return the number of rule executions.
-
-We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
+We take both a \texttt{HyperGraph} struct \texttt{g} and a _Set_ \texttt{c} as arguments and mutate them. We then return the number of rule executions. We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
 
 ## Executions
 
@@ -425,8 +396,6 @@ $$
 
 ### Approximative Vertex Domination Rule
 
-\todo[backgroundcolor=green]{remove explicit AdjCount generation, use the one provided by the graph struct}
-
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
 $O(|V|\cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
@@ -498,7 +467,7 @@ $$
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets if vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.\todo[backgroundcolor=green]{change to new Two-Sum algorithm description}
+$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets if vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.
 
 \begin{lemma}
 Algorithm \ref{apdvdom} is correct.
@@ -645,8 +614,6 @@ $$
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
 
-\todo[backgroundcolor=green]{add algorithm for SmallEdgeDeg2}
-
 $$
 \begin{algorithm}[H]
 \nllabel{smallEdgeDegTwo}
@@ -774,8 +741,6 @@ We first apply all reduction rules exhaustively for the entire graph $G$. If the
 
 We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices adjacent to vertices in a modified/removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
 
-\todo[backgroundcolor=green]{add new Frontier section}
-
 $$
 \begin{algorithm}[H]
 \nllabel{3hs_frontier}
@@ -835,58 +800,79 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
 The algorithm achieved a median estimated approximation ratio of $\approx 1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
-\todo[backgroundcolor=green]{update the ratio and chart with frontier algorithm}
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions.  \todo[backgroundcolor=green]{add possible explanation for less small edge}
-
-|             | Tiny | VDom | EDom |  Small |  Tri |   ETri |  AVD | ADVD |   SED2 |   F3 |
-| ----------: | ---: | ---: | ---: | -----: | ---: | -----: | ---: | ---: | -----: | ---: |
-| change [\%] | 0.63 | 0.35 | -100 | -42.36 | -100 | -20.47 | 0.69 | 2.74 | -43.00 | 1.42 |
-
-Table: Number of rule executions, percent change after not using edge domination \label{rules_diff}
-
-This leads us to our next experiment. What happens if we do not use edge domination and the small edge rule? 
+Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
 
 \begin{table}[t]
-\begin{minipage}[c]{0.45\textwidth}
 \centering
+\caption{Number of rule executions, percent change of mean after not using some rules }
+\label{rules_diff_noedom}
+\begin{tabular}{l|rrrrrrrrrr}
+\toprule
+rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+\midrule
+EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
+EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This leads us to our next experiment. What happens if we do not use edge domination and the small edge rule? All the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling edge domination. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge rule by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. 
+
+\begin{table}[t]
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
 \begin{tabular}{lrr}
-\hline
+\toprule
 & Ratio & $|C|$ \\
-\hline
+\midrule
 mean & 1.7595 & 115652.28 \\
 std & 0.0005 & 85.16 \\
 min & 1.7578 & 115403.00 \\
 median & 1.7595 & 115650.00 \\
 max & 1.7606 & 115836.00 \\
-\hline
+\bottomrule
 \end{tabular}
-\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
 \label{dblp_with_edom}
 \end{minipage}
-\hspace{0.1\textwidth}
-\begin{minipage}[c]{0.45\textwidth}
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
 \centering
+\caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
 \begin{tabular}{lrr}
-\hline
+\toprule
 & Ratio & $|C|$ \\
-\hline
+\midrule
 mean & 1.7572 & 114953.68 \\
 std & 0.0005 & 78.17 \\
 min & 1.7560 & 114724.00 \\
 median & 1.7571 & 114948.50 \\
 max & 1.7587 & 115157.00 \\
-\hline
+\bottomrule
 \end{tabular}
-\caption{Same as Table 1, but no edge domination rule; $n=100$}
 \label{dblp_noedom}
 \end{minipage}
-
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7451 & 114197.28 \\
+std & 0.0007 & 82.84 \\
+min & 1.7435 & 113960.00 \\
+median & 1.7452 & 114202.50 \\
+max & 1.7472 & 114386.00 \\
+\bottomrule
+\end{tabular}
+\label{dblp_noedomsmall}
+\end{minipage}
 \end{table}
-
-
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
