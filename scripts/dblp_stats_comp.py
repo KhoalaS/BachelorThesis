@@ -58,7 +58,7 @@ for rule, short in rule_names.items():
     vals_diff.append(d)
 
 diff_df = pd.DataFrame([vals_diff], columns=short_labels)
-diff_table = diff_df.to_markdown()
+diff_table = diff_df.to_latex()
 diff_out = open("./out/diff_table.md", "w+")
 diff_out.write(diff_table)
 
