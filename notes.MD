@@ -373,7 +373,7 @@ $outer \gets true$\;
     \For{$v \in V$}{
         $dom \gets false$\;
         \For{$(\_, val) \in AdjCount[v]$}{
-            \If{$val = vDeg[v]$}{
+            \If{$val = deg(v)$}{
                 $dom = true$\;
                 $\textbf{break}$\;
             }
@@ -403,7 +403,7 @@ $O(|V|\cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at firs
 We start by iterating other the $AdjCount$ map of the graph, refering to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
 
 $$
-AdjCount[v][a] + AdjCount[v][b] = vDeg[v]+1
+AdjCount[v][a] + AdjCount[v][b] = deg(v)+1
 $$
 
 If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds that, either $a\in f$ or $b\in f$.
