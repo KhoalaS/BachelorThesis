@@ -638,6 +638,17 @@ func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 	return F3RuleDetect(g)
 }
 
+func F2Detect(g *HyperGraph) int32 {
+	var rem int32 = -1
+	for eId, e := range g.Edges {
+		if len(e.V) == 2 {
+			rem = eId
+			break
+		}
+	}
+	return rem
+}
+
 func F3RuleDetect(g *HyperGraph) int32 {
 	s3Arr := make([]int32, len(g.Edges))
 

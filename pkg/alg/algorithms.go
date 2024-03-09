@@ -340,10 +340,12 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 			continue
 		}
 
+		isSmall := false
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
 			fmt.Println("Could not find size 3 edge")
-			continue
+			e = hypergraph.F2Detect(g)
+			isSmall = true
 		}
 
 		for v := range g.Edges[e].V {
@@ -351,7 +353,11 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 		}
 
 		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
-		execs["kFallback"] += 1
+		if isSmall {
+			execs["kSmall"] += 1
+		}else{
+			execs["kFallback"] += 1
+		}
 	}
 	return execs
 }
