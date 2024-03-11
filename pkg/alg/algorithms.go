@@ -356,7 +356,7 @@ func ApplyRulesRand(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 			case 0:
 				kApVertDom = hypergraph.ApproxVertexDominationRule(g, c)
 			case 1:
-				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule2(g, c)
+				kApDoubleVertDom = hypergraph.ApproxDoubleVertexDominationRule(g, c)
 			case 2:
 				kSmallEdgeDegTwo = hypergraph.SmallEdgeDegreeTwoRule(g, c)
 			case 3:
