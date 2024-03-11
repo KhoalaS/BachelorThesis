@@ -124,7 +124,6 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 		}
 	}
 
-
 	delete(g.Edges, e)
 	return true
 }

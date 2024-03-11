@@ -14,7 +14,7 @@
 
 # Programming Language
 
-We chose the [Go](https://go.dev/) language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
 
 # Datastructures
 
@@ -326,7 +326,7 @@ Algorithm \ref{edom} finds all edges of G that are dominated, iff G has no size 
 
 _Proof._ Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. $\square$
 
-This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of $\approx 2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
+This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of approximatly $2$ on a six-core CPU an a pseudo-random graph with one million vertices and two million edges.
 
 ### Vertex Domination Rule
 
@@ -843,30 +843,16 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a median estimated approximation ratio of $\approx 1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
+The algorithm achieved a median estimated approximation ratio of approximatly $1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
 
 This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
+Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_stock} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
 
 \begin{table}[t]
+\begin{subtable}[b]{0.3\textwidth}
 \centering
-\caption{Number of rule executions, percent change of mean after not using some rules (DBLP) }
-\label{rules_diff_noedom}
-\begin{tabular}{l|rrrrrrrrrr}
-\toprule
-rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-\midrule
-EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
-EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[t]
-\begin{minipage}[b]{0.3\textwidth}
-\centering
-\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+\caption{unmodified algorithm}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -878,12 +864,12 @@ median & 1.7595 & 115650.00 \\
 max & 1.7606 & 115836.00 \\
 \bottomrule
 \end{tabular}
-\label{dblp_with_edom}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
+\label{dblp_stock}
+\end{subtable}
+\hfill
+\begin{subtable}[b]{0.3\textwidth}
 \centering
-\caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
+\caption{no edge domination rule}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -896,11 +882,11 @@ max & 1.7587 & 115157.00 \\
 \bottomrule
 \end{tabular}
 \label{dblp_noedom}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
+\end{subtable}
+\hfill
+\begin{subtable}[b]{0.3\textwidth}
 \centering
-\caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
+\caption{no edge domination and small edge rule}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -913,7 +899,25 @@ max & 1.7472 & 114386.00 \\
 \bottomrule
 \end{tabular}
 \label{dblp_noedomsmall}
-\end{minipage}
+\end{subtable}
+\newline
+\vspace{4mm}
+\newline
+\begin{subtable}[b]{\textwidth}
+\centering
+\caption{Number of rule executions, percent change of mean after not using some rules}
+\begin{tabular}{l|rrrrrrrrrr}
+\toprule
+rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+\midrule
+EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
+EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
+\bottomrule
+\end{tabular}
+\label{rules_diff_noedom}
+\end{subtable}
+\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+\label{stats_dblp}
 \end{table}
 
 This leads us to our next experiment. What happens if we do not use edge domination rule and the small edge rule? This obviously invalidates the correctness of the algorithm, since there exist structures made up of size two edges, that the algorithm can not target, for example a $C_n, n>3$. One possibility to uphold correctness is, to remove a size two edge, if the fallback rule can not find a size three edge. Nonetheless, all the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling the edge domination rule. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. The following possible interpretations of these observations are highly speculative.
@@ -930,22 +934,9 @@ This leads us to our next experiment. What happens if we do not use edge dominat
 To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. 
 
 \begin{table}[t]
+\begin{subtable}[b]{0.3\textwidth}
 \centering
-\caption{Number of rule executions, percent change of mean after not using some rules (Amazon) }
-\begin{tabular}{l|rrrrrrrrrr}
-\toprule
-rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-\midrule
-EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
-Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
-\bottomrule
-\end{tabular}
-\label{rules_diff_amazon}
-\end{table}
-
-\begin{table}
-\begin{minipage}[b]{0.3\textwidth}
-\centering
+\caption{unmodified}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -957,9 +948,11 @@ median & 1.7469 & 95249.50 \\
 max & 1.7477 & 95435.00 \\
 \bottomrule
 \end{tabular}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
+\label{amzn_stock}
+\end{subtable}
+\hfill
+\begin{subtable}[b]{0.3\textwidth}
+\caption{no edge domination rule}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -971,9 +964,11 @@ median & 1.7404 & 92621.00 \\
 max & 1.7413 & 92802.00 \\
 \bottomrule
 \end{tabular}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
+\label{amzn_noedom}
+\end{subtable}
+\hfill
+\begin{subtable}[b]{0.3\textwidth}
+\caption{no edge domination rule and small edge rule$(*)$}
 \begin{tabular}{lrr}
 \toprule
 & Ratio & $|C|$ \\
@@ -985,7 +980,26 @@ median & 1.6894 & 89953.00 \\
 max & 1.6905 & 90153.00 \\
 \bottomrule
 \end{tabular}
-\end{minipage}
+\label{amzn_noedomsmall}
+\end{subtable}
+\newline
+\vspace{4mm}
+\newline
+\begin{subtable}[b]{\linewidth}
+\centering
+\caption{Number of rule executions, percent change of mean after not using some rules}
+\begin{tabular}{l|rrrrrrrrrr}
+\toprule
+rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+\midrule
+EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
+Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
+\bottomrule
+\end{tabular}
+\label{rules_diff_amazon}
+\end{subtable}
+\caption{Results for \textsc{Triangle Vertex Deletion} on Amazon co-purchasing graph; $n=100$}
+\label{stats_amzn}
 \end{table}
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
