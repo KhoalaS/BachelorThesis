@@ -67,52 +67,20 @@ We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We th
 
 \todo{rewrite with new algorithm}
 
-```go
-func getSubsetsRecMain(arr *[]int32, i int, n int, s int, data *[]int32, index int, subsets *list.List)
-```
-
 Time Complexity: $2^n$
 
-Let us explain all the arguments first.
+$$
+\begin{algorithm}[H]
+\nllabel{label}
 
--   $\texttt{arr}$ is a pointer to an array. This array is basically the input set whose subsets we want to compute.
--   $\texttt{i}$ is an index over $\texttt{arr}$
--   $\texttt{n}$ is the size of $\texttt{arr}$.
--   $\texttt{s}$ is the size of the computed subsets
--   $\texttt{data}$ is a temporary array
--   $\texttt{index}$ is an index over $\texttt{data}$
--   $\texttt{subsets}$ is a list that will store all the subsets of size $\texttt{s}$ we find
+\KwIn{}
+\KwOut{}
+\BlankLine
 
-The implementation looks as follows.
+\caption{}
+\end{algorithm}
+$$
 
-```go
-func getSubsetsRecMain(arr []int32, i int, n int, s int, data []int32, index int, subsets *list.List) {
-	if index == s {
-		subset := make([]int32, s)
-		for j := 0; j < index; j++ {
-			subset[j] = data[j]
-		}
-		subsets.PushBack(subset)
-		return
-	}
-
-	if i >= n {
-		return
-	}
-
-	data[index] = arr[i]
-
-	getSubsetsRecMain(arr, i+1, n, s, data, index+1, subsets)
-	getSubsetsRecMain(arr, i+1, n, s, data, index, subsets)
-}
-```
-
-The algorithm is pretty simple. For every element $x$ in $\texttt{arr}$, we either put $x$ into $\texttt{data}$ or we do not. We have two base conditions.
-
-1. If $\texttt{index} = \texttt{s}$, then we copy the contents of $\texttt{data}$ into an array and add it to $\texttt{subsets}$.
-2. If $\texttt{i} \geq \texttt{n}$, then we have considered all elements for the current path of the search tree.
-
-Lists in Go are not very memory efficient, but since we exclusively call this function with $\texttt{arr}$ representing the vertices in an edge, the value $\texttt{n}$ is usually fixed at 3. The raised memory problems occur at values of $\texttt{n}\geq 10000$, thus justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $\texttt{subsets}$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
@@ -178,7 +146,7 @@ size(\texttt{r})=
 \end{cases}
 $$
 
-The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph. 
+The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph.
 
 That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers.
 
@@ -354,8 +322,8 @@ This also allows us to parallelize the main part of the algorithm, where we chec
     belongs to some hyperedge $e$, then $y$ also belongs to $e$. Then, we can simply
     delete $x$ from the vertex set and from all edges it belongs to.
 
-$O(|V| \cdot |E|)$ **Algorithm**
-A vertex $v$ is dominated, if one of the entries in $\texttt{AdjCount}[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
+$O(|V|^2 \cdot |E|)$ **Algorithm**
+A vertex $v$ is dominated, if one of the entries in $AdjCount[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
 \begin{algorithm}
@@ -398,7 +366,7 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|V|\cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
+$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
 We start by iterating other the $AdjCount$ map of the graph, refering to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
 
@@ -490,7 +458,7 @@ $exec \gets 0$\;
 $outer \gets true$\;
 \For{$outer$}{
     $outer \gets false$\;
-    $tsHashes \gets \texttt{map}[2^E]2^V$\;
+    $tsHashes \gets \texttt{map}[2^V]2^V$\;
 
     \For{$x \in V$}{
         \For{$sol \in \textnormal{\textsc{Two-SumAll}}(AdjCount[x], deg(x))$}{
@@ -795,8 +763,6 @@ $$
 
 We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
 
-![Triangle Vertex Deletion on a DBLP coauthor graph, the ratio was calculated after every recalculation of $H$](img/dblp_tvd_ratio.png)
-
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
 The algorithm achieved a median estimated approximation ratio of $\approx 1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
@@ -806,73 +772,143 @@ This speedup can be attributed to the fact, that the original coauthor graph exe
 Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
 
 \begin{table}[t]
-\centering
-\caption{Number of rule executions, percent change of mean after not using some rules }
-\label{rules_diff_noedom}
-\begin{tabular}{l|rrrrrrrrrr}
-\toprule
-rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-\midrule
-EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
-EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
-\bottomrule
-\end{tabular}
+    \centering
+    \caption{Number of rule executions, percent change of mean after not using some rules }
+    \label{rules_diff_noedom}
+    \begin{tabular}{l|rrrrrrrrrr}
+        \toprule
+        rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+        \midrule
+        EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
+        EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
-This leads us to our next experiment. What happens if we do not use edge domination and the small edge rule? All the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling edge domination. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge rule by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. 
 
 \begin{table}[t]
-\begin{minipage}[b]{0.3\textwidth}
-\centering
-\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7595 & 115652.28 \\
-std & 0.0005 & 85.16 \\
-min & 1.7578 & 115403.00 \\
-median & 1.7595 & 115650.00 \\
-max & 1.7606 & 115836.00 \\
-\bottomrule
-\end{tabular}
-\label{dblp_with_edom}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
-\centering
-\caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7572 & 114953.68 \\
-std & 0.0005 & 78.17 \\
-min & 1.7560 & 114724.00 \\
-median & 1.7571 & 114948.50 \\
-max & 1.7587 & 115157.00 \\
-\bottomrule
-\end{tabular}
-\label{dblp_noedom}
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[b]{0.3\textwidth}
-\centering
-\caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7451 & 114197.28 \\
-std & 0.0007 & 82.84 \\
-min & 1.7435 & 113960.00 \\
-median & 1.7452 & 114202.50 \\
-max & 1.7472 & 114386.00 \\
-\bottomrule
-\end{tabular}
-\label{dblp_noedomsmall}
-\end{minipage}
+    \begin{minipage}[b]{0.3\textwidth}
+    \centering
+    \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+        \begin{tabular}{lrr}
+            \toprule
+            & Ratio & $|C|$ \\
+            \midrule
+            mean & 1.7595 & 115652.28 \\
+            std & 0.0005 & 85.16 \\
+            min & 1.7578 & 115403.00 \\
+            median & 1.7595 & 115650.00 \\
+            max & 1.7606 & 115836.00 \\
+            \bottomrule
+        \end{tabular}
+    \label{dblp_with_edom}
+    \end{minipage}
+    \hspace{0.05\textwidth}
+    \begin{minipage}[b]{0.3\textwidth}
+        \centering
+        \caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
+        \begin{tabular}{lrr}
+            \toprule
+            & Ratio & $|C|$ \\
+            \midrule
+            mean & 1.7572 & 114953.68 \\
+            std & 0.0005 & 78.17 \\
+            min & 1.7560 & 114724.00 \\
+            median & 1.7571 & 114948.50 \\
+            max & 1.7587 & 115157.00 \\
+            \bottomrule
+        \end{tabular}
+        \label{dblp_noedom}
+    \end{minipage}
+    \hspace{0.05\textwidth}
+    \begin{minipage}[b]{0.3\textwidth}
+        \centering
+        \caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
+        \begin{tabular}{lrr}
+            \toprule
+            & Ratio & $|C|$ \\
+            \midrule
+            mean & 1.7451 & 114197.28 \\
+            std & 0.0007 & 82.84 \\
+            min & 1.7435 & 113960.00 \\
+            median & 1.7452 & 114202.50 \\
+            max & 1.7472 & 114386.00 \\
+            \bottomrule
+        \end{tabular}
+        \label{dblp_noedomsmall}
+    \end{minipage}
 \end{table}
+
+This leads us to our next experiment. What happens if we do not use edge domination rule and the small edge rule? This obviously invalidates the correctness of the algorithm, since there exist structures made up of size two edges, that the algorithm can not target, for example a $C_n, n>3$. One possibility to uphold correctness is, to remove a size two edge, if the fallback rule can not find a size three edge. Nonetheless, all the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling the edge domination rule. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. The following possible interpretations of these observations are highly speculative.
+
+-   **failed cascading**: For example, let $G=(V,E)$ be a hypergraph and $e\in E$ be a size two edge. Let us assume, that a rule $R_1$ that gets executed after a rule $R_0$, will make rule $R_1$ applicable, such that $e$ will be removed. Since we did not go back and recheck if $R_1$ can be applied again, the small edge rule will remove $e$.
+-   **preemptive removal**: What if not removing a size two edge, makes a vertex domiantion type rule possible at some point in time, during the algorithms execution? Another possibility is, that a better rule will remove the edge at some point anyway. Thus removing the edge is not necessary in the first place.
+
+Both 
+
+### Amazon Product Co-Purchasing Graph
+
+To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. Both base graphs have around the same number of vertices and edges, but their TVD representation differs. The Amazon graph only has 667129 many triangles. 
+
+\begin{table}[t]
+    \centering
+    \caption{Number of rule executions, percent change of mean after not using some rules }
+    \begin{tabular}{l|rrrrrrrrrr}
+        \toprule
+        rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+        \midrule
+        EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
+        Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
+        \bottomrule
+    \end{tabular}
+    \label{rules_diff_amazon}
+\end{table}
+
+\begin{table}
+    \begin{minipage}[b]{0.3\textwidth}
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+         & Ratio & $|C|$ \\
+        \midrule
+        mean & 1.7469 & 95252.10 \\
+        std & 0.0003 & 74.38 \\
+        min & 1.7460 & 95081.00 \\
+        median & 1.7469 & 95249.50 \\
+        max & 1.7477 & 95435.00 \\
+        \bottomrule
+    \end{tabular}
+    \end{minipage}
+    \hspace{0.05\textwidth}
+    \begin{minipage}[b]{0.3\textwidth}
+        \begin{tabular}{lrr}
+            \toprule
+             & Ratio & $|C|$ \\
+            \midrule
+            mean & 1.7404 & 92614.51 \\
+            std & 0.0003 & 80.23 \\
+            min & 1.7397 & 92382.00 \\
+            median & 1.7404 & 92621.00 \\
+            max & 1.7413 & 92802.00 \\
+            \bottomrule
+        \end{tabular}
+    \end{minipage}
+    \hspace{0.05\textwidth}
+    \begin{minipage}[b]{0.3\textwidth}
+        \begin{tabular}{lrr}
+            \toprule
+             & Ratio & $|C|$ \\
+            \midrule
+            mean & 1.6894 & 89951.35 \\
+            std & 0.0005 & 83.60 \\
+            min & 1.6876 & 89742.00 \\
+            median & 1.6894 & 89953.00 \\
+            max & 1.6905 & 90153.00 \\
+            \bottomrule
+        \end{tabular}
+    \end{minipage}
+\end{table}
+
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
