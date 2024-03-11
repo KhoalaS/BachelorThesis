@@ -936,21 +936,4 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
 
-# Branching Algorithm
-
-## Potential Triangle Siutation
-
-## Edge-Cover
-
-If our problem instance is simple, we can solve it in polynomial time using an edge cover algorithm for standard graphs. We transform the hypergraph of our instance to a standard graph as follows:
-
--   Let $v$ be a hypergraph vertex with $\delta(v)=2$ and $e_0, e_1$ be the two edges that $v$ is incident to.
--   We then add two vertices to the auxiliary graph identified by $e_0$ and $e_1$. At last we add an edge $\{e_0, e_1\}$ identified by $v$.
-
-## Possible Optimizations
-
-Right now we sometimes use the Go $\texttt{apppend}$ function, to add elements to a slice. Calls to $\texttt{apppend}$ are more expensive than an ordinary assignment to a fixed size slice.
-
-Using fixed size slices could improve performance slightly in cases where we know the maximum amount of elements we will add to a slice.
-
 # References

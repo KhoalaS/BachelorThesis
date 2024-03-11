@@ -124,7 +124,7 @@ func TestApproxDoubleVertexDominationRule(t *testing.T) {
 	g.AddEdge(0, 3)
 	g.AddEdge(1, 3)
 
-	ApproxDoubleVertexDominationRule5(g, c)
+	ApproxDoubleVertexDominationRule(g, c)
 	assert.Equal(2, len(c))
 	assert.Equal(0, len(g.Vertices))
 	assert.Equal(0, len(g.IncMap))
@@ -235,19 +235,18 @@ func TestVertexDominationRule(t *testing.T) {
 
 func TestExtendedTriangleRule(t *testing.T) {
 	assert := assert.New(t)
-	
+
 	g := NewHyperGraph()
 
 	for i := 0; i < 6; i++ {
 		g.AddVertex(int32(i), 0)
 	}
 
-	g.AddEdge(0,1)
-	g.AddEdge(1,2,3)
-	g.AddEdge(1,2)
-	g.AddEdge(3,4,5)
-	g.AddEdge(4,5)
-
+	g.AddEdge(0, 1)
+	g.AddEdge(1, 2, 3)
+	g.AddEdge(1, 2)
+	g.AddEdge(3, 4, 5)
+	g.AddEdge(4, 5)
 
 	c := make(map[int32]bool)
 	ExtendedTriangleRule(g, c)
@@ -269,10 +268,10 @@ func TestF3Rule(t *testing.T) {
 		g.AddVertex(int32(i), 0)
 	}
 
-	g.AddEdge(0,1,2)
-	g.AddEdge(1,3)
-	g.AddEdge(0,4)
-	g.AddEdge(4,5)
+	g.AddEdge(0, 1, 2)
+	g.AddEdge(1, 3)
+	g.AddEdge(0, 4)
+	g.AddEdge(4, 5)
 
 	c := make(map[int32]bool)
 
@@ -285,10 +284,6 @@ func TestF3Rule(t *testing.T) {
 
 	assert.Equal(1, g.Deg(4))
 	assert.Equal(1, g.Deg(5))
-
-
-
-
 
 }
 
@@ -396,7 +391,7 @@ func BenchmarkApproxDoubleVertexDominationRule(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ApproxDoubleVertexDominationRule2(g, c)
+		ApproxDoubleVertexDominationRule(g, c)
 	}
 
 	m, err := os.Create(fmt.Sprintf("../../profiles/mem_%s.prof", name))
