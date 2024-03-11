@@ -9,6 +9,8 @@
 \SetAlgoVlined
 \LinesNumbered
 \listoftodos
+\SetKwFunction{FRecurs}{FnRecursive}%
+\SetKwProg{Fn}{func}{\string:}{}
 
 # Programming Language
 
@@ -65,22 +67,38 @@ We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We th
 
 ## Compute Subsets of Size $s$
 
-\todo{rewrite with new algorithm}
+Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s$.
 
-Time Complexity: $2^n$
+\todo[backgroundcolor=green]{rewrite with new algorithm}
 
 $$
 \begin{algorithm}[H]
-\nllabel{label}
+\nllabel{subset}
 
-\KwIn{}
+\KwIn{An array $arr$, the subset size $s$ and a list $subsets$.}
 \KwOut{}
 \BlankLine
 
-\caption{}
+$data\gets [\;]$\;
+$n\gets |arr|$\;
+$last\gets s-1$\;
+$FRecursive(0,0)$\;
+
+\Fn{\FRecurs{i, next}}{
+    \For{$i\gets next$ \KwTo $n$}{
+        $data[i] \gets arr[j]$\;
+        \eIf{$i=last$}{
+            $subsets.push(data)$\;
+        }{
+            $FRecursive(i+1, j+1)$\;
+        }
+    }
+}
+\caption{An algorithm to compute all subsets of size $s$}
 \end{algorithm}
 $$
 
+Lists in Go are not very memory efficient, but since we exclusively call this function with $arr$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, thus justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
@@ -90,7 +108,7 @@ Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
 
 $$
 \begin{algorithm}
-\nllabel{label}
+\nllabel{twosum}
 
 \KwIn{An array of integers $arr$, a target value $t$}
 \KwOut{Two indices $a,b$, such that $arr[a] + arr[b] = t$, a boolean indicating if a solution was found}
@@ -164,12 +182,6 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 -   $\texttt{p}$ is the probability of adding a new vertex to the graph
 -   $\texttt{maxEdgesize}$ is the maximum size of a generated edge
 
-## Preferential Attachment Hypergraph Model with high Modularity (Giroire et al.)
-
-Looking at the first preferential attachment model, one can see that the resulting graph will be one big community.
-
-We therefore also considered a model with high modularity proposed by Giroire et al.[@Giroire_Nisse_Trolliet_Sulkowska_2022].
-
 # Reduction Rules
 
 The ususal signature of a reduction rule looks as follows:
@@ -228,7 +240,7 @@ $exec \gets 0$\;
         \For{$v \in e$}{
             $C \gets C \cup \{v\}$\;
             $V \gets V\setminus \{v\}$\;
-            \For{$f$ incident to $v$}{
+            \For{$f$ \textnormal{incident to} $v$}{
                 $E \gets E\setminus \{f\}$\;
             }
         }
@@ -348,7 +360,7 @@ $outer \gets true$\;
         }
         \If{$dom$}{
             $outer = true$\;
-            \For{$e$ incident to $v$}{
+            \For{$e$ \textnormal{incident to} $v$}{
                 $e \gets e\setminus \{ v \}$;
             }
             $V \gets V\setminus \{ v \}$\;
@@ -413,7 +425,7 @@ $outer \gets true$\;
         \For{$w \in sol$}{
             $C\gets C\cup \{ w \}$\;
             $V \gets V\setminus \{ w \}$\;
-            \For{$e$ incident to $w$}{
+            \For{$e$ \textnormal{incident to} $w$}{
                 $E \gets E\setminus \{ e \}$\;
             }
         }
@@ -472,7 +484,7 @@ $outer \gets true$\;
                     $f_1 \gets \{ x,y,z_1 \}$\;
 
                     $found \gets false$\;
-                    \For{$e \textnormal{ incident to }y$}{
+                    \For{$e$ \textnormal{incident to} $y$}{
                         \If{$e=f_0 \textbf{ or } e=f_1$}{
                             $found \gets true$\;
                             \textbf{break}\;
@@ -484,7 +496,7 @@ $outer \gets true$\;
                         $outer\gets true$\;
                         $C\gets C \cup sol$\;
                         \For{$a \in sol$}{
-                            \For{$e \textnormal{ incident to } a$}{
+                            \For{$e$ \textnormal{incident to} $a$}{
                                 $E\gets E\setminus \{ e \}$\;
                             }
                         }
@@ -558,7 +570,7 @@ $exec \gets 0$\;
 
 \For{$v \in rem$}{
     $V\gets V\setminus \{ v \}$\;
-    \For{$e$ incident to $v$}{
+    \For{$e$ \textnormal{incident to} $v$}{
         $E\gets E\setminus \{ e \}$\;
     }
 }
@@ -574,6 +586,72 @@ $$
 -   Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
     there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
 
+$$
+\begin{algorithm}[H]
+\nllabel{etri}
+
+\KwIn{A hypergraph $G = (V, E)$, a set $C$}
+\KwOut{An integer denoting the number of rule applications.}
+\BlankLine
+
+$exec \gets 0$\;
+$outer \gets true$\;
+\For{$outer$}{
+    $outer \gets false$\;
+
+    \For{$e \in E$}{
+        \If{$|e| \neq 2$}{
+            \textbf{continue}\;
+        }
+
+        \For{$a\in e$}{
+            $y\gets a$\;
+            $\{ z \} \gets e\setminus \{ y \}$\;
+            $f_0 \gets nil$\;
+
+            \textbf{incy:}\;
+            \For{$f$ \textnormal{incident to} y}{
+                \If{$|f|\neq 3 \textnormal{\textbf{ or }} z\in f$}{
+                    \textbf{continue}\;
+                }
+
+                \For{$g$ \textnormal{incident to} $z$}{
+                    $cond \gets true$\;
+                    \For{$b \in g$}{
+                        \If{$b = z$}{
+                            \textbf{continue}\;
+                        }
+                        \If{$b\notin f$}{
+                            $cond \gets false$\;
+                            \textbf{break}\;
+                        }
+                    }
+                    \If{cond}{
+                        $f_0 \gets f$\;
+                        \textbf{break incy}\;
+                    }
+                }
+            }
+            \If{$f_0 \neq nil$}{
+                $outer \gets true$\;
+                $exec \gets exec +1$\;
+                $C\gets C\cup f \cup \{ z \}$\;
+                $V\gets V\setminus f\cup \{ z \}$\;
+                \For{$h$ \textnormal{incident to} $f\cup \{ z \}$}{
+                    $E\gets E\setminus \{ h \}$\;
+                }
+            }
+        }
+    }
+}
+
+
+\KwRet exec\;
+
+\caption{Algorithm for exhaustive application of Extended Triangle Rule}
+\end{algorithm}
+$$
+
 ### Small Edge Degree 2 Rule
 
 -   small edge degree 2: Let v be a vertex of degree 2, and let the two hyperedges
@@ -581,6 +659,8 @@ $$
     that contains one of the neighbors of $v$ in $f$ but not $x$, for example $g = \{u, w, z\}$
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
+
+$O(|V|\cdot |E|)$ **Algorithm** We start by iterating other all vertices in $V$. If the vertex $v$ in the current iteration is of degree two, check if there is a size two edge $e$ and a size three edge $f$ incident to $v$. If these two edges exist, save $e\setminus \{ v \}$ in a variable $x$. Then iterate over the vertices $w$ in $f\setminus{v}$ and check if there exists an edge $h$ incident to $w$, such that $h\neq f$ and $x\notin h$. If such an edge exists, then we found a small edge degree 2 situation. We then put both $x$ and all vertices of $h$ into the partial hitting set.
 
 $$
 \begin{algorithm}[H]
@@ -600,7 +680,7 @@ $outer \gets true$\;
         }
 
         $s2,s3 \gets nil$\;
-        \For{$e\textnormal{ incident to }v$}{
+        \For{$e$ \textnormal{incident to} $v$}{
             \uIf{$|e| = 3$}{
                 $s3 \gets e$\;
             }
@@ -618,7 +698,7 @@ $outer \gets true$\;
         $rem \gets nil$\;
 
         \For{$w\in s3\setminus \{ v \} $}{
-            \For{$f \textnormal{ incident to } w$}{
+            \For{$f$ \textnormal{incident to} $w$}{
                 \eIf{$x \in f \textnormal{\textbf{ or }} s3 = f$}{
                     \textbf{continue}
                 }{
@@ -636,7 +716,7 @@ $outer \gets true$\;
             $exec \gets exec +1$\;
             \For{$a \in \{ x \}\cup f$}{
                 $C\gets C\cup \{ a \}$\;
-                \For{$h \textnormal{ incident to } a$}{
+                \For{$h$ \textnormal{incident to} $a$}{
                     $E\gets E \setminus \{ h \}$\;
                 }
             }
@@ -660,9 +740,7 @@ var ratios = map[string]pkg.IntTuple{
 }
 ```
 
-Where $\texttt{A}$ denotes the amount of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the amount of vertices present in an optimal solution.
-
-We can then use these values to calculate the estimated approximation factor as follows:
+Where $\texttt{A}$ denotes the amount of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the amount of vertices present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows:
 
 ```go
 execs := ApplyRules(g, c)
@@ -772,71 +850,70 @@ This speedup can be attributed to the fact, that the original coauthor graph exe
 Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_with_edom} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
 
 \begin{table}[t]
-    \centering
-    \caption{Number of rule executions, percent change of mean after not using some rules }
-    \label{rules_diff_noedom}
-    \begin{tabular}{l|rrrrrrrrrr}
-        \toprule
-        rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-        \midrule
-        EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
-        EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
-        \bottomrule
-    \end{tabular}
+\centering
+\caption{Number of rule executions, percent change of mean after not using some rules (DBLP) }
+\label{rules_diff_noedom}
+\begin{tabular}{l|rrrrrrrrrr}
+\toprule
+rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+\midrule
+EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
+EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-
 \begin{table}[t]
-    \begin{minipage}[b]{0.3\textwidth}
-    \centering
-    \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
-        \begin{tabular}{lrr}
-            \toprule
-            & Ratio & $|C|$ \\
-            \midrule
-            mean & 1.7595 & 115652.28 \\
-            std & 0.0005 & 85.16 \\
-            min & 1.7578 & 115403.00 \\
-            median & 1.7595 & 115650.00 \\
-            max & 1.7606 & 115836.00 \\
-            \bottomrule
-        \end{tabular}
-    \label{dblp_with_edom}
-    \end{minipage}
-    \hspace{0.05\textwidth}
-    \begin{minipage}[b]{0.3\textwidth}
-        \centering
-        \caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
-        \begin{tabular}{lrr}
-            \toprule
-            & Ratio & $|C|$ \\
-            \midrule
-            mean & 1.7572 & 114953.68 \\
-            std & 0.0005 & 78.17 \\
-            min & 1.7560 & 114724.00 \\
-            median & 1.7571 & 114948.50 \\
-            max & 1.7587 & 115157.00 \\
-            \bottomrule
-        \end{tabular}
-        \label{dblp_noedom}
-    \end{minipage}
-    \hspace{0.05\textwidth}
-    \begin{minipage}[b]{0.3\textwidth}
-        \centering
-        \caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
-        \begin{tabular}{lrr}
-            \toprule
-            & Ratio & $|C|$ \\
-            \midrule
-            mean & 1.7451 & 114197.28 \\
-            std & 0.0007 & 82.84 \\
-            min & 1.7435 & 113960.00 \\
-            median & 1.7452 & 114202.50 \\
-            max & 1.7472 & 114386.00 \\
-            \bottomrule
-        \end{tabular}
-        \label{dblp_noedomsmall}
-    \end{minipage}
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7595 & 115652.28 \\
+std & 0.0005 & 85.16 \\
+min & 1.7578 & 115403.00 \\
+median & 1.7595 & 115650.00 \\
+max & 1.7606 & 115836.00 \\
+\bottomrule
+\end{tabular}
+\label{dblp_with_edom}
+\end{minipage}
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\caption{Same as Table \ref{dblp_with_edom}, but no edge domination rule; $n=100$}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7572 & 114953.68 \\
+std & 0.0005 & 78.17 \\
+min & 1.7560 & 114724.00 \\
+median & 1.7571 & 114948.50 \\
+max & 1.7587 & 115157.00 \\
+\bottomrule
+\end{tabular}
+\label{dblp_noedom}
+\end{minipage}
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\caption{Same as Table \ref{dblp_with_edom}, but no edge domination and small edge rule; $n=100$}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7451 & 114197.28 \\
+std & 0.0007 & 82.84 \\
+min & 1.7435 & 113960.00 \\
+median & 1.7452 & 114202.50 \\
+max & 1.7472 & 114386.00 \\
+\bottomrule
+\end{tabular}
+\label{dblp_noedomsmall}
+\end{minipage}
 \end{table}
 
 This leads us to our next experiment. What happens if we do not use edge domination rule and the small edge rule? This obviously invalidates the correctness of the algorithm, since there exist structures made up of size two edges, that the algorithm can not target, for example a $C_n, n>3$. One possibility to uphold correctness is, to remove a size two edge, if the fallback rule can not find a size three edge. Nonetheless, all the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling the edge domination rule. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. The following possible interpretations of these observations are highly speculative.
@@ -844,71 +921,72 @@ This leads us to our next experiment. What happens if we do not use edge dominat
 -   **failed cascading**: For example, let $G=(V,E)$ be a hypergraph and $e\in E$ be a size two edge. Let us assume, that a rule $R_1$ that gets executed after a rule $R_0$, will make rule $R_1$ applicable, such that $e$ will be removed. Since we did not go back and recheck if $R_1$ can be applied again, the small edge rule will remove $e$.
 -   **preemptive removal**: What if not removing a size two edge, makes a vertex domiantion type rule possible at some point in time, during the algorithms execution? Another possibility is, that a better rule will remove the edge at some point anyway. Thus removing the edge is not necessary in the first place.
 
-Both 
+\todo[backgroundcolor=green]{add possible explanaiton for better ratio with no small edge rule}
 
 ### Amazon Product Co-Purchasing Graph
 
-To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. Both base graphs have around the same number of vertices and edges, but their TVD representation differs. The Amazon graph only has 667129 many triangles. 
+\todo[backgroundcolor=green]{add amazon graph section}
+
+To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. 
 
 \begin{table}[t]
-    \centering
-    \caption{Number of rule executions, percent change of mean after not using some rules }
-    \begin{tabular}{l|rrrrrrrrrr}
-        \toprule
-        rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-        \midrule
-        EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
-        Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
-        \bottomrule
-    \end{tabular}
-    \label{rules_diff_amazon}
+\centering
+\caption{Number of rule executions, percent change of mean after not using some rules (Amazon) }
+\begin{tabular}{l|rrrrrrrrrr}
+\toprule
+rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
+\midrule
+EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
+Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
+\bottomrule
+\end{tabular}
+\label{rules_diff_amazon}
 \end{table}
 
 \begin{table}
-    \begin{minipage}[b]{0.3\textwidth}
-    \centering
-    \begin{tabular}{lrr}
-        \toprule
-         & Ratio & $|C|$ \\
-        \midrule
-        mean & 1.7469 & 95252.10 \\
-        std & 0.0003 & 74.38 \\
-        min & 1.7460 & 95081.00 \\
-        median & 1.7469 & 95249.50 \\
-        max & 1.7477 & 95435.00 \\
-        \bottomrule
-    \end{tabular}
-    \end{minipage}
-    \hspace{0.05\textwidth}
-    \begin{minipage}[b]{0.3\textwidth}
-        \begin{tabular}{lrr}
-            \toprule
-             & Ratio & $|C|$ \\
-            \midrule
-            mean & 1.7404 & 92614.51 \\
-            std & 0.0003 & 80.23 \\
-            min & 1.7397 & 92382.00 \\
-            median & 1.7404 & 92621.00 \\
-            max & 1.7413 & 92802.00 \\
-            \bottomrule
-        \end{tabular}
-    \end{minipage}
-    \hspace{0.05\textwidth}
-    \begin{minipage}[b]{0.3\textwidth}
-        \begin{tabular}{lrr}
-            \toprule
-             & Ratio & $|C|$ \\
-            \midrule
-            mean & 1.6894 & 89951.35 \\
-            std & 0.0005 & 83.60 \\
-            min & 1.6876 & 89742.00 \\
-            median & 1.6894 & 89953.00 \\
-            max & 1.6905 & 90153.00 \\
-            \bottomrule
-        \end{tabular}
-    \end{minipage}
+\begin{minipage}[b]{0.3\textwidth}
+\centering
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7469 & 95252.10 \\
+std & 0.0003 & 74.38 \\
+min & 1.7460 & 95081.00 \\
+median & 1.7469 & 95249.50 \\
+max & 1.7477 & 95435.00 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.7404 & 92614.51 \\
+std & 0.0003 & 80.23 \\
+min & 1.7397 & 92382.00 \\
+median & 1.7404 & 92621.00 \\
+max & 1.7413 & 92802.00 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hspace{0.05\textwidth}
+\begin{minipage}[b]{0.3\textwidth}
+\begin{tabular}{lrr}
+\toprule
+& Ratio & $|C|$ \\
+\midrule
+mean & 1.6894 & 89951.35 \\
+std & 0.0005 & 83.60 \\
+min & 1.6876 & 89742.00 \\
+median & 1.6894 & 89953.00 \\
+max & 1.6905 & 90153.00 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
 \end{table}
-
 
 Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
