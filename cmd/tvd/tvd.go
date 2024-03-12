@@ -32,10 +32,11 @@ func main() {
 	outdir := flag.String("d", "./data", "output directory")
 	profile := flag.Bool("prof", false, "make pprof profile")
 	frontier := flag.Bool("fr", false, "use frontier algorithm")
-	cvd := flag.Bool("cvd", false, "")
-	debug := flag.Bool("dbg", false, "")
-	tvdi := flag.String("tvdi", "", "Use graph file that is already a TVD instance")
+	cvd := flag.Bool("cvd", false, "reduce to cluster vertex deletion")
+	debug := flag.Bool("dbg", false, "enable debug printing for rules")
+	tvdi := flag.String("tvdi", "", "use graph file that is already a TVD instance")
 	gr := flag.Bool("gr", false, "")
+	gml := flag.Bool("gml", false, "")
 
 	flag.Parse()
 
@@ -57,7 +58,7 @@ func main() {
 		var a int
 		var b int
 
-		if len(*in) > 0 {
+		if len(*in) > 0 && !*gml {
 			hypergraph.ReadFromFileSimpleCallback(*in, func(line string) {
 				if line[0] == '#' {
 					return
@@ -76,6 +77,8 @@ func main() {
 			})
 		} else if flagPassed("tvdi") {
 			// pass
+		} else if *gml {
+			// pass
 		} else {
 			hypergraph.UniformERGraphCallback(*n, *p, *evr, 2, func(edge []int32) {
 				if _, ex := adjList[edge[0]]; !ex {
@@ -92,8 +95,21 @@ func main() {
 		}
 
 		if *cvd {
+			var j *hypergraph.HyperGraph
+			if *gml {
+				j = hypergraph.ReadFromFileRome(*in)
+			} else {
+				j = hypergraph.NewHyperGraph()
+				for v, adj := range adjList {
+					j.AddVertex(v, 0)
+					for w := range adj {
+						j.AddEdge(v, w)
+					}
+				}
+			}
+
 			fmt.Println("Start P3 detection and problem reduction...")
-			g = hypergraph.P3Detection(adjList)
+			g = hypergraph.P3Detection(j)
 			fmt.Printf("Graph had %d many P3's\n", len(g.Edges))
 		} else if flagPassed("tvdi") {
 			fmt.Println("Read from TVD instance file...")

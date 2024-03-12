@@ -106,24 +106,35 @@ func TriangleDetection(adjList map[int32]map[int32]bool) *HyperGraph {
 	return g
 }
 
-func P3Detection(adjList map[int32]map[int32]bool) *HyperGraph {
-	g := NewHyperGraph()
+func P3Detection(g *HyperGraph) *HyperGraph {
+	h := NewHyperGraph()
 
+	edgeHashes := make(map[string]int32)
 	hashes := make(map[string]bool)
 
-	for x, Nx := range adjList {
-		for y := range Nx {
-			for z := range adjList[y] {
-				if z == x {
+	for eId, e := range g.Edges {
+		edgeHashes[e.getHash()] = eId
+	}
+
+	for u := range g.Vertices {
+		for v := range g.AdjCount[u] {
+			for w := range g.AdjCount[v] {
+				if w == v || w == u {
 					continue
 				}
-				if !Nx[z] {
-					hash := GetHash(x, y, z)
-					if !hashes[hash] {
-						g.AddVertex(x, 0)
-						g.AddVertex(y, 0)
-						g.AddVertex(z, 0)
-						g.AddEdge(x, y, z)
+				for x := range g.AdjCount[w] {
+					if x == w || x == v || x == u {
+						continue
+					}
+					e_0 := edgeHashes[GetHash(u, v)]
+					e_1 := edgeHashes[GetHash(v, w)]
+					e_2 := edgeHashes[GetHash(w, x)]
+					hash := GetHash(e_0, e_1, e_2)
+					if _, ex := hashes[hash]; !ex {
+						h.AddVertex(e_0, 0)
+						h.AddVertex(e_1, 0)
+						h.AddVertex(e_2, 0)
+						h.AddEdge(e_0, e_1, e_2)
 						hashes[hash] = true
 					}
 				}
