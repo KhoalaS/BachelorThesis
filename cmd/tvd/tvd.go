@@ -134,6 +134,7 @@ func main() {
 			pprof.StartCPUProfile(f)
 		}
 
+		fmt.Printf("Problem instance has %d vertices and %d edges\n", len(g.Vertices), len(g.Edges))
 		fmt.Println("Start 3-HS algorithm...")
 		defer hypergraph.LogTime(time.Now(), "Main Algorithm")
 		if *frontier {
