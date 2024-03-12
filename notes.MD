@@ -9,7 +9,7 @@
 \SetAlgoVlined
 \LinesNumbered
 \listoftodos
-\SetKwFunction{FRecurs}{FnRecursive}%
+\SetKwFunction{FRecurs}{FnRecursive}
 \SetKwProg{Fn}{func}{\string:}{}
 
 # Programming Language
@@ -211,7 +211,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 ## Algorithms
 
-The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings.
+The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. Proofs are provided in the case, where the algorithm does not simply follow the definition of a rule.
 
 We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol.
 
@@ -931,7 +931,7 @@ This leads us to our next experiment. What happens if we do not use edge dominat
 
 \todo[backgroundcolor=green]{add amazon graph section}
 
-To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. 
+To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn}
 
 \begin{table}[t]
 \begin{subtable}[b]{0.3\textwidth}
