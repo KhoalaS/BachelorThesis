@@ -134,7 +134,7 @@ func P3Detection(g *HyperGraph) *HyperGraph {
 						h.AddVertex(e_0, 0)
 						h.AddVertex(e_1, 0)
 						h.AddVertex(e_2, 0)
-						h.AddEdge(e_0, e_1, e_2)
+						h.AddEdge(e_0, e_1, e_2)htop
 						hashes[hash] = true
 					}
 				}
@@ -142,5 +142,5 @@ func P3Detection(g *HyperGraph) *HyperGraph {
 		}
 	}
 
-	return g
+	return h
 }

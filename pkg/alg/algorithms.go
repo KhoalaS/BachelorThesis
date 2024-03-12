@@ -139,14 +139,11 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	}
 
 	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
-	fmt.Println(len(gf.Edges))
 
 	for len(g.Edges) > 0 {
 		expand := make(map[int32]bool)
 		ApplyRulesFrontier(gf, g, c, execs, expand)
 		if len(expand) > 0 {
-			fmt.Println("Expand")
-			fmt.Println(execs)
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			msg = fmt.Sprintf("%f;", GetRatio(execs))
 			for _, v := range Labels {
@@ -160,7 +157,6 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		isSmall := false
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
-			fmt.Println("Could not find size 3 edge")
 			e = hypergraph.F2Detect(g)
 			isSmall = true
 		}
@@ -239,9 +235,6 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 			break
 		}
 	}
-
-	fmt.Println(execs)
-
 	return execs
 }
 
@@ -275,7 +268,6 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 		isSmall := false
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
-			fmt.Println("Could not find size 3 edge")
 			e = hypergraph.F2Detect(g)
 			isSmall = true
 		}
@@ -473,7 +465,6 @@ func GreedyHighDeg(g *hypergraph.HyperGraph, c map[int32]bool) {
 			g.RemoveEdge(e)
 		}
 		c[remVertex] = true
-		fmt.Println(len(g.Edges))
 	}
 }
 
