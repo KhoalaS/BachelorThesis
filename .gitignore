@@ -11,6 +11,8 @@ test.go
 coauthor.txt
 **/__pycache__
 **/*.pgo
+!tvd/
+tvd
 main
 tvd.exe
 main.exe
