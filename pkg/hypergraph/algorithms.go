@@ -119,24 +119,19 @@ func P3Detection(g *HyperGraph) *HyperGraph {
 	for u := range g.Vertices {
 		for v := range g.AdjCount[u] {
 			for w := range g.AdjCount[v] {
-				if w == v || w == u {
+				if w == u {
 					continue
 				}
-				for x := range g.AdjCount[w] {
-					if x == w || x == v || x == u {
-						continue
-					}
-					e_0 := edgeHashes[GetHash(u, v)]
-					e_1 := edgeHashes[GetHash(v, w)]
-					e_2 := edgeHashes[GetHash(w, x)]
-					hash := GetHash(e_0, e_1, e_2)
-					if _, ex := hashes[hash]; !ex {
-						h.AddVertex(e_0, 0)
-						h.AddVertex(e_1, 0)
-						h.AddVertex(e_2, 0)
-						h.AddEdge(e_0, e_1, e_2)
-						hashes[hash] = true
-					}
+				if _, ex := g.AdjCount[u][w]; ex {
+					continue
+				}
+				hash := GetHash(u, v, w)
+				if _, ex := hashes[hash]; !ex {
+					h.AddVertex(u, 0)
+					h.AddVertex(v, 0)
+					h.AddVertex(w, 0)
+					h.AddEdge(u, v, w)
+					hashes[hash] = true
 				}
 			}
 		}
