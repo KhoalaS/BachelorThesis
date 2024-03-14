@@ -22,7 +22,7 @@ func main() {
 	masterfile.WriteString(strings.Join(alg.Labels, ";"))
 	masterfile.WriteString(";OVertices;OEdges;Vertices;Edges;HittingSet\n")
 
-	bufWriter := bufio.NewWriterSize(masterfile, 8192)
+	bufWriter := bufio.NewWriterSize(masterfile, 1048576)
 
 	for _, file := range dir {
 		if file.Name() == "Graph.log" {
