@@ -73,7 +73,7 @@ Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s
 
 $$
 \begin{algorithm}[H]
-\nllabel{subset}
+\label{subset}
 
 \KwIn{An array $arr$, the subset size $s$ and a list $subsets$.}
 \KwOut{}
@@ -82,15 +82,15 @@ $$
 $data\gets [\;]$\;
 $n\gets |arr|$\;
 $last\gets s-1$\;
-$FRecursive(0,0)$\;
+$\texttt{FnRecursive}(0,0)$\;
 
 \Fn{\FRecurs{i, next}}{
-    \For{$i\gets next$ \KwTo $n$}{
+    \For{$j\gets next$ \KwTo $n$}{
         $data[i] \gets arr[j]$\;
         \eIf{$i=last$}{
             $subsets.push(data)$\;
         }{
-            $FRecursive(i+1, j+1)$\;
+            $\texttt{FnRecursive}(i+1, j+1)$\;
         }
     }
 }
@@ -108,7 +108,7 @@ Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
 
 $$
 \begin{algorithm}
-\nllabel{twosum}
+\label{twosum}
 
 \KwIn{An array of integers $arr$, a target value $t$}
 \KwOut{Two indices $a,b$, such that $arr[a] + arr[b] = t$, a boolean indicating if a solution was found}
@@ -225,7 +225,6 @@ $O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current
 
 $$
 \begin{algorithm}
-\nllabel{TinySmall}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$, an integer $t$ denoting the size of the edges to be removed}
 \KwOut{An integer denoting the number of rule applications.}
@@ -249,7 +248,7 @@ $exec \gets 0$\;
 
 \KwRet $exec$\;
 
-\caption{Algorithm for exhaustive application of Tiny/Small Edge Rule}
+\caption{Algorithm for exhaustive application of Tiny/Small Edge Rule\label{TinySmall}}
 \end{algorithm}
 $$
 
@@ -263,7 +262,6 @@ We then iterate over the set $dom$ and compute every strict subset of the curren
 
 $$
 \begin{algorithm}
-\nllabel{edom}
 \SetKwFunction{subsets}{getSubsetsRec}
 \KwIn{A hypergraph $G=(V,E)$ without size one edges, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -298,8 +296,7 @@ $exec \gets 0$\;
 }
 
 \KwRet $exec$\;
-
-\caption{Algorithm for exhaustive application of Edge Domination Rule}
+\caption{Algorithm for exhaustive application of Edge Domination Rule\label{edom}}
 \end{algorithm}
 $$
 
@@ -339,7 +336,6 @@ A vertex $v$ is dominated, if one of the entries in $AdjCount[v]$ is equal to $d
 
 $$
 \begin{algorithm}
-\nllabel{vdom}
 
 \KwIn{A hypergraph $G=(V,E)$ }
 \KwOut{An integer denoting the number of rule applications.}
@@ -370,7 +366,7 @@ $outer \gets true$\;
 }
 \KwRet $exec$\;
 
-\caption{Algorithm for exhaustive application of Vertex Domination Rule}
+\caption{Algorithm for exhaustive application of Vertex Domination Rule\label{vdom}}
 \end{algorithm}
 $$
 
@@ -403,7 +399,6 @@ We then add the two vertices in the solution $sol$ to our partial solution $c$.
 
 $$
 \begin{algorithm}
-\nllabel{apvdom}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -434,7 +429,7 @@ $outer \gets true$\;
 
 \KwRet $exec$\;
 
-\caption{Algorithm for exhaustive application of Approximative Vertex Domination Rule}
+\caption{Algorithm for exhaustive application of Approximative Vertex Domination Rule\label{apvdom}}
 \end{algorithm}
 $$
 
@@ -459,7 +454,6 @@ $\square$
 
 $$
 \begin{algorithm}
-\nllabel{apdvdom}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -513,7 +507,7 @@ $outer \gets true$\;
 
 \KwRet $exec$\;
 
-\caption{Algorithm for exhaustive application of Approximative Double Vertex Domination Rule}
+\caption{Algorithm for exhaustive application of Approximative Double Vertex Domination Rule\label{apdvdom}}
 \end{algorithm}
 $$
 
@@ -527,7 +521,6 @@ This last step will introduce the quadratic complexity, since in the worst case,
 
 $$
 \begin{algorithm}
-\nllabel{tri}
 \SetKwFunction{subsets}{getSubsetsRec}
 \KwIn{A hypergraph $G = (V, E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -577,7 +570,7 @@ $exec \gets 0$\;
 
 \KwRet $exec$\;
 
-\caption{: Algorithm for exhaustive application of Small Triangle Rule}
+\caption{: Algorithm for exhaustive application of Small Triangle Rule\label{tri}}
 \end{algorithm}
 $$
 
@@ -588,7 +581,6 @@ $$
 
 $$
 \begin{algorithm}[H]
-\nllabel{etri}
 
 \KwIn{A hypergraph $G = (V, E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -648,7 +640,7 @@ $outer \gets true$\;
 
 \KwRet exec\;
 
-\caption{Algorithm for exhaustive application of Extended Triangle Rule}
+\caption{Algorithm for exhaustive application of Extended Triangle Rule\label{etri}}
 \end{algorithm}
 $$
 
@@ -664,7 +656,6 @@ $O(|V|\cdot |E|)$ **Algorithm** We start by iterating other all vertices in $V$.
 
 $$
 \begin{algorithm}[H]
-\nllabel{smallEdgeDegTwo}
 
 \KwIn{A hypergraph $G=(V,E)$, a set $C$}
 \KwOut{An integer denoting the number of rule applications.}
@@ -724,7 +715,7 @@ $outer \gets true$\;
     }
 }
 
-\caption{Algorithm for exhaustive application of Small Edge Degree 2 Rule}
+\caption{Algorithm for exhaustive application of Small Edge Degree 2 Rule\label{sed2}}
 \end{algorithm}
 $$
 
@@ -789,7 +780,6 @@ We apply the rules as usual, but only on $H$. The rules are modified, such that 
 
 $$
 \begin{algorithm}[H]
-\nllabel{3hs_frontier}
 
 \KwIn{Hypergraph $G = (V, E)$, and a partial hitting set $C$}
 \KwOut{A hitting set $C$}
@@ -825,7 +815,7 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 
 \KwRet $C$\;
 
-\caption{Incremental 3-approximation algorithm for 3-HS}
+\caption{Incremental 3-approximation algorithm for 3-HS\label{3hs_frontier}}
 \end{algorithm}
 $$
 
@@ -1036,7 +1026,6 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 \end{table}
 
 \todo{interpretation of results}
-
 
 ## Preferential Attachment Hypergraphs
 
