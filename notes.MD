@@ -415,7 +415,7 @@ $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
     \For{$(v, count) \in AdjCount$}{
-        $sol, ex \gets \textsc{Two-Sum}(count, deg(v)+1)$\;
+        $sol, ex \gets \texttt{TwoSum}(count, deg(v)+1)$\;
         \If{\textbf{not} $ex$}{
             \textbf{continue}\;
         }
@@ -473,7 +473,7 @@ $outer \gets true$\;
     $tsHashes \gets \texttt{map}[2^V]2^V$\;
 
     \For{$x \in V$}{
-        \For{$sol \in \textnormal{\textsc{Two-SumAll}}(AdjCount[x], deg(x))$}{
+        \For{$sol \in \textnormal{\texttt{TwoSumAll}}(AdjCount[x], deg(x))$}{
             $\{ z_0, z_1 \} \gets sol$\;
             \eIf{$tsHashes[sol] \neq \emptyset$}{
                 \For{$y \in tsHashes[sol]$}{
@@ -684,7 +684,7 @@ $outer \gets true$\;
             \uIf{$|e| = 3$}{
                 $s3 \gets e$\;
             }
-            \uElse{$|e| = 2$}{
+            \uElseIf{$|e| = 2$}{
                 $s2 \gets e$\;
             }
         }
@@ -714,7 +714,7 @@ $outer \gets true$\;
         \If{$found$}{
             $outer \gets true$\;
             $exec \gets exec +1$\;
-            \For{$a \in \{ x \}\cup f$}{
+            \For{$a \in \{ x \}\cup rem$}{
                 $C\gets C\cup \{ a \}$\;
                 \For{$h$ \textnormal{incident to} $a$}{
                     $E\gets E \setminus \{ h \}$\;
