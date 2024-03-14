@@ -6,12 +6,27 @@ import (
 	"strconv"
 )
 
+var historyEnabled = false
+
+type RemoveType int
+const (
+	VERTEX RemoveType = iota
+	EDGE
+)
+
+
+type HistoryEntry struct {
+	Type RemoveType `json:"type"`
+	Id   int32 `json:"id"`
+}
+
 type HyperGraph struct {
-	Vertices       map[int32]Vertex
-	Edges          map[int32]Edge
-	edgeCounter    int32
-	IncMap         map[int32]map[int32]bool
-	AdjCount       map[int32]map[int32]int32
+	Vertices    map[int32]Vertex
+	Edges       map[int32]Edge
+	edgeCounter int32
+	IncMap      map[int32]map[int32]bool
+	AdjCount    map[int32]map[int32]int32
+	History []HistoryEntry
 }
 
 type Vertex struct {
@@ -103,6 +118,11 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 		return false
 	}
 
+	if historyEnabled {
+		entry := HistoryEntry{Type: EDGE, Id: e}
+		g.History = append(g.History, entry)
+	}
+
 	for v := range g.Edges[e].V {
 		delete(g.IncMap[v], e)
 
@@ -144,13 +164,18 @@ func (g *HyperGraph) RemoveElem(elem int32) bool {
 		return false
 	}
 
+	if historyEnabled {
+		entry := HistoryEntry{Type: VERTEX, Id: elem}
+		g.History = append(g.History, entry)
+	}
+
 	for e := range g.IncMap[elem] {
 		for v := range g.Edges[e].V {
 			if v == elem {
 				continue
 			}
 			g.AdjCount[v][elem]--
-			if g.AdjCount[v][elem] == 0{
+			if g.AdjCount[v][elem] == 0 {
 				delete(g.AdjCount[v], elem)
 			}
 		}
@@ -264,6 +289,10 @@ func (g *HyperGraph) RemoveDuplicate() {
 	for eId, e := range g.Edges {
 		hash := e.getHash()
 		if hashes[hash] {
+			if historyEnabled {
+				entry := HistoryEntry{Type: EDGE, Id: eId}
+				g.History = append(g.History, entry)
+			}
 			g.RemoveEdge(eId)
 		} else {
 			hashes[hash] = true
