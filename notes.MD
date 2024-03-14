@@ -931,7 +931,7 @@ This leads us to our next experiment. What happens if we do not use edge dominat
 
 \todo[backgroundcolor=green]{add amazon graph section}
 
-To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn}
+To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn} \todo{interpretation of results}
 
 \begin{table}[t]
 \begin{subtable}[b]{0.3\textwidth}
@@ -1011,6 +1011,32 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 ![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=25](img/er_tvd_rules_2.png)
 
 ## Cluster Vertex Deletion
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrrrrrrrrrr}
+\toprule
+& & Ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 & $|C|$ \\
+\midrule
+\multirow{5}{4em}{stock} & mean & 1.7529 & 3.07 & 11.69 & 35.54 & 3.10 & 0.03 & 0 & 7.77 & 0.03 & 0.05 & 0 & 25.13 \\
+& std & 0.1703 & 2 & 6.11 & 29.80 & 2.35 & 0.18 & 0.07 & 4.59 & 0.18 & 0.23 & 0.01 & 13.24 \\
+& min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 \\
+& median & 1.7778 & 3 & 11 & 29 & 3 & 0 & 0 & 7 & 0 & 0 & 0 & 23 \\
+& max & 2.6667 & 13 & 37 & 198 & 16 & 2 & 4 & 25 & 3 & 4 & 2 & 62 \\
+\hline
+\multirow{5}{4em}{no EDom and small} & mean & 1.7109 & 3.47 & 12.10 & 0 & 0 & 0 & 0 & 9.75 & 0 & 0 & 0 & 22.98 \\
+& std & 0.1807 & 2.18 & 6.32 & 0 & 0 & 0.06 & 0 & 5.59 & 0.02 & 0 & 0.01 & 12.03 \\
+& min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 \\
+& median & 1.7391 & 3 & 11 & 0 & 0 & 0 & 0 & 9 & 0 & 0 & 0 & 21 \\
+& max & 2.50 & 15 & 42 & 0 & 0 & 2 & 1 & 27 & 2 & 1 & 2 & 56 \\
+\bottomrule
+\end{tabular}
+\caption{Results for $\textsc{Cluster Vertex Deletion}$ on the Rome-Graph dataset, $n=100$}
+\label{cvd_rome_stats}
+\end{table}
+
+\todo{interpretation of results}
+
 
 ## Preferential Attachment Hypergraphs
 
