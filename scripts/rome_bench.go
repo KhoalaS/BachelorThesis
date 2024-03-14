@@ -14,6 +14,7 @@ import (
 
 func main() {
 	o := flag.String("o", "./data/rome_master.csv", "path to output csv masterfile")
+	n := flag.Int("n", 1, "number of algorithm runs per graph")
 	flag.Parse()
 
 	dir, _ := os.ReadDir("./graphs/rome")
@@ -28,7 +29,8 @@ func main() {
 		if file.Name() == "Graph.log" {
 			continue
 		}
-		for i := 0; i < 100; i++ {
+	
+		for i := 0; i < *n; i++ {
 			g := hypergraph.ReadFromFileRome("./graphs/rome/" + file.Name())
 			h := hypergraph.P3Detection(g)
 			eOSize := len(g.Edges)
