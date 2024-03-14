@@ -1,6 +1,19 @@
 import pandas as pd
 import argparse
 
+rule_names = {
+    "kTiny": "Tiny",
+    "kVertDom": "VD",
+    "kEdgeDom": "ED",
+    "kSmall": "Small",
+    "kTri": "Tri",
+    "kExtTri": "ETri",
+    "kApVertDom": "AVD",
+    "kApDoubleVertDom": "ADVD",
+    "kSmallEdgeDegTwo": "SED2",
+    "kFallback": "F3"
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("file", metavar="FILE", help="path to csv file")
 parser.add_argument("out", metavar="OUT", help="path to output tex file")
@@ -13,9 +26,19 @@ df = pd.read_csv(args.file, delimiter=";")
 print("file loaded...")
 df.drop(columns=["File", "OVertices", "OEdges",
         "Vertices", "Edges"], inplace=True)
+
+
+
 rome_stats = df.describe()
-rome_stats.drop(["count"], inplace=True)
-rome_tbl = rome_stats.to_latex()
+rome_stats.drop(["count", "25%", "75%"], inplace=True)
+rome_stats.rename(index={"50%": "median"}, inplace=True)
+rome_stats["Ratio"] = rome_stats["Ratio"].round(4)
+
+for k, v in rule_names.items():
+    rome_stats[k] = rome_stats[k].round(2)
+    rome_stats.rename(columns={k: v}, inplace=True)
+
+rome_tbl = rome_stats.to_latex(float_format="%.4f")
 
 f = open(args.out, "w+")
 f.write(rome_tbl)
