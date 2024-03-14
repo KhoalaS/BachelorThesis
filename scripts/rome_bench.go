@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -12,8 +13,11 @@ import (
 )
 
 func main() {
+	o := flag.String("o", "./data/rome_master.csv", "path to output csv masterfile")
+	flag.Parse()
+
 	dir, _ := os.ReadDir("./graphs/rome")
-	masterfile, _ := os.Create("./data/rome_master.csv")
+	masterfile, _ := os.Create(*o)
 	masterfile.WriteString("File;Ratio;")
 	masterfile.WriteString(strings.Join(alg.Labels, ";"))
 	masterfile.WriteString(";OVertices;OEdges;Vertices;Edges;HittingSet\n")
