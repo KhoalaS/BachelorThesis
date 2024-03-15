@@ -11,6 +11,7 @@ rule_names = {
     "kApVertDom": "AVD",
     "kApDoubleVertDom": "ADVD",
     "kSmallEdgeDegTwo": "SED2",
+    "kSmallEdgeDegTwo2": "SED2[1.5]",
     "kFallback": "F3"
 }
 
@@ -35,6 +36,7 @@ for k, v in rule_names.items():
     c.rename(columns={k: v}, inplace=True)
 
 #df = df[df['ED'] > 150 ]
+print(df.describe())
 
 print(df.shape[0])
 foi = []
@@ -48,4 +50,4 @@ for idx, row in df.iterrows():
 print(len(foi))
 
 for file in foi:
-    print(c.loc[file])
+    print(df.loc[file])
