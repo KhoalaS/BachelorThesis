@@ -15,14 +15,15 @@ import (
 var Labels = []string{"kTiny", "kVertDom", "kEdgeDom", "kSmall", "kTri", "kExtTri", "kApVertDom", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kFallback"}
 
 var Ratios = map[string]IntTuple{
-	"kTiny":            {A: 1, B: 1},
-	"kSmall":           {A: 2, B: 1},
-	"kTri":             {A: 3, B: 2},
-	"kExtTri":          {A: 4, B: 2},
-	"kApVertDom":       {A: 2, B: 1},
-	"kApDoubleVertDom": {A: 2, B: 1},
-	"kSmallEdgeDegTwo": {A: 4, B: 2},
-	"kFallback":        {A: 3, B: 1},
+	"kTiny":             {A: 1, B: 1},
+	"kSmall":            {A: 2, B: 1},
+	"kTri":              {A: 3, B: 2},
+	"kExtTri":           {A: 4, B: 2},
+	"kApVertDom":        {A: 2, B: 1},
+	"kApDoubleVertDom":  {A: 2, B: 1},
+	"kSmallEdgeDegTwo":  {A: 4, B: 2},
+	"kSmallEdgeDegTwo2": {A: 3, B: 2},
+	"kFallback":         {A: 3, B: 1},
 }
 
 func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graphtype string, masterfilename string, iteration int, outdir string) map[string]int {
@@ -158,6 +159,9 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
 			e = hypergraph.F2Detect(g)
+			if e == -1 {
+				continue
+			}
 			isSmall = true
 		}
 
@@ -269,6 +273,9 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
 			e = hypergraph.F2Detect(g)
+			if e == -1 {
+				continue
+			}
 			isSmall = true
 		}
 
@@ -467,4 +474,3 @@ func GreedyHighDeg(g *hypergraph.HyperGraph, c map[int32]bool) {
 		c[remVertex] = true
 	}
 }
-
