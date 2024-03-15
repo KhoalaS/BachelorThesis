@@ -100,7 +100,9 @@ func main() {
 		return
 	}
 
-	for _, file := range dir {
+	nFiles := len(dir)
+
+	for idx, file := range dir {
 		if file.Name() == "Graph.log" {
 			continue
 		}
@@ -124,6 +126,7 @@ func main() {
 			}
 			bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d;%d\n", file.Name(), alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c), alg.GetEstOpt(execs))))
 		}
+		fmt.Printf("(%d/%d) finished for file:%s\n", idx, nFiles, file.Name())
 	}
 	bufWriter.Flush()
 }
