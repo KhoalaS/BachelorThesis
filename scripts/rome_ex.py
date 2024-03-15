@@ -1,19 +1,7 @@
 import pandas as pd
 import argparse
+from opts import rule_names
 
-rule_names = {
-    "kTiny": "Tiny",
-    "kVertDom": "VD",
-    "kEdgeDom": "ED",
-    "kSmall": "Small",
-    "kTri": "Tri",
-    "kExtTri": "ETri",
-    "kApVertDom": "AVD",
-    "kApDoubleVertDom": "ADVD",
-    "kSmallEdgeDegTwo": "SED2",
-    "kSmallEdgeDegTwo2": "SED2[1.5]",
-    "kFallback": "F3"
-}
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", metavar="FILE", help="path to csv file")

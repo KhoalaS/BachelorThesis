@@ -28,7 +28,7 @@ func main() {
 	masterfile, _ := os.Create(*o)
 	masterfile.WriteString("File;Ratio;")
 	masterfile.WriteString(strings.Join(alg.Labels, ";"))
-	masterfile.WriteString(";OVertices;OEdges;Vertices;Edges;HittingSet\n")
+	masterfile.WriteString(";OVertices;OEdges;Vertices;Edges;HittingSet;Opt\n")
 
 	bufWriter := bufio.NewWriterSize(masterfile, 65536)
 
@@ -95,7 +95,7 @@ func main() {
 			rules += strconv.Itoa(execs[label])
 			rules += ";"
 		}
-		bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d\n", *i, alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c))))
+		bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d;%d\n", *i, alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c), alg.GetEstOpt(execs))))
 		bufWriter.Flush()
 		return
 	}
@@ -122,7 +122,7 @@ func main() {
 				rules += strconv.Itoa(execs[label])
 				rules += ";"
 			}
-			bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d\n", file.Name(), alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c))))
+			bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d;%d\n", file.Name(), alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c), alg.GetEstOpt(execs))))
 		}
 	}
 	bufWriter.Flush()

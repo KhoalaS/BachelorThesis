@@ -6,6 +6,7 @@ import os
 import math
 from dotenv import dotenv_values
 import opts as _opts
+from opts import rule_names
 
 def round_down(x: float, d: int) -> float:
     mul = math.pow(10, d)
@@ -13,19 +14,6 @@ def round_down(x: float, d: int) -> float:
     z = math.floor(y)
     return float(z)/mul
 
-
-rule_names = {
-    "kTiny": "Tiny",
-    "kVertDom": "VDom",
-    "kEdgeDom": "EDom",
-    "kSmall": "Small",
-    "kTri": "Tri",
-    "kExtTri": "ETri",
-    "kApVertDom": "AVDom",
-    "kApDoubleVertDom": "ADVDom",
-    "kSmallEdgeDegTwo": "SETwo",
-    "kFallback": "F3"
-}
 
 parser = argparse.ArgumentParser(prog="chart_single")
 parser.add_argument("folder")

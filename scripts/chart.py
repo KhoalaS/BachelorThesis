@@ -6,20 +6,8 @@ from pyecharts import options as opts
 import statistics as st
 import math
 from dotenv import dotenv_values
+from opts import rule_names
 import opts as _opts
-
-rule_names = {
-    "kTiny": "Tiny",
-    "kVertDom": "VDom",
-    "kEdgeDom": "EDom",
-    "kSmall": "Small",
-    "kTri": "Tri",
-    "kExtTri": "ETri",
-    "kApVertDom": "AVDom",
-    "kApDoubleVertDom": "ADVDom",
-    "kSmallEdgeDegTwo": "SETwo",
-    "kFallback": "F3"
-}
 
 
 def round_down(x: float, d: int) -> float:

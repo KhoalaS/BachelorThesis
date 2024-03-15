@@ -3,21 +3,8 @@ import argparse
 from dotenv import dotenv_values
 from pyecharts.charts import Bar, Page
 import opts as _opts
+from opts import rule_names
 import pyecharts.options as opts
-
-
-rule_names = {
-    "kTiny": "Tiny",
-    "kVertDom": "VD",
-    "kEdgeDom": "ED",
-    "kSmall": "Small",
-    "kTri": "Tri",
-    "kExtTri": "ETri",
-    "kApVertDom": "AVD",
-    "kApDoubleVertDom": "ADVD",
-    "kSmallEdgeDegTwo": "SED2",
-    "kFallback": "F3"
-}
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", metavar="FILE", help="path to first csv file")
