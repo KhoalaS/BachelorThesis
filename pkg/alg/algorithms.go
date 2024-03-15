@@ -31,7 +31,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	eSize := len(g.Edges)
 
 	header := "Ratio;"
-	header += strings.Join(Labels, ";") + "\n"
+	header += strings.Join(Labels, ";") + ";Opt\n"
 
 	os.Mkdir(outdir, 0700)
 
@@ -61,7 +61,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		}
 		msg = msg[:len(msg)-1] + "\n"
 	}
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c), GetEstOpt(execs)))
 	return execs
 }
 
@@ -71,7 +71,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	eSize := len(g.Edges)
 
 	header := "Ratio;"
-	header += strings.Join(Labels, ";") + "\n"
+	header += strings.Join(Labels, ";") + ";Opt\n"
 
 	os.Mkdir(outdir, 0700)
 
@@ -156,7 +156,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		}
 		msg = msg[:len(msg)-1] + "\n"
 	}
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c), GetEstOpt(execs)))
 	return execs
 }
 
