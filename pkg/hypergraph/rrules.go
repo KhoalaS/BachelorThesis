@@ -354,7 +354,7 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 
 	for outer := true; outer; {
 		outer = false
-		for v := range g.IncMap {
+		for v := range g.Vertices {
 			if g.Deg(v) != 2 {
 				continue
 			}
@@ -377,9 +377,7 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 				continue
 			}
 
-			found := false
-
-			found = smallDegreeTwoSub(g, c, v, s2Edge, s3Edge)
+			found := smallDegreeTwoSub(g, c, v, s2Edge, s3Edge)
 
 			if found {
 				outer = true
