@@ -126,7 +126,7 @@ func main() {
 			}
 			bufWriter.WriteString((fmt.Sprintf("%s;%f;%s%d;%d;%d;%d;%d;%d\n", file.Name(), alg.GetRatio(execs), rules, vOSize, eOSize, vSize, eSize, len(c), alg.GetEstOpt(execs))))
 		}
-		fmt.Printf("(%d/%d) finished for file:%s\n", idx, nFiles, file.Name())
+		fmt.Printf("(%d/%d) finished for file:%s\n", idx+1, nFiles, file.Name())
 	}
 	bufWriter.Flush()
 }
