@@ -6,18 +6,19 @@ import (
 	"strconv"
 )
 
-var historyEnabled = false
+var HistoryEnabled = false
 
 type RemoveType int
+
 const (
 	VERTEX RemoveType = iota
 	EDGE
 )
 
-
 type HistoryEntry struct {
 	Type RemoveType `json:"type"`
-	Id   int32 `json:"id"`
+	Id   int32      `json:"id"`
+	Rule string     `json:"rule"`
 }
 
 type HyperGraph struct {
@@ -26,7 +27,8 @@ type HyperGraph struct {
 	edgeCounter int32
 	IncMap      map[int32]map[int32]bool
 	AdjCount    map[int32]map[int32]int32
-	History []HistoryEntry
+	History     []HistoryEntry
+	CurrentRule string
 }
 
 type Vertex struct {
@@ -118,8 +120,8 @@ func (g *HyperGraph) RemoveEdge(e int32) bool {
 		return false
 	}
 
-	if historyEnabled {
-		entry := HistoryEntry{Type: EDGE, Id: e}
+	if HistoryEnabled {
+		entry := HistoryEntry{Type: EDGE, Id: e, Rule: g.CurrentRule}
 		g.History = append(g.History, entry)
 	}
 
@@ -164,8 +166,8 @@ func (g *HyperGraph) RemoveElem(elem int32) bool {
 		return false
 	}
 
-	if historyEnabled {
-		entry := HistoryEntry{Type: VERTEX, Id: elem}
+	if HistoryEnabled {
+		entry := HistoryEntry{Type: VERTEX, Id: elem, Rule: g.CurrentRule}
 		g.History = append(g.History, entry)
 	}
 
@@ -270,8 +272,9 @@ func NewHyperGraph() *HyperGraph {
 	edges := make(map[int32]Edge)
 	incMap := make(map[int32]map[int32]bool)
 	adjCount := make(map[int32]map[int32]int32)
+	history := []HistoryEntry{}
 
-	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap, AdjCount: adjCount}
+	return &HyperGraph{Vertices: vertices, Edges: edges, IncMap: incMap, AdjCount: adjCount, History: history}
 }
 
 func (g *HyperGraph) IsSimple() bool {
@@ -289,8 +292,8 @@ func (g *HyperGraph) RemoveDuplicate() {
 	for eId, e := range g.Edges {
 		hash := e.getHash()
 		if hashes[hash] {
-			if historyEnabled {
-				entry := HistoryEntry{Type: EDGE, Id: eId}
+			if HistoryEnabled {
+				entry := HistoryEntry{Type: EDGE, Id: eId, Rule: "Duplicate"}
 				g.History = append(g.History, entry)
 			}
 			g.RemoveEdge(eId)
