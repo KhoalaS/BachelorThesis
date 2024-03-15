@@ -19,16 +19,15 @@ print("file loaded...")
 #df.drop(columns=["OVertices", "OEdges",
 #        "Vertices", "Edges"], inplace=True)
 
+
 for k, v in rule_names.items():
     df.rename(columns={k: v}, inplace=True)
     c.rename(columns={k: v}, inplace=True)
 
-#df = df[df['ED'] > 150 ]
-print(df.describe())
+df = df.groupby('File').mean()
 
 print(df.shape[0])
 foi = []
-
 
 for idx, row in df.iterrows():
     c_ratio = c.loc[idx]["Ratio"]
@@ -38,4 +37,4 @@ for idx, row in df.iterrows():
 print(len(foi))
 
 for file in foi:
-    print(df.loc[file])
+    print(c.loc[file])
