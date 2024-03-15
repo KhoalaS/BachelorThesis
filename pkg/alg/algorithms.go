@@ -31,7 +31,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	eSize := len(g.Edges)
 
 	header := "Ratio;"
-	header += strings.Join(Labels, ";") + ";Opt\n"
+	header += strings.Join(Labels, ";")
 
 	os.Mkdir(outdir, 0700)
 
@@ -41,6 +41,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
 			masterfile.WriteString(header)
+			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
@@ -54,14 +55,14 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, 0)
 		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
-
-		msg = fmt.Sprintf("%f;", GetRatio(execs))
-		for _, v := range Labels {
-			msg += fmt.Sprintf("%d;", execs[v])
-		}
-		msg = msg[:len(msg)-1] + "\n"
 	}
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c), GetEstOpt(execs)))
+
+	msg = fmt.Sprintf("%f;", GetRatio(execs))
+	for _, v := range Labels {
+		msg += fmt.Sprintf("%d;", execs[v])
+	}
+	msg = msg[:len(msg)-1]
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg, vSize, eSize, len(c), GetEstOpt(execs)))
 	return execs
 }
 
@@ -71,7 +72,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	eSize := len(g.Edges)
 
 	header := "Ratio;"
-	header += strings.Join(Labels, ";") + ";Opt\n"
+	header += strings.Join(Labels, ";")
 
 	os.Mkdir(outdir, 0700)
 
@@ -80,8 +81,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
-			masterfile.WriteString(header[0 : len(header)-1])
-			masterfile.WriteString(";Vertices;Edges;HittingSet\n")
+			masterfile.WriteString(header)
+			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
@@ -107,7 +108,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	for _, v := range Labels {
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
-	msg = msg[:len(msg)-1] + "\n"
+	msg = msg[:len(msg)-1]
 
 	if len(g.Edges) == 0 {
 		masterfile.WriteString(msg)
@@ -121,11 +122,6 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		ApplyRulesFrontier(gf, g, c, execs, expand)
 		if len(expand) > 0 {
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
-			msg = fmt.Sprintf("%f;", GetRatio(execs))
-			for _, v := range Labels {
-				msg += fmt.Sprintf("%d;", execs[v])
-			}
-			msg = msg[:len(msg)-1] + "\n"
 			continue
 		}
 
@@ -150,13 +146,13 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 			execs["kFallback"] += 1
 		}
 
-		msg = fmt.Sprintf("%f;", GetRatio(execs))
-		for _, v := range Labels {
-			msg += fmt.Sprintf("%d;", execs[v])
-		}
-		msg = msg[:len(msg)-1] + "\n"
 	}
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c), GetEstOpt(execs)))
+	msg = fmt.Sprintf("%f;", GetRatio(execs))
+	for _, v := range Labels {
+		msg += fmt.Sprintf("%d;", execs[v])
+	}
+	msg = msg[:len(msg)-1]
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg, vSize, eSize, len(c), GetEstOpt(execs)))
 	return execs
 }
 
