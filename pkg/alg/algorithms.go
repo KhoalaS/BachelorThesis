@@ -1,7 +1,6 @@
 package alg
 
 import (
-	"bufio"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -36,13 +35,6 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 
 	os.Mkdir(outdir, 0700)
 
-	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv", outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
-	logfile, err := os.Create(logfilename)
-	if err != nil {
-		log.Fatalf("Could not create file %s", logfilename)
-	}
-	logWriter := bufio.NewWriter(logfile)
-
 	fMasterFilename := fmt.Sprintf("%s/%s", outdir, masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
@@ -54,10 +46,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		}
 	}
 
-	defer logfile.Close()
 	defer masterfile.Close()
-
-	logWriter.WriteString(header)
 
 	execs := MakeExecs()
 	msg := ""
@@ -71,10 +60,8 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 			msg += fmt.Sprintf("%d;", execs[v])
 		}
 		msg = msg[:len(msg)-1] + "\n"
-		logWriter.WriteString(msg)
 	}
 	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
-	logWriter.Flush()
 	return execs
 }
 
@@ -88,13 +75,6 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 
 	os.Mkdir(outdir, 0700)
 
-	logfilename := fmt.Sprintf("%s/%s_%.2f_%d.csv", outdir, graphtype, float64(len(g.Edges))/float64(len(g.Vertices)), iteration)
-	logfile, err := os.Create(logfilename)
-	if err != nil {
-		log.Fatalf("Could not create file %s", logfilename)
-	}
-	logWriter := bufio.NewWriter(logfile)
-
 	fMasterFilename := fmt.Sprintf("%s/%s", outdir, masterfilename)
 	masterfile, err := os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
@@ -107,10 +87,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		}
 	}
 
-	defer logfile.Close()
 	defer masterfile.Close()
-
-	logWriter.WriteString(header)
 
 	msg := ""
 
@@ -131,10 +108,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
 	msg = msg[:len(msg)-1] + "\n"
-	logWriter.WriteString(msg)
 
 	if len(g.Edges) == 0 {
-		logWriter.Flush()
 		masterfile.WriteString(msg)
 		return execs
 	}
@@ -151,7 +126,6 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 				msg += fmt.Sprintf("%d;", execs[v])
 			}
 			msg = msg[:len(msg)-1] + "\n"
-			logWriter.WriteString(msg)
 			continue
 		}
 
@@ -181,10 +155,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 			msg += fmt.Sprintf("%d;", execs[v])
 		}
 		msg = msg[:len(msg)-1] + "\n"
-		logWriter.WriteString(msg)
 	}
 	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d\n", msg[0:len(msg)-1], vSize, eSize, len(c)))
-	logWriter.Flush()
 	return execs
 }
 
