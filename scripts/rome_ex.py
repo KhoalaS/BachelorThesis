@@ -19,12 +19,13 @@ print("file loaded...")
 #df.drop(columns=["OVertices", "OEdges",
 #        "Vertices", "Edges"], inplace=True)
 
-
 for k, v in rule_names.items():
     df.rename(columns={k: v}, inplace=True)
     c.rename(columns={k: v}, inplace=True)
 
 df = df.groupby('File').mean()
+c = c.groupby('File').mean()
+
 
 print(df.shape[0])
 foi = []
@@ -37,4 +38,6 @@ for idx, row in df.iterrows():
 print(len(foi))
 
 for file in foi:
+    pass
     print(c.loc[file])
+    print(df.loc[file])

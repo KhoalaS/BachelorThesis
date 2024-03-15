@@ -53,6 +53,8 @@ func main() {
 			h.CurrentRule = "Tiny"
 			execs["kTiny"] += hypergraph.RemoveEdgeRule(h, c, hypergraph.TINY)
 
+			hypergraph.WriteToFileSimple(h, "./out/rome_single_pre_edom.txt")
+
 			h.CurrentRule = "EDom"
 			execs["kEdgeDom"] += hypergraph.EdgeDominationRule(h)
 
