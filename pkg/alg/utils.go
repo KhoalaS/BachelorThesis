@@ -23,6 +23,15 @@ func GetRatio(execs map[string]int) float64 {
 	return nom / denom
 }
 
+func GetEstOpt(execs map[string]int) int {
+	opt := 0
+
+	for key, val := range execs {
+		opt += Ratios[key].B * val
+	}
+	return opt
+}
+
 func Shuffle[V any](arr []V){
 	var t V
 	for i:=len(arr)-1; i>0; i--{
