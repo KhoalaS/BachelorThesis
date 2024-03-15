@@ -345,12 +345,13 @@ func F3Rule(g *HyperGraph, c map[int32]bool) int {
 	return 1
 }
 
-func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
+func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) (int, int) {
 	if Logging {
 		LogTime(time.Now(), "SmallEdgeDegreeTwoRule")
 	}
 
-	exec := 0
+	exec0 := 0
+	exec1 := 0
 
 	for outer := true; outer; {
 		outer = false
@@ -377,18 +378,22 @@ func SmallEdgeDegreeTwoRule(g *HyperGraph, c map[int32]bool) int {
 				continue
 			}
 
-			found := smallDegreeTwoSub(g, c, v, s2Edge, s3Edge)
+			found, remSize := smallDegreeTwoSub(g, c, v, s2Edge, s3Edge)
 
 			if found {
 				outer = true
-				exec++
+				if remSize == 3 {
+					exec0++
+				}else{
+					exec1++
+				}
 			}
 		}
 	}
-	return exec
+	return exec0, exec1
 }
 
-func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32) bool {
+func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32) (bool, int) {
 	var x int32 = -1
 	var remEdge int32 = -1
 
@@ -421,7 +426,10 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 		}
 	}
 
+	remSize := -1
+
 	if found {
+		remSize = len(g.Edges[remEdge].V)
 		// should be possible to delete immidietly
 		c[x] = true
 		for h := range g.IncMap[x] {
@@ -436,7 +444,7 @@ func smallDegreeTwoSub(g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32,
 		}
 
 	}
-	return found
+	return found, remSize
 }
 
 func ExtendedTriangleRule(g *HyperGraph, c map[int32]bool) int {

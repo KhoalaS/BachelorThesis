@@ -491,12 +491,13 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 	return exec
 }
 
-func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
+func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) (int, int) {
 	if Logging {
 		LogTime(time.Now(), "S_SmallEdgeDegreeTwoRule")
 	}
 
-	exec := 0
+	exec0 := 0
+	exec1 := 0
 
 	for outer := true; outer; {
 		outer = false
@@ -504,7 +505,6 @@ func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, e
 			if g.Deg(v) != 2 {
 				continue
 			}
-
 			// assert that deg(v) = 2
 
 			var s2Edge int32 = -1
@@ -523,20 +523,22 @@ func S_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, e
 				continue
 			}
 
-			found := false
-
-			found = S_smallDegreeTwoSub(gf, g, c, v, s2Edge, s3Edge, expand)
+			found, remSize := S_smallDegreeTwoSub(gf, g, c, v, s2Edge, s3Edge, expand)
 
 			if found {
 				outer = true
-				exec++
+				if remSize == 3 {
+					exec0++
+				}else{
+					exec1++
+				}
 			}
 		}
 	}
-	return exec
+	return exec0, exec1
 }
 
-func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32, expand map[int32]bool) bool {
+func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId int32, s2Edge int32, s3Edge int32, expand map[int32]bool) (bool, int) {
 	var x int32 = -1
 	var remEdge int32 = -1
 
@@ -569,7 +571,10 @@ func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId in
 		}
 	}
 
+	remSize := -1
+
 	if found {
+		remSize = len(g.Edges[remEdge].V)
 		// should be possible to delete immidietly
 		c[x] = true
 		for h := range g.IncMap[x] {
@@ -590,7 +595,7 @@ func S_smallDegreeTwoSub(gf *HyperGraph, g *HyperGraph, c map[int32]bool, vId in
 		}
 
 	}
-	return found
+	return found, remSize
 }
 
 func F3TargetLowDegreeDetect(g *HyperGraph) int32 {

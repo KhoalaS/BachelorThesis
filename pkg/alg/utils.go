@@ -1,6 +1,7 @@
 package alg
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -20,6 +21,7 @@ func GetRatio(execs map[string]int) float64 {
 		nom += float64(Ratios[key].A * val)
 		denom += float64(Ratios[key].B * val)
 	}
+	fmt.Println("GetRatio:", nom, denom)
 	return nom / denom
 }
 
