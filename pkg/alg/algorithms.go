@@ -180,19 +180,16 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 	}
 
 	for {
-		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		execs["kTiny"] += kTiny
-
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		if kVertDom > 0 {
 			execs["kVertDom"] += kVertDom
 			continue
 		}
-		//kEdgeDom := hypergraph.EdgeDominationRule(g)
-		//if kEdgeDom > 0 {
-		//	execs["kEdgeDom"] += kEdgeDom
-		//	continue
-		//}
+		kEdgeDom := hypergraph.EdgeDominationRule(g)
+		if kEdgeDom > 0 {
+			execs["kEdgeDom"] += kEdgeDom
+			continue
+		}
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
 		if kApVertDom > 0 {
 			execs["kApVertDom"] += kApVertDom
@@ -283,19 +280,16 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 
 func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
 	for {
-		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
-		execs["kTiny"] += kTiny
-
 		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
 		if kVertDom > 0 {
 			execs["kVertDom"] += kVertDom
 			continue
 		}
-		//kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
-		//if kEdgeDom > 0 {
-		//	execs["kEdgeDom"] += kEdgeDom
-		//	continue
-		//}
+		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
+		if kEdgeDom > 0 {
+			execs["kEdgeDom"] += kEdgeDom
+			continue
+		}
 		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
 		if kApVertDom > 0 {
 			execs["kApVertDom"] += kApVertDom
