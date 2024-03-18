@@ -102,14 +102,6 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	ApplyRules(g, c, execs, 0)
 	expDepth := 2
 
-	e := hypergraph.F3TargetLowDegreeDetect(g)
-	if e != -1 {
-		execs["kFallback"] += 1
-		for v := range g.Edges[e].V {
-			c[v] = true
-		}
-	}
-
 	msg = fmt.Sprintf("%f;", GetRatio(execs))
 	for _, v := range Labels {
 		msg += fmt.Sprintf("%d;", execs[v])
@@ -119,6 +111,14 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	if len(g.Edges) == 0 {
 		masterfile.WriteString(msg)
 		return execs
+	}
+
+	e := hypergraph.F3TargetLowDegreeDetect(g)
+	if e != -1 {
+		execs["kFallback"] += 1
+		for v := range g.Edges[e].V {
+			c[v] = true
+		}
 	}
 
 	gf := hypergraph.F3_ExpandFrontier(g, e, expDepth)
@@ -131,14 +131,9 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 			continue
 		}
 
-		isSmall := false
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
-			e = hypergraph.F2Detect(g)
-			if e == -1 {
-				continue
-			}
-			isSmall = true
+			continue
 		}
 
 		for v := range g.Edges[e].V {
@@ -146,12 +141,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		}
 
 		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
-		if isSmall {
-			execs["kSmall"] += 1
-		} else {
-			execs["kFallback"] += 1
-		}
-
+		execs["kFallback"] += 1
 	}
 
 	stop := time.Since(start).Seconds()
@@ -268,14 +258,9 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 			continue
 		}
 
-		isSmall := false
 		e := hypergraph.F3TargetLowDegreeDetect(g)
 		if e == -1 {
-			e = hypergraph.F2Detect(g)
-			if e == -1 {
-				continue
-			}
-			isSmall = true
+			continue
 		}
 
 		for v := range g.Edges[e].V {
@@ -283,11 +268,7 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 		}
 
 		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
-		if isSmall {
-			execs["kSmall"] += 1
-		} else {
-			execs["kFallback"] += 1
-		}
+		execs["kFallback"] += 1
 	}
 	return execs
 }
