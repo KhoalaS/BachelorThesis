@@ -523,14 +523,22 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 
 	gf := hypergraph.ExpandFrontier(g, expDepth, expand)
 
+	reset := false
+
 	for len(g.Edges) > 0 {
 		fmt.Println(execs, len(g.Edges))
 		expand := make(map[int32]bool)
 		ApplyRulesSingle(gf, g, c, execs, expand)
 
 		if len(expand) > 0 {
-			hypergraph.ExtendFrontier(gf, g, expDepth, expand)
+			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			continue
+		}else{
+			if !reset {
+				gf = g
+				continue
+			}
+			reset = !reset
 		}
 
 		e := hypergraph.F3TargetLowDegreeDetect(g)
