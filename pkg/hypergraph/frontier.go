@@ -50,3 +50,27 @@ func F3_ExpandFrontier(g *HyperGraph, remId int32, level int) *HyperGraph {
 	}
 	return ExpandFrontier(g, level, frontier)
 }
+
+func ExtendFrontier(gf *HyperGraph, g *HyperGraph, level int, expand map[int32]bool) {
+
+	for i := 0; i < level; i++ {
+		nextFrontier := make(map[int32]bool)
+		for v := range expand {
+			for e := range g.IncMap[v] {
+				if _, ex := gf.Edges[e]; !ex {
+					gf.AddEdgeMapWithId(g.Edges[e].V, e)
+					for w := range g.Edges[e].V {
+						if _, ex2 := gf.Vertices[w]; !ex2 {
+							gf.AddVertex(w, 0)
+							nextFrontier[w] = true
+						}
+					}
+				}
+			}
+		}
+		if len(nextFrontier) == 0 {
+			break
+		}
+		expand = nextFrontier
+	}
+}
