@@ -766,13 +766,23 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 ## Main Algorithm
 
-\todo{TODO}
+The first version of the algorithm uses a not optimal way of applying the rules. We will refer to this as _rule strategy_ going forward. At the time, the implementation of the approximative double vertex domination rule was bottlenecking the algorithm and the incremental version of the main algorithm did not exist yet. Both of these improvements sped up the execution time significantly, but since they were not completed yet, we chose a worse strategy instead of increasing execution time. This version of the algorithm will apply all rules exhaustively one by one in the following order:
+
+-   vertex domination
+-   tiny edge
+-   edge domination
+-   approximative vertex domiantion
+-   double approximative vertex domiantion
+-   small edge degree 2
+-   small triangle
+-   extended triangle
+-   small edge
+
+The rules are applied sequentially until no more rules can be applied. If the graph still contains edges afterwards, we put a size three edge into the partial hitting set and restart the rule application. Note that we do not recheck if prior rules are viable after the application of each rule. The obvious correct way of applying the rules would be to restart again at the vertex domination rule, every time a rule has been applied at least once. The differences between the two rule strategies are further explored in chapter \ref{appl}.
 
 ## Incremental Frontier Algorithm
 
-As experienced with the DBLP coauthor graph, there are some graph instances that do not work well with the prior algorithm. These instances do not admit a lot of rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule was applied.
-
-We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
+As experienced with the DBLP coauthor graph, there are some graph instances that do not work well with the prior algorithm. These instances do not admit a lot of rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule was applied. We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
 
 We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges we are done. Else we try to find a size 3 edge $e$, which will trigger a vertex domination situation if removed. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
@@ -819,7 +829,7 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 \end{algorithm}
 $$
 
-# Applications and Results
+# Applications and Results {#appl}
 
 ## Triangle Vertex Deletion
 
@@ -833,11 +843,11 @@ We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densit
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a median estimated approximation ratio of approximatly $1.759$. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds.
+The algorithm achieved a mean estimated approximation ratio of approximatly $1.759$, with the worse rule strategy and a ratio of $1.543$ with the correct one. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds or 2 minutes respectively. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus \textsc{3-Hitting-Set} instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus 3-Hitting-Set instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these community. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs without community structure. Due to the high density, even a small expansion two layers deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
+As stated already, we started testing the algorithm on this graph, even before we had achieved better execution times though the incremental algorithm. As we kept gathering data, we still used the old rule strategy. We conducted some experiments, to see how this rule strategy behaves if certain rules are not applied at all. Our goal is to push this rule strategy as close to the optimal one, in terms of hitting set sizes, without sacrificing too much execution time. 
 
-Next we tested some variations of the algorithm. In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_stock} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. Note that the sheer size of these real life networks makes it quite difficult to pinpoint the exact reason for these changes in number of rule executions. \todo[backgroundcolor=green]{add possible explanation for less small edge}
+In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_stock} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. This indicates that the current rule strategy can be improved, by not using the small edge rule, until all the over rules can not be applied anymore.
 
 \begin{table}[t]
 \begin{subtable}[b]{0.3\textwidth}
@@ -912,10 +922,12 @@ EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40
 
 This leads us to our next experiment. What happens if we do not use edge domination rule and the small edge rule? This obviously invalidates the correctness of the algorithm, since there exist structures made up of size two edges, that the algorithm can not target, for example a $C_n, n>3$. One possibility to uphold correctness is, to remove a size two edge, if the fallback rule can not find a size three edge. Nonetheless, all the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling the edge domination rule. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. The following possible interpretations of these observations are highly speculative.
 
--   **failed cascading**: For example, let $G=(V,E)$ be a hypergraph and $e\in E$ be a size two edge. Let us assume, that a rule $R_1$ that gets executed after a rule $R_0$, will make rule $R_1$ applicable, such that $e$ will be removed. Since we did not go back and recheck if $R_1$ can be applied again, the small edge rule will remove $e$.
+-   **failed cascading**: For example, let $G=(V,E)$ be a hypergraph and $e\in E$ be a size two edge. Let us assume, that a rule $R_1$ that gets executed after a rule $R_0$, will make rule $R_0$ applicable, such that $e$ will be removed. Since we did not go back and recheck if $R_0$ can be applied again, the small edge rule will remove $e$.
 -   **preemptive removal**: What if not removing a size two edge, makes a vertex domiantion type rule possible at some point in time, during the algorithms execution? Another possibility is, that a better rule will remove the edge at some point anyway. Thus removing the edge is not necessary in the first place.
 
 \todo[backgroundcolor=green]{add possible explanaiton for better ratio with no small edge rule}
+
+\newpage
 
 ### Amazon Product Co-Purchasing Graph
 
