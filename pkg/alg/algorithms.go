@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
@@ -41,7 +42,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
 			masterfile.WriteString(header)
-			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt\n")
+			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt;Time\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
@@ -51,18 +52,21 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 
 	execs := MakeExecs()
 	msg := ""
+	start := time.Now()
 
 	for len(g.Edges) > 0 {
 		execs = ApplyRules(g, c, execs, 0)
 		execs["kFallback"] += hypergraph.F3TargetLowDegree(g, c)
 	}
 
+	stop := time.Since(start).Seconds()
+
 	msg = fmt.Sprintf("%f;", GetRatio(execs))
 	for _, v := range Labels {
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
 	msg = msg[:len(msg)-1]
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg, vSize, eSize, len(c), GetEstOpt(execs)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs),RoundUp(stop, 2)))
 	return execs
 }
 
@@ -82,7 +86,7 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		if errors.Is(err, os.ErrNotExist) {
 			masterfile, _ = os.Create(fMasterFilename)
 			masterfile.WriteString(header)
-			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt\n")
+			masterfile.WriteString(";Vertices;Edges;HittingSet;Opt;Time\n")
 		} else {
 			log.Fatalf("Could not open file %s", fMasterFilename)
 		}
@@ -91,6 +95,8 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 	defer masterfile.Close()
 
 	msg := ""
+
+	start := time.Now()
 
 	execs := MakeExecs()
 	ApplyRules(g, c, execs, 0)
@@ -147,12 +153,15 @@ func LoggingThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]boo
 		}
 
 	}
+
+	stop := time.Since(start).Seconds()
+
 	msg = fmt.Sprintf("%f;", GetRatio(execs))
 	for _, v := range Labels {
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
 	msg = msg[:len(msg)-1]
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d\n", msg, vSize, eSize, len(c), GetEstOpt(execs)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs), RoundUp(stop, 2)))
 	return execs
 }
 
