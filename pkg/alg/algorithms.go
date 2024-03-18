@@ -554,7 +554,7 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 		return execs
 	}
 
-	expDepth := 2
+	expDepth := 1
 
 	gf := hypergraph.ExpandFrontier(g, expDepth, expand)
 
