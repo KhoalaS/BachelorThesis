@@ -173,7 +173,7 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 // adjCount version
 func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
 	if Logging {
-		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule2")
+		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule")
 	}
 
 	exec := 0
@@ -254,7 +254,7 @@ func S_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int
 // Two-Sum version
 func S_ApproxDoubleVertexDominationRule2(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expand map[int32]bool) int {
 	if Logging {
-		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule_New")
+		defer LogTime(time.Now(), "S_ApproxDoubleVertexDominationRule2")
 	}
 
 	exec := 0

@@ -431,3 +431,119 @@ func GreedyHighDeg(g *hypergraph.HyperGraph, c map[int32]bool) {
 		c[remVertex] = true
 	}
 }
+
+func ApplyRulesSingle(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
+	kTiny := 0
+	kVertDom := 0
+	kEdgeDom := 0
+
+	for {
+		old := kTiny + kVertDom + kEdgeDom
+
+		kTiny += hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+		kVertDom += hypergraph.S_VertexDominationRule(gf, g, c, expand)
+		kEdgeDom += hypergraph.S_EdgeDominationRule(gf, g, expand)
+
+		new := kTiny + kVertDom + kEdgeDom
+		if old == new {
+			break
+		}
+	}
+
+	execs["kTiny"] += kTiny
+	execs["kVertDom"] += kVertDom
+	execs["kEdgeDom"] += kEdgeDom
+
+	kApVertDom := hypergraph.FS_ApproxVertexDominationRule(gf, g, c, expand)
+	if kApVertDom > 0 {
+		execs["kApVertDom"] += kApVertDom
+		return
+	}
+	kApDoubleVertDom := hypergraph.FS_ApproxDoubleVertexDominationRule(gf, g, c, expand)
+	if kApDoubleVertDom > 0 {
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		return
+	}
+	kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.FS_SmallEdgeDegreeTwoRule(gf, g, c, expand)
+	if kSmallEdgeDegTwo+kSmallEdgeDegTwo2 > 0 {
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+		execs["kSmallEdgeDegTwo2"] += kSmallEdgeDegTwo2
+		return
+	}
+	kTri := hypergraph.FS_SmallTriangleRule(gf, g, c, expand)
+	if kTri > 0 {
+		execs["kTri"] += kTri
+		return
+	}
+	kExtTri := hypergraph.FS_ExtendedTriangleRule(gf, g, c, expand)
+	if kExtTri > 0 {
+		execs["kExtTri"] += kExtTri
+		return
+	}
+	kSmall := hypergraph.FS_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
+	if kSmall > 0 {
+		execs["kSmall"] += kSmall
+		return
+	}
+}
+
+func PreProcessOnly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
+	kTiny := 0
+	kVertDom := 0
+	kEdgeDom := 0
+
+	for {
+		old := kTiny + kVertDom + kEdgeDom
+
+		kTiny += hypergraph.FS_TinyEdgeRule(g, c, expand)
+		kVertDom += hypergraph.FS_VertexDominationRule(g, expand)
+		kEdgeDom += hypergraph.FS_EdgeDominationRule(g, expand)
+
+		new := kTiny + kVertDom + kEdgeDom
+		if old == new {
+			break
+		}
+	}
+	execs["kTiny"] += kTiny
+	execs["kVertDom"] += kVertDom
+	execs["kEdgeDom"] += kEdgeDom
+}
+
+func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
+	execs := MakeExecs()
+	expand := make(map[int32]bool)
+
+	PreProcessOnly(g, c, execs, expand)
+
+	if len(g.Edges) == 0 {
+		return execs
+	}
+
+	expDepth := 2
+
+	gf := hypergraph.ExpandFrontier(g, expDepth, expand)
+
+	for len(g.Edges) > 0 {
+		fmt.Println(execs)
+		expand := make(map[int32]bool)
+		ApplyRulesSingle(gf, g, c, execs, expand)
+
+		if len(expand) > 0 {
+			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
+			continue
+		}
+
+		e := hypergraph.F3TargetLowDegreeDetect(g)
+		if e == -1 {
+			continue
+		}
+
+		for v := range g.Edges[e].V {
+			c[v] = true
+		}
+
+		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
+		execs["kFallback"] += 1
+	}
+	return execs
+}
