@@ -66,7 +66,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
 	msg = msg[:len(msg)-1]
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs),RoundUp(stop, 2)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs), RoundUp(stop, 2)))
 	return execs
 }
 
@@ -194,6 +194,11 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 			execs["kVertDom"] += kVertDom
 			continue
 		}
+		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
+		if kTiny > 0 {
+			execs["kTiny"] += kTiny
+			continue
+		}
 		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		if kEdgeDom > 0 {
 			execs["kEdgeDom"] += kEdgeDom
@@ -292,6 +297,11 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
 		if kVertDom > 0 {
 			execs["kVertDom"] += kVertDom
+			continue
+		}
+		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
+		if kTiny > 0 {
+			execs["kTiny"] += kTiny
 			continue
 		}
 		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
