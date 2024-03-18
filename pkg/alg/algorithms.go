@@ -487,6 +487,41 @@ func ApplyRulesSingle(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map
 	}
 }
 
+func findEntry(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) bool {
+	kApVertDom := hypergraph.FS_ApproxVertexDominationRule(gf, g, c, expand)
+	if kApVertDom > 0 {
+		execs["kApVertDom"] += kApVertDom
+		return true
+	}
+	kApDoubleVertDom := hypergraph.FS_ApproxDoubleVertexDominationRule(gf, g, c, expand)
+	if kApDoubleVertDom > 0 {
+		execs["kApDoubleVertDom"] += kApDoubleVertDom
+		return true
+	}
+	kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.FS_SmallEdgeDegreeTwoRule(gf, g, c, expand)
+	if kSmallEdgeDegTwo+kSmallEdgeDegTwo2 > 0 {
+		execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+		execs["kSmallEdgeDegTwo2"] += kSmallEdgeDegTwo2
+		return true
+	}
+	kTri := hypergraph.FS_SmallTriangleRule(gf, g, c, expand)
+	if kTri > 0 {
+		execs["kTri"] += kTri
+		return true
+	}
+	kExtTri := hypergraph.FS_ExtendedTriangleRule(gf, g, c, expand)
+	if kExtTri > 0 {
+		execs["kExtTri"] += kExtTri
+		return true
+	}
+	kSmall := hypergraph.FS_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
+	if kSmall > 0 {
+		execs["kSmall"] += kSmall
+		return true
+	}
+	return false
+}
+
 func PreProcessOnly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
 	kTiny := 0
 	kVertDom := 0
@@ -523,8 +558,6 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 
 	gf := hypergraph.ExpandFrontier(g, expDepth, expand)
 
-	reset := false
-
 	for len(g.Edges) > 0 {
 		fmt.Println(execs, len(g.Edges))
 		expand := make(map[int32]bool)
@@ -534,11 +567,10 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			continue
 		}else{
-			if !reset {
-				gf = g
+			entry := findEntry(g, g, c, execs, expand)
+			if entry {
 				continue
 			}
-			reset = !reset
 		}
 
 		e := hypergraph.F3TargetLowDegreeDetect(g)
