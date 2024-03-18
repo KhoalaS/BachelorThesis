@@ -1,6 +1,7 @@
 package alg
 
 import (
+	"math"
 	"math/rand"
 )
 
@@ -40,4 +41,9 @@ func Shuffle[V any](arr []V){
 		arr[i] = arr[j]
 		arr[j] = t
 	}
+}
+
+func RoundUp(val float64, decimals int) float64{
+	mul := math.Pow(10, float64(decimals))
+	return math.Ceil(val * mul) / mul
 }
