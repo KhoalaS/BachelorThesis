@@ -180,10 +180,8 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 
 	for {
 		kVertDom := hypergraph.VertexDominationRule(g, c)
-		if kVertDom > 0 {
-			execs["kVertDom"] += kVertDom
-			continue
-		}
+		execs["kVertDom"] += kVertDom
+		
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		if kTiny > 0 {
 			execs["kTiny"] += kTiny
@@ -276,10 +274,8 @@ func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[
 func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, expand map[int32]bool) {
 	for {
 		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
-		if kVertDom > 0 {
-			execs["kVertDom"] += kVertDom
-			continue
-		}
+		execs["kVertDom"] += kVertDom
+
 		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
 		if kTiny > 0 {
 			execs["kTiny"] += kTiny
