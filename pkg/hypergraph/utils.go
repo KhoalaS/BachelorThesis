@@ -59,14 +59,3 @@ func binomialCoefficient(n int, k int) int {
 	}
 	return int(math.Ceil(c))
 }
-
-var Ratios = map[string]IntTuple{
-	"kTiny":            {A: 1, B: 1},
-	"kSmall":           {A: 2, B: 1},
-	"kTri":             {A: 3, B: 2},
-	"kExtTri":          {A: 4, B: 2},
-	"kApVertDom":       {A: 2, B: 1},
-	"kApDoubleVertDom": {A: 2, B: 1},
-	"kSmallEdgeDegTwo": {A: 4, B: 2},
-	"kFallback":        {A: 3, B: 1},
-}
