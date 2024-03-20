@@ -9,6 +9,7 @@
 \LinesNumbered
 \listoftodos
 \SetKwFunction{FRecurs}{FnRecursive}
+\SetKwFunction{ExpandFrontier}{ExpandFrontier}
 \SetKwProg{Fn}{func}{\string:}{}
 
 # Programming Language
@@ -774,11 +775,9 @@ It is crucial to apply the rules in a given order. Some rules expect that other 
 5. extended triangle rule
 6. small edge rule
 
-We present three algorithms, each using a different strategy to apply the rules in the precedence. The first algorithm prioritizes execution time. The base algorithm is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve the effectiveness of the algorithm. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base algorithm. Iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules. 
-The second algorithm is also using the same base algorithm. The only modification is that, we start over with the vertex domination rule, whenever one of the rules was applied at least once. This algorithm serves as a middle ground between execution time and solution size. 
+We present three algorithms, each using a different strategy to apply the rules in the precedence. The first algorithm prioritizes execution time. The base algorithm is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve the effectiveness of the algorithm. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base algorithm. Iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules.
+The second algorithm is also using the same base algorithm. The only modification is that, we start over with the vertex domination rule, whenever one of the rules was applied at least once. This algorithm serves as a middle ground between execution time and solution size.
 The third algorithm tries to maximize the exact rule executions. We start by applying the exact rules exhaustively. We then execute the other rules at most once, according to the precedence. If a rule has been applied, we execute the exact rules exhaustively and start over with the first non-exact rule in the precedence.
-
-In the next section we try to lower the execution time of the algorithms.  
 
 ## Incremental Frontier Algorithm
 
@@ -802,11 +801,8 @@ $l\gets 2$\;
     \KwRet $C$\;
 }
 
-$e\gets \texttt{F3TargetLowDegree}(G)$\;
-
-$H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
+$H \gets$ empty hypergraph\;
 \tcc{$H$ will act as a mask over $G$, the rules will only be applied to vertices/edges in $H$}
-
 
 \For{$|E| > 0$}{
     Apply all reduction rules exhaustively on $H$ mutating $H$,$G$ and $C$\;
@@ -825,11 +821,40 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 
 \KwRet $C$\;
 
+
+\Fn{\ExpandFrontier{G, l, exp}}{
+    $H\gets$ empty hypergraph\;
+
+    \For{$i\gets 0$ \KwTo $l$}{
+        $next \gets \emptyset$\;
+        \For{$v\in exp$}{
+            \For{$e \in G.E$ \textnormal{incident to} $v$}{
+                \If{$e \notin H.E$}{
+                    $H.E\gets H.E \cup \{ e \}$\;
+                    \For{$w\in e$}{
+                        \If{$w \notin H.V$}{
+                            $H.V \gets H.V \cup \{ w \}$\;
+                            $next \gets next \cup \{ w \}$\;
+                        }
+                    }
+                }
+            }
+        }
+        \If{$|next | = 0$}{
+            \textbf{break}\;
+        }
+        $exp\gets next$\;
+    }
+    $H.IncMap = G.IncMap$\;
+    $H.AdjCount = G.AdjCount$\;
+    \KwRet $H$\;
+}
+
 \caption{Incremental 3-approximation algorithm for 3-HS\label{3hs_frontier}}
 \end{algorithm}
 $$
 
-Algorithm \ref{3hs_frontier} serves as a general outline for the first and second algorithm presented in the previous section. It was sadly not that easy to decouple the application of the rules from the algorithm, when using the frontier mechanism in the third algorithm. In an ideal scenario, one would only need to swap out the function that handles the rule applications for a different rule strategy. 
+Algorithm \ref{3hs_frontier} serves as a general outline for the first and second algorithm presented in the previous section. It was sadly not that easy to decouple the application of the rules from the algorithm, when using the frontier mechanism in the third algorithm. In an ideal scenario, one would only need to swap out the function that handles the rule applications for a different rule strategy.
 
 # Applications and Results {#appl}
 
@@ -841,95 +866,42 @@ Algorithm \ref{3hs_frontier} serves as a general outline for the first and secon
 
 ### DBLP Coauthor Graph
 
-We tested the algorithm on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
+We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-The algorithm achieved a mean estimated approximation ratio of approximatly $1.759$, with the worse rule strategy and a ratio of $1.543$ with the correct one. Using the incremental algorithm, the previous execution time of around 25 minutes could be reduced to about 16 seconds or 2 minutes respectively. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a Triangle Vertex Deletion and thus \textsc{3-Hitting-Set} instance. The expansion steps will therefore only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
-
-As stated already, we started testing the algorithm on this graph, even before we had achieved better execution times though the incremental algorithm. As we kept gathering data, we still used the old rule strategy. We conducted some experiments, to see how this rule strategy behaves if certain rules are not applied at all. Our goal is to push this rule strategy as close to the optimal one, in terms of hitting set sizes, without sacrificing too much execution time.
-
-In our first test we disabled the use of the edge domination rule. This seems counter-intuitive at first, since the rule is reducing the problem instance "for free". But the fact that we use these data reduction rules in conjunction with approximative reduction rules makes the situation less predictable. What if we destroy favourable structures in our graph with the rule? And if so, how often does that happen? We ran the modified algorithm 100 times and collected data about the est. approximation ratio, hitting set sizes and the rule executions. As seen in tables \ref{dblp_stock} and \ref{dblp_noedom}, the mean, median, minimum and maximum hitting set sizes are a little smaller while not using the edge domination rule. As seen in table \ref{rules_diff_noedom}, all of the vertex domination rules see a slight increase in number of executions. The rules with the largest difference are the small edge rule and the extended triangle rule. Both of these rules target size two edges and the usage of both are decreasing. The number of executions of the small edge rule decreased by $42.36\%$ and the extended triangle rule by $20.47\%$. We suspect, that not removing dominated edges, preserves conditions, that are favourable for these vertex domination rules. Since a dominated edge contains a size two edge, it is very likely that the vertex domination rules will remove some of these edges as a byproduct. This is a possible explanation for the rather sharp decrease of small edge rule executions. This indicates that the current rule strategy can be improved, by not using the small edge rule, until all the over rules can not be applied anymore.
+Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4199$\todo{replace with real value}, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90x, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
 \begin{table}[t]
-\begin{subtable}[b]{0.3\textwidth}
 \centering
-\caption{unmodified algorithm}
-\begin{tabular}{lrr}
+\begin{tabular}{clrrrr}
 \toprule
-& Ratio & $|C|$ \\
+strategy & & ratio & $|C|$ & est. opt & time[sec] \\
 \midrule
-mean & 1.7595 & 115652.28 \\
-std & 0.0005 & 85.16 \\
-min & 1.7578 & 115403.00 \\
-median & 1.7595 & 115650.00 \\
-max & 1.7606 & 115836.00 \\
+\multirow{5}{4em}{1} & mean & 1.5708 & 106338.66 & 67697.18 & 29 \\
+& std & 0.0006 & 65.33 & 39.54 & 1 \\
+& min & 1.5691 & 106183 & 67597 & 26 \\
+& median & 1.5708 & 106341.50 & 67698.50 & 29 \\
+& max & 1.5727 & 106500 & 67797 & 31 \\
+\hline
+\addlinespace
+\multirow{5}{4em}{2} & mean & 1.5437 & 105083.74 & 68071.20 & 104 \\
+& std & 0.0006 & 63.45 & 34.78 & 2 \\
+& min & 1.5422 & 104922 & 67956 & 99 \\
+& median & 1.5438 & 105084 & 68072 & 104 \\
+& max & 1.5453 & 105261 & 68146 & 110 \\
+\hline
+\addlinespace
+\multirow{5}{4em}{3 TODO} & & & & & \\
+& & & & & \\
+& & & & & \\
+& & & & & \\
+& & & & & \\
 \bottomrule
 \end{tabular}
-\label{dblp_stock}
-\end{subtable}
-\hfill
-\begin{subtable}[b]{0.3\textwidth}
-\centering
-\caption{no edge domination rule}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7572 & 114953.68 \\
-std & 0.0005 & 78.17 \\
-min & 1.7560 & 114724.00 \\
-median & 1.7571 & 114948.50 \\
-max & 1.7587 & 115157.00 \\
-\bottomrule
-\end{tabular}
-\label{dblp_noedom}
-\end{subtable}
-\hfill
-\begin{subtable}[b]{0.3\textwidth}
-\centering
-\caption{no edge domination and small edge rule}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7451 & 114197.28 \\
-std & 0.0007 & 82.84 \\
-min & 1.7435 & 113960.00 \\
-median & 1.7452 & 114202.50 \\
-max & 1.7472 & 114386.00 \\
-\bottomrule
-\end{tabular}
-\label{dblp_noedomsmall}
-\end{subtable}
-\newline
-\vspace{4mm}
-\newline
-\begin{subtable}[b]{\textwidth}
-\centering
-\caption{Number of rule executions, percent change of mean after not using some rules}
-\begin{tabular}{l|rrrrrrrrrr}
-\toprule
-rules disabled & Tiny & VDom & EDom & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-\midrule
-EDom & 0.63 & 0.35 & -100 & -42.36 & -100 & -20.47 & 0.69 & 2.74 & -43.00 & 1.42 \\
-EDom, Small & 4.87 & 1.51 & -100 & -100 & -99.32 & -20.61 & 0.75 & 2.54 & -41.40 & 1.48 \\
-\bottomrule
-\end{tabular}
-\label{rules_diff_noedom}
-\end{subtable}
 \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
 \label{stats_dblp}
 \end{table}
-
-This leads us to our next experiment. What happens if we do not use edge domination rule and the small edge rule? This obviously invalidates the correctness of the algorithm, since there exist structures made up of size two edges, that the algorithm can not target, for example a $C_n, n>3$. One possibility to uphold correctness is, to remove a size two edge, if the fallback rule can not find a size three edge. Nonetheless, all the metrics decrease again as seen in table \ref{dblp_noedomsmall}. The percent change in number of rule executions is smiliar to the previous test, when only disabling the edge domination rule. With the two exceptions being the tiny edge and vertex domination rules. We can see an increase of tiny edge by $4.87\%$ and an increase of vertex domination by $1.51\%$, compared to the unmodified algorithm. The following possible interpretations of these observations are highly speculative.
-
--   **failed cascading**: For example, let $G=(V,E)$ be a hypergraph and $e\in E$ be a size two edge. Let us assume, that a rule $R_1$ that gets executed after a rule $R_0$, will make rule $R_0$ applicable, such that $e$ will be removed. Since we did not go back and recheck if $R_0$ can be applied again, the small edge rule will remove $e$.
--   **preemptive removal**: What if not removing a size two edge, makes a vertex domiantion type rule possible at some point in time, during the algorithms execution? Another possibility is, that a better rule will remove the edge at some point anyway. Thus removing the edge is not necessary in the first place.
-
-\todo[backgroundcolor=green]{add possible explanaiton for better ratio with no small edge rule}
-
-\newpage
 
 ### Amazon Product Co-Purchasing Graph
 
