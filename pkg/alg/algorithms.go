@@ -556,6 +556,10 @@ func PreProcessOnly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool, logging bool) map[string]int {
 	var masterfile *os.File
 	var err error
+
+	vSize := len(g.Vertices)
+	eSize := len(g.Edges)
+	
 	if logging {
 		header := "Ratio;"
 		header += strings.Join(Labels, ";")
