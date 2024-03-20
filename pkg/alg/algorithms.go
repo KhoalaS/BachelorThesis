@@ -66,7 +66,7 @@ func LoggingThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, graph
 		msg += fmt.Sprintf("%d;", execs[v])
 	}
 	msg = msg[:len(msg)-1]
-	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs),RoundUp(stop, 2)))
+	masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs), RoundUp(stop, 2)))
 	return execs
 }
 
@@ -553,9 +553,34 @@ func PreProcessOnly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 	execs["kEdgeDom"] += kEdgeDom
 }
 
-func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
+func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool, logging bool) map[string]int {
+	var masterfile *os.File
+	var err error
+	if logging {
+		header := "Ratio;"
+		header += strings.Join(Labels, ";")
+
+		outdir := "./data/dblp_str3"
+		os.Mkdir(outdir, 0700)
+
+		masterfilename := fmt.Sprintf("master_CUSTOM_%d", time.Now().Unix())
+		fMasterFilename := fmt.Sprintf("%s/%s", outdir, masterfilename)
+		masterfile, err = os.OpenFile(fMasterFilename, os.O_APPEND|os.O_WRONLY, 0755)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				masterfile, _ = os.Create(fMasterFilename)
+				masterfile.WriteString(header)
+				masterfile.WriteString(";Vertices;Edges;HittingSet;Opt;Time\n")
+			} else {
+				log.Fatalf("Could not open file %s", fMasterFilename)
+			}
+		}
+	}
+
 	execs := MakeExecs()
 	expand := make(map[int32]bool)
+
+	start := time.Now()
 
 	PreProcessOnly(g, c, execs, expand)
 
@@ -575,7 +600,7 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 		if len(expand) > 0 {
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			continue
-		}else{
+		} else {
 			entry := findEntry(g, g, c, execs, expand)
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 			if entry {
@@ -596,5 +621,17 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 		gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
 		execs["kFallback"] += 1
 	}
+
+	if logging {
+		stop := time.Since(start).Seconds()
+
+		msg := fmt.Sprintf("%f;", GetRatio(execs))
+		for _, v := range Labels {
+			msg += fmt.Sprintf("%d;", execs[v])
+		}
+		msg = msg[:len(msg)-1]
+		masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), GetEstOpt(execs), RoundUp(stop, 2)))
+	}
+
 	return execs
 }
