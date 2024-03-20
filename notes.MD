@@ -1,7 +1,6 @@
 ---
     title: Implementation and evaluation of a self-monitoring approximation algorithm for 3-Hitting-Set
     link-citations: true
-
 ...
 
 \RestyleAlgo{ruled}
@@ -766,7 +765,7 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 ## Main Algorithm
 
-It is crucial to apply the rules in a given order. Some rules expect that other rules can not be applied. As for the exact rules, one can save on execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@10.1007/978-3-642-29116-6_6], also refered to as precedence of rule executions. We will use the shorter term _precedence_ going forward.
+It is crucial to apply the rules in a given order. Some rules expect that other rules can not be applied. As for the exact rules, one can save on execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@10.1007/978-3-642-29116-6_6], also refered to as precedence of rule executions. We will just use the shorter term _precedence_ going forward.
 
 1. Exact Rules: vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination
 2. approximate (double) vertex domination rules
@@ -775,7 +774,11 @@ It is crucial to apply the rules in a given order. Some rules expect that other 
 5. extended triangle rule
 6. small edge rule
 
-We present three algorithms, each using a different strategy to apply the rules in the precedence. The first algorithm prioritizes execution time. The base algorithm is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this as until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve the effectiveness of the algorithm. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base algorithm. Testing with iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make these extact rules applicable. That would be the approximative (double) vertex domination rules. 
+We present three algorithms, each using a different strategy to apply the rules in the precedence. The first algorithm prioritizes execution time. The base algorithm is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve the effectiveness of the algorithm. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base algorithm. Iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules. 
+The second algorithm is also using the same base algorithm. The only modification is that, we start over with the vertex domination rule, whenever one of the rules was applied at least once. This algorithm serves as a middle ground between execution time and solution size. 
+The third algorithm tries to maximize the exact rule executions. We start by applying the exact rules exhaustively. We then execute the other rules at most once, according to the precedence. If a rule has been applied, we execute the exact rules exhaustively and start over with the first non-exact rule in the precedence.
+
+In the next section we try to lower the execution time of the algorithms.  
 
 ## Incremental Frontier Algorithm
 
@@ -826,7 +829,7 @@ $H \gets \texttt{GetFrontierGraph}(G, l, e)$\;
 \end{algorithm}
 $$
 
-Algorithm \ref{3hs_frontier} serves as a general outline for all algorithms presented in the previous section. It was sadly not that easy to decouple the application of the rules from the algorithm, when using the frontier mechanism. In an ideal scenario, one would only need to swap out a function that handles the rule application for a different rule strategy.
+Algorithm \ref{3hs_frontier} serves as a general outline for the first and second algorithm presented in the previous section. It was sadly not that easy to decouple the application of the rules from the algorithm, when using the frontier mechanism in the third algorithm. In an ideal scenario, one would only need to swap out the function that handles the rule applications for a different rule strategy. 
 
 # Applications and Results {#appl}
 
