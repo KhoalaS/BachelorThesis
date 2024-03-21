@@ -61,7 +61,7 @@ func main() {
 	prefAttachMod := flag.Bool("pamod", false, "")
 	er := flag.Bool("er", false, "Generate a andom Erdös Renyi hypergraph")
 	logging := flag.Int("log", 0, "Amount of logging passes.")
-	outdir := flag.String("d", "./data", "Output directory for log files.")
+	outdir := flag.String("d", "./data", "directory of output log file")
 
 	flag.Parse()
 
@@ -93,17 +93,38 @@ func main() {
 	var execs map[string]int
 
 	if *logging > 0 {
-		l_evr := float64(*evr)
-		if *evr == 0 {
-			l_evr = float64(len(g.Edges)) / float64(len(g.Vertices))
-		}
-		t := time.Now().Unix()
-		masterfilename := fmt.Sprintf("master_%s_%.2f_%d.csv", graphtype, l_evr, t)
+		timestamp := time.Now().Unix()
+
+		header := "Ratio;"
+		header += strings.Join(alg.Labels, ";")
+		header += ";Vertices;Edges;HittingSet;Opt;Time\n"
+
+		os.Mkdir(*outdir, 0700)
+
+		masterfilename := fmt.Sprintf("master_%s_%d.csv", graphtype, timestamp)
+		fMasterFilename := fmt.Sprintf("%s/%s", *outdir, masterfilename)
+		masterfile, _ := os.Create(fMasterFilename)
+		masterfile.WriteString(header)
+
 		for i := 0; i < *logging; i++ {
-			alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
-			if i == *logging - 1 {
+			vSize := len(g.Vertices)
+			eSize := len(g.Edges)
+
+			start := time.Now()
+			execs := alg.ThreeHS_F3ApprPolyFrontier(g, c)
+			stop := time.Since(start).Seconds()
+
+			msg := fmt.Sprintf("%f;", alg.GetRatio(execs))
+			for _, v := range alg.Labels {
+				msg += fmt.Sprintf("%d;", execs[v])
+			}
+			msg = msg[:len(msg)-1]
+			masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), alg.GetEstOpt(execs), alg.RoundUp(stop, 2)))
+
+			if i == *logging-1 {
 				break
 			}
+
 			g, _ = makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
 			c = make(map[int32]bool)
 		}

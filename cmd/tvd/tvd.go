@@ -45,13 +45,25 @@ func main() {
 	adjList := make(map[int32]map[int32]bool)
 
 	graphtype := "CUSTOM"
-	if !flagPassed("i") {
+	if !flagPassed("i") && !flagPassed("tvdi") {
 		graphtype = "ER"
 	}
 	var g *hypergraph.HyperGraph
+		var masterfile *os.File
+	
+	if flagPassed("log") {
+		timestamp := time.Now().Unix()
+		header := "Ratio;"
+		header += strings.Join(alg.Labels, ";")
+		header += ";Vertices;Edges;HittingSet;Opt;Time\n"
 
-	timestamp := time.Now().Unix()
-	masterfilename := fmt.Sprintf("master_%s_%d.csv", graphtype, timestamp)
+		os.Mkdir(*outdir, 0700)
+
+		masterfilename := fmt.Sprintf("master_%s_%d.csv", graphtype, timestamp)
+		fMasterFilename := fmt.Sprintf("%s/%s", *outdir, masterfilename)
+		masterfile, _ = os.Create(fMasterFilename)
+		masterfile.WriteString(header)
+	}
 
 	for i := 0; i < *logging; i++ {
 		adjList = make(map[int32]map[int32]bool)
@@ -134,28 +146,37 @@ func main() {
 			pprof.StartCPUProfile(f)
 		}
 
-		fmt.Printf("Problem instance has %d vertices and %d edges\n", len(g.Vertices), len(g.Edges))
+		vSize := len(g.Vertices)
+		eSize := len(g.Edges)
+		fmt.Printf("Problem instance has %d vertices and %d edges\n", vSize, eSize)
 		fmt.Println("Start 3-HS algorithm...")
-		defer hypergraph.LogTime(time.Now(), "Main Algorithm")
+
+		start := time.Now()
+		defer hypergraph.LogTime(start, "Main Algorithm")
 		if *frontier {
-			if flagPassed("log") {
-				execs = alg.LoggingThreeHS_F3ApprPolyFrontier(g, c, graphtype, masterfilename, i, *outdir)
-			} else {
-				execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
-			}
+			execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
 		} else {
-			if flagPassed("log") {
-				execs = alg.LoggingThreeHS_F3ApprPoly(g, c, graphtype, masterfilename, i, *outdir)
-			} else if *gr {
+			if *gr {
 				alg.GreedyHighDeg(g, c)
 			} else {
 				execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
 			}
 		}
 
-		pprof.StopCPUProfile()
+		stop := time.Since(start).Seconds()
+
+		if flagPassed("log") {
+			msg := fmt.Sprintf("%f;", alg.GetRatio(execs))
+			for _, v := range alg.Labels {
+				msg += fmt.Sprintf("%d;", execs[v])
+			}
+			msg = msg[:len(msg)-1]
+			masterfile.WriteString(fmt.Sprintf("%s;%d;%d;%d;%d;%.2f\n", msg, vSize, eSize, len(c), alg.GetEstOpt(execs), alg.RoundUp(stop, 2)))
+		}
+
 		fmt.Println(execs)
 		fmt.Printf("Found a hitting-set with size %d\n", len(c))
 		fmt.Println("Est. Approximation Factor:", alg.GetRatio(execs))
 	}
+	pprof.StopCPUProfile()
 }
