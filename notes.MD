@@ -57,10 +57,6 @@ The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertice
 
 ## Edge Hashing
 
-```go
-func getHash(arr []int32) string
-```
-
 Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
 
 We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter $"|"$, returning a string of the form $"|id_0|id_1|\dots|id_n|"$. Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
@@ -68,8 +64,6 @@ We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We th
 ## Compute Subsets of Size $s$
 
 Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s$.
-
-\todo[backgroundcolor=green]{rewrite with new algorithm}
 
 $$
 \begin{algorithm}[H]
@@ -858,6 +852,8 @@ Algorithm \ref{3hs_frontier} serves as a general outline for the first and secon
 
 # Applications and Results {#appl}
 
+All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance.
+
 ## Triangle Vertex Deletion
 
 [PROBLEM DEFINITION]
@@ -870,35 +866,38 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 ![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
 
-Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4199$\todo{replace with real value}, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90x, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
+Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4199$\todo{replace with real value}, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
 \begin{table}[t]
+\begin{subtable}[b]{0.45\textwidth}
 \centering
-\begin{tabular}{clrrrr}
+\begin{tabular}{lrrrr}
 \toprule
-strategy & & ratio & $|C|$ & est. opt & time[sec] \\
+& ratio & $|C|$ & est. opt & time\\
 \midrule
-\multirow{5}{4em}{1} & mean & 1.5708 & 106338.66 & 67697.18 & 29 \\
-& std & 0.0006 & 65.33 & 39.54 & 1 \\
-& min & 1.5691 & 106183 & 67597 & 26 \\
-& median & 1.5708 & 106341.50 & 67698.50 & 29 \\
-& max & 1.5727 & 106500 & 67797 & 31 \\
-\hline
-\addlinespace
-\multirow{5}{4em}{2} & mean & 1.5437 & 105083.74 & 68071.20 & 104 \\
-& std & 0.0006 & 63.45 & 34.78 & 2 \\
-& min & 1.5422 & 104922 & 67956 & 99 \\
-& median & 1.5438 & 105084 & 68072 & 104 \\
-& max & 1.5453 & 105261 & 68146 & 110 \\
-\hline
-\addlinespace
-\multirow{5}{4em}{3 TODO} & & & & & \\
-& & & & & \\
-& & & & & \\
-& & & & & \\
-& & & & & \\
+mean & 1.5708 & 106338.66 & 67697.18 & 29 sec\\
+std & 0.0006 & 65.33 & 39.54 & 1 sec\\
+min & 1.5691 & 106183 & 67597 & 26 sec\\
+median & 1.5708 & 106341.50 & 67698.50 & 29 sec\\
+max & 1.5727 & 106500 & 67797 & 31 sec\\
 \bottomrule
 \end{tabular}
+\end{subtable}
+\hfill
+\begin{subtable}[b]{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+& ratio & $|C|$ & est. opt & time \\
+\midrule
+mean & 1.5437 & 105083.74 & 68071.20 & 104 sec \\
+std & 0.0006 & 63.45 & 34.78 & 2 sec\\
+min & 1.5422 & 104922 & 67956 & 99 sec\\
+median & 1.5438 & 105084 & 68072 & 104 sec\\
+max & 1.5453 & 105261 & 68146 & 110 sec\\
+\bottomrule
+\end{tabular}
+\end{subtable}
 \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
 \label{stats_dblp}
 \end{table}
