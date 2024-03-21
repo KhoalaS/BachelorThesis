@@ -47,15 +47,13 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kVertDom := hypergraph.VertexDominationRule(g, c)
 		kTiny += hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
-		//kEdgeDom := hypergraph.EdgeDominationRule(g)
-		kEdgeDom := 0
+		kEdgeDom := hypergraph.EdgeDominationRule(g)
 		kApVertDom := hypergraph.ApproxVertexDominationRule(g, c)
 		kApDoubleVertDom := hypergraph.ApproxDoubleVertexDominationRule(g, c)
 		kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.SmallEdgeDegreeTwoRule(g, c)
 		kTri := hypergraph.SmallTriangleRule(g, c)
 		kExtTri := hypergraph.ExtendedTriangleRule(g, c)
-		//kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
-		kSmall := 0
+		kSmall := hypergraph.RemoveEdgeRule(g, c, hypergraph.SMALL)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
@@ -122,15 +120,13 @@ func ApplyRulesFrontier(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c m
 		kTiny := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
 		kVertDom := hypergraph.S_VertexDominationRule(gf, g, c, expand)
 		kTiny += hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.TINY, expand)
-		//kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
-		kEdgeDom := 0
+		kEdgeDom := hypergraph.S_EdgeDominationRule(gf, g, expand)
 		kApVertDom := hypergraph.S_ApproxVertexDominationRule(gf, g, c, expand)
 		kApDoubleVertDom := hypergraph.S_ApproxDoubleVertexDominationRule2(gf, g, c, expand)
 		kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.S_SmallEdgeDegreeTwoRule(gf, g, c, expand)
 		kTri := hypergraph.S_SmallTriangleRule(gf, g, c, expand)
 		kExtTri := hypergraph.S_ExtendedTriangleRule(gf, g, c, expand)
-		//kSmall := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
-		kSmall := 0
+		kSmall := hypergraph.S_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
 
 		execs["kTiny"] += kTiny
 		execs["kVertDom"] += kVertDom
