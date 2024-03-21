@@ -65,6 +65,8 @@ func WriteToFileSimple(g *HyperGraph, filepath string) bool {
 		return false
 	}
 
+	bf := bufio.NewWriterSize(f, 8192)
+
 	defer f.Close()
 
 	for _, e := range g.Edges {
@@ -78,11 +80,11 @@ func WriteToFileSimple(g *HyperGraph, filepath string) bool {
 			line += fmt.Sprintf("%d ", v)
 			i++
 		}
-		f.Write([]byte(line))
+		bf.Write([]byte(line))
 	}
+	bf.Flush()
 
 	return true
-
 }
 
 func ReadFromFileSimpleCallback(filename string, callback func(line string)) {
