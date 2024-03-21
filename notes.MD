@@ -868,39 +868,58 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4199$\todo{replace with real value}, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
+$$
 \begin{table}[t]
-\begin{subtable}[b]{0.45\textwidth}
-\centering
-\begin{tabular}{lrrrr}
-\toprule
-& ratio & $|C|$ & est. opt & time\\
-\midrule
-mean & 1.5708 & 106338.66 & 67697.18 & 29 sec\\
-std & 0.0006 & 65.33 & 39.54 & 1 sec\\
-min & 1.5691 & 106183 & 67597 & 26 sec\\
-median & 1.5708 & 106341.50 & 67698.50 & 29 sec\\
-max & 1.5727 & 106500 & 67797 & 31 sec\\
-\bottomrule
-\end{tabular}
-\end{subtable}
-\hfill
-\begin{subtable}[b]{0.45\textwidth}
-\centering
-\begin{tabular}{lrrrr}
-\toprule
-& ratio & $|C|$ & est. opt & time \\
-\midrule
-mean & 1.5437 & 105083.74 & 68071.20 & 104 sec \\
-std & 0.0006 & 63.45 & 34.78 & 2 sec\\
-min & 1.5422 & 104922 & 67956 & 99 sec\\
-median & 1.5438 & 105084 & 68072 & 104 sec\\
-max & 1.5453 & 105261 & 68146 & 110 sec\\
-\bottomrule
-\end{tabular}
-\end{subtable}
-\caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
-\label{stats_dblp}
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time\\
+            \midrule
+            mean & 1.5708 & 106338.66 & 67697.18 & 29 sec\\
+            std & 0.0006 & 65.33 & 39.54 & 1 sec\\
+            min & 1.5691 & 106183 & 67597 & 26 sec\\
+            median & 1.5708 & 106341.50 & 67698.50 & 29 sec\\
+            max & 1.5727 & 106500 & 67797 & 31 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.5437 & 105083.74 & 68071.20 & 104 sec \\
+            std & 0.0006 & 63.45 & 34.78 & 2 sec\\
+            min & 1.5422 & 104922 & 67956 & 99 sec\\
+            median & 1.5438 & 105084 & 68072 & 104 sec\\
+            max & 1.5453 & 105261 & 68146 & 110 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4195 & 99455.78 & 70065.97 & 474 \\
+            std & 0.0009 & 52.12 & 30.7200 & 7 \\
+            min & 1.4171 & 99323 & 69987 & 457 \\
+            median & 1.4196 & 99450 & 70068.50 & 474 \\
+            max & 1.4215 & 99575 & 70133 & 493 \\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+    \label{stats_dblp}
 \end{table}
+$$
 
 ### Amazon Product Co-Purchasing Graph
 
