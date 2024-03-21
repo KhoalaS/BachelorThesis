@@ -159,7 +159,7 @@ func main() {
 			if *gr {
 				alg.GreedyHighDeg(g, c)
 			} else {
-				execs = alg.ThreeHS_F3ApprPoly(g, c, 0)
+				execs = alg.ThreeHS_F3ApprPoly(g, c)
 			}
 		}
 

@@ -63,7 +63,7 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 
 func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 	execs := MakeExecs()
-	ApplyRules(g, c, execs, 0)
+	ApplyRules(g, c, execs)
 	expDepth := 2
 
 	if len(g.Edges) == 0 {
@@ -233,7 +233,7 @@ func PreProcessOnly(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string
 	execs["kEdgeDom"] += kEdgeDom
 }
 
-func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool, logging bool) map[string]int {
+func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 	execs := MakeExecs()
 	expand := make(map[int32]bool)
 
