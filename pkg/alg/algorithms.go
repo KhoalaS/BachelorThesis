@@ -20,29 +20,18 @@ var Ratios = map[string]IntTuple{
 	"kFallback":         {A: 3, B: 1},
 }
 
-func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool, prio int) map[string]int {
+func ThreeHS_F3ApprPoly(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
 	execs := MakeExecs()
-	f3 := 0
 
 	for len(g.Edges) > 0 {
-		execs = ApplyRules(g, c, execs, prio)
-		prio = 0
+		ApplyRules(g, c, execs)
 		kFallback := hypergraph.F3TargetLowDegree(g, c)
 		execs["kFallback"] += kFallback
-		f3++
-		//prio = nextPrio
 	}
 	return execs
 }
 
-func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int, prio int) map[string]int {
-
-	switch prio {
-	case 2:
-		exec := hypergraph.SmallTriangleRule(g, c)
-		execs["kTri"] += exec
-	}
-
+func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int) {
 	for {
 		kTiny := hypergraph.RemoveEdgeRule(g, c, hypergraph.TINY)
 		kVertDom := hypergraph.VertexDominationRule(g, c)
@@ -70,7 +59,6 @@ func ApplyRules(g *hypergraph.HyperGraph, c map[int32]bool, execs map[string]int
 			break
 		}
 	}
-	return execs
 }
 
 func ThreeHS_F3ApprPolyFrontier(g *hypergraph.HyperGraph, c map[int32]bool) map[string]int {
