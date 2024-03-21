@@ -760,7 +760,7 @@ We can observe a large performance hit, once our graph is near 3-uniform. We pre
 
 ## Main Algorithm
 
-It is crucial to apply the rules in a given order. Some rules expect that other rules can not be applied. As for the exact rules, one can save on execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@10.1007/978-3-642-29116-6_6], also refered to as precedence of rule executions. We will just use the shorter term _precedence_ going forward.
+It is crucial to apply the rules in a given order. Some rules expect that other rules can not be applied. As for the exact rules, one can save execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@10.1007/978-3-642-29116-6_6], also refered to as precedence of rule executions. We will just use the shorter term _precedence_ going forward.
 
 1. Exact Rules: vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination
 2. approximate (double) vertex domination rules
@@ -769,9 +769,11 @@ It is crucial to apply the rules in a given order. Some rules expect that other 
 5. extended triangle rule
 6. small edge rule
 
-We present three algorithms, each using a different strategy to apply the rules in the precedence. The first algorithm prioritizes execution time. The base algorithm is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve the effectiveness of the algorithm. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base algorithm. Iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules.
-The second algorithm is also using the same base algorithm. The only modification is that, we start over with the vertex domination rule, whenever one of the rules was applied at least once. This algorithm serves as a middle ground between execution time and solution size.
-The third algorithm tries to maximize the exact rule executions. We start by applying the exact rules exhaustively. We then execute the other rules at most once, according to the precedence. If a rule has been applied, we execute the exact rules exhaustively and start over with the first non-exact rule in the precedence.
+The main algorithm will apply all rules exhaustively according to the precedence, possibly mutating the input graph. If the graph has no more edges, then we are done. If not, put a size three edge into the partial hitting set and start over with the rule application. Note that the step of "applying all rules exhaustively" leaves room for interpretation and that the produced hitting sets are highly dependant on the actions taken during this step. We will refer to the procedure in this step as _rule strategy_ or just _strategy_ if the context allows it. We now present three strategies to apply the rules in the precedence.
+
+The base strategy is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics, that preserve the fast execution time and improve on effectiveness. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base strategy. Iteration values higher than three did not yield better results. We should also execute this cascade after rules, that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules.
+The second strategy is also derived from the same base strategy. The only modification is that, we start over with the vertex domination rule, whenever one of the rules was applied at least once. This should in theory lead to more exact rules being executed, while sacrificing a bit of execution time.
+The third strategy tries to maximize the exact rule executions. We start by applying the exact rules exhaustively. We then execute the other rules at most once, according to the precedence. If a rule has been applied, we execute the exact rules exhaustively and start over with the first non-exact rule in the precedence.
 
 ## Incremental Frontier Algorithm
 
@@ -848,7 +850,7 @@ $H \gets$ empty hypergraph\;
 \end{algorithm}
 $$
 
-Algorithm \ref{3hs_frontier} serves as a general outline for the first and second algorithm presented in the previous section. It was sadly not that easy to decouple the application of the rules from the algorithm, when using the frontier mechanism in the third algorithm. In an ideal scenario, one would only need to swap out the function that handles the rule applications for a different rule strategy.
+Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It is not compatible with strategy 3, since the auxiliary graph could at some point be empty and thus $|exp| = 0$, with the original graph still admitting rule applications. In such a case, we have to apply the first applicable rule in the precedence and use the neighborhood of the removed vertices to rebuild the auxiliary graph.
 
 # Applications and Results {#appl}
 
@@ -870,54 +872,73 @@ Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but al
 
 $$
 \begin{table}[t]
+    \label{stats_dblp}
     \begin{subtable}[b]{0.45\textwidth}
         \centering
+        \caption{base rule strategy\label{str_base}}
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time\\
+            & ratio & $|C|$ & est. opt & time \\
             \midrule
-            mean & 1.5708 & 106338.66 & 67697.18 & 29 sec\\
-            std & 0.0006 & 65.33 & 39.54 & 1 sec\\
-            min & 1.5691 & 106183 & 67597 & 26 sec\\
-            median & 1.5708 & 106341.50 & 67698.50 & 29 sec\\
-            max & 1.5727 & 106500 & 67797 & 31 sec\\
+            mean & 1.7594 & 115672 & 65745 & 17 sec \\
+            std & 0.0005 & 79 & 41 & 1 sec\\
+            min & 1.7577 & 115469 & 65635 & 16 sec\\
+            median & 1.7594 & 115677 & 65741 & 17 sec\\
+            max & 1.7610 & 115998 & 65904 & 19 sec\\
             \bottomrule
         \end{tabular}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
+        \caption{rule strategy 1\label{str_1}}
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & ratio & $|C|$ & est. opt & time\\
             \midrule
-            mean & 1.5437 & 105083.74 & 68071.20 & 104 sec \\
-            std & 0.0006 & 63.45 & 34.78 & 2 sec\\
-            min & 1.5422 & 104922 & 67956 & 99 sec\\
-            median & 1.5438 & 105084 & 68072 & 104 sec\\
-            max & 1.5453 & 105261 & 68146 & 110 sec\\
+            mean & 1.5708 & 106339 & 67697 & 29 sec\\
+            std & 0.0006 & 65 & 39.54 & 1 sec\\
+            min & 1.5691 & 106183 & 67597 & 26 sec\\
+            median & 1.5708 & 106342 & 67699 & 29 sec\\
+            max & 1.5727 & 106500 & 67797 & 31 sec\\
             \bottomrule
         \end{tabular}
     \end{subtable}
     \newline
     \vspace{4mm}
     \newline
-    \begin{subtable}[b]{0.45\textwidth}
+     \begin{subtable}[b]{0.45\textwidth}
         \centering
+        \caption{rule strategy 2\label{str_2}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
             \midrule
-            mean & 1.4195 & 99455.78 & 70065.97 & 474 \\
-            std & 0.0009 & 52.12 & 30.7200 & 7 \\
-            min & 1.4171 & 99323 & 69987 & 457 \\
-            median & 1.4196 & 99450 & 70068.50 & 474 \\
-            max & 1.4215 & 99575 & 70133 & 493 \\
+            mean & 1.5437 & 105084 & 68071 & 104 sec \\
+            std & 0.0006 & 63 & 35 & 2 sec\\
+            min & 1.5422 & 104922 & 67956 & 99 sec\\
+            median & 1.5438 & 105084 & 68072 & 104 sec\\
+            max & 1.5453 & 105261 & 68146 & 110 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \caption{rule strategy 3\label{str_3}}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4195 & 99456 & 70066 & 474 sec\\
+            std & 0.0009 & 52 & 31 & 7 sec\\
+            min & 1.4171 & 99323 & 69987 & 457 sec\\
+            median & 1.4196 & 99450 & 70069 & 474 sec\\
+            max & 1.4215 & 99575 & 70133 & 493 sec\\
             \bottomrule
         \end{tabular}
     \end{subtable}
     \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
-    \label{stats_dblp}
 \end{table}
 $$
 
