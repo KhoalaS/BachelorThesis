@@ -17,9 +17,15 @@ func TestShuffle(t *testing.T) {
 
 	perm := []int{4,1,3,0,2,5}
 
-	Shuffle[int](arr)
+	Shuffle(arr)
 
 	for i:=0; i<6; i++{
 		assert.Equal(t, arr[i], perm[i])
 	}
+}
+
+func TestRoundUp(t *testing.T) {
+	x := 3.14159
+	y := RoundUp(x, 2)
+	assert.Equal(t, y, 3.15)
 }
