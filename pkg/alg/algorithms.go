@@ -4,9 +4,6 @@ import (
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
 
-var logChannel = make(chan string, 2)
-var done = make(chan bool)
-
 var Labels = []string{"kTiny", "kVertDom", "kEdgeDom", "kSmall", "kTri", "kExtTri", "kApVertDom", "kApDoubleVertDom", "kSmallEdgeDegTwo", "kSmallEdgeDegTwo2", "kFallback"}
 
 var Ratios = map[string]IntTuple{
