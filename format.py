@@ -1,7 +1,7 @@
 import re
 import os
 
-f = open("notes.MD")
+f = open("./tex/notes.MD")
 text = ""
 
 for line in f:
@@ -22,5 +22,5 @@ out.write(text)
 out.close()
 
 code = os.system(
-    "pandoc --verbose -H header.tex --number-sections --toc -V geometry:margin=1in out/out.MD -o notes.pdf --bibliography=./lit.bib --csl=./ieee.csl")
+    "pandoc --verbose -H ./tex/header.tex --number-sections --toc -V geometry:margin=1in out/out.MD -o notes.pdf --bibliography=./tex/lit.bib --csl=./tex/ieee.csl")
 exit(code)
