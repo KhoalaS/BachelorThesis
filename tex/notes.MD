@@ -853,7 +853,7 @@ Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It 
 
 # Applications and Results {#appl}
 
-All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance.
+All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22.1. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance. We provide results for $\textsc{Triangle Vertex Deletion}$ and $\textsc{Cluster Vertex Deletion}$ problems using real world networks, as well as randomly generated hypergraphs.
 
 ## Triangle Vertex Deletion
 
@@ -863,11 +863,29 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 ### DBLP Coauthor Graph
 
-We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph.
+$$
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{./img/dblp_tvd_rules_strat.png}
+    \caption{Number of rule executions for DBLP coauthor graph per rule strategy, $n=100$}
+    \label{dblp_rules_strat}
+\end{figure}
+$$
 
-![Triangle Vertex Deletion on a DBLP coauthor graph, amount of rule executions](img/dblp_tvd_rules.png)
-t
+$$
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{./img/dblp_tvd_rules_strat_s.png}
+    \caption{Number of rule executions for DBLP coauthor graph per rule strategy, $n=100$}
+    \label{dblp_rules_strat_s}
+\end{figure}
+$$
+
+We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
+
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
+
+Figure \ref{dblp_rules_strat} and \ref{dblp_rules_strat_s} display the number of rule executions per strategy. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. 
 
 $$
 \begin{table}[t]
