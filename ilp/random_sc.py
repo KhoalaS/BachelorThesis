@@ -81,7 +81,7 @@ for i in range(1, n+1):
     prob += e_sum >= 1
 
 print("begin solving...")
-prob.solve(HiGHS(mip=False, msg="using HiGHS", threads=os.cpu_count()))
+prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", path="/usr/local/bin/highs", threads=os.cpu_count()))
 
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
