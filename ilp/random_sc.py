@@ -129,5 +129,4 @@ for i in I_r:
         C.add(v)
 
 sc = [S_lookup[j] for j in R_1 + R_2]
-print("Set Cover:", sc)
 print("Size:", len(sc))
