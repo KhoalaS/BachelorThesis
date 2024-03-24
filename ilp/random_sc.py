@@ -6,6 +6,8 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input", metavar="FILE", help="path to input file")
+parser.add_argument("--highs", action='store_true',
+                    help="use the HiGHS solver")
 
 args = parser.parse_args()
 
@@ -81,7 +83,12 @@ for i in range(1, n+1):
     prob += e_sum >= 1
 
 print("begin solving...")
-prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", path="/usr/local/bin/highs", threads=os.cpu_count()))
+
+if args.highs:
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS",
+           path="/usr/local/bin/highs", threads=os.cpu_count()))
+else:
+    prob.solve()
 
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
