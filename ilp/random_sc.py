@@ -83,10 +83,9 @@ prob.solve()
 
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
-    print("Solution:")
-    for j in range(1, m+1):
-        print(f"{S_lookup[j]} =", value(x[j]))
-
+    #print("Solution:")
+    #for j in range(1, m+1):
+    #    print(f"{S_lookup[j]} =", value(x[j]))
     print("Sum of decision variables =", value(
         lpSum([x[j] for j in U])))
 
@@ -98,12 +97,12 @@ for j in range(1, m+1):
     alpha = 1 - exp(-1.0 * (log(delta)/float(k-1)))
     p_j = min([1.0, alpha*k*value(x[j])])
     r = random()
-    print(p_j, r,alpha, j)
     if r <= p_j:
         R_1.append(j)
         for i in S[j]:
             C.add(i)
 
+#get elements not covered by sets
 I_r = set()
 for i in range(1, n+1):
     if i not in C:
@@ -127,8 +126,6 @@ for i in I_r:
     for v in S[max_id]:
         C.add(v)
 
-C_tr = []
-for j in R_1 + R_2:
-    C_tr.append(S_lookup[j])
-
-print(C_tr)
+sc = [S_lookup[j] for j in R_1 + R_2]
+print("Set Cover:", sc)
+print("Size:", len(sc))
