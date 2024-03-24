@@ -30,12 +30,14 @@ for line in file:
 
     E.append(e_tr)
 
+
 print("file loaded...")
 
 n = V_counter-1
 m = len(E)
 
-print("graph had {} vertices and {} many edges".format(n,m))
+V = [x for x in range(1, n+1)]
+print("graph had {} vertices and {} many edges".format(n, m))
 
 prob = LpProblem("VC-Relax", LpMinimize)
 
@@ -54,6 +56,5 @@ prob.solve()
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
     print("Solution:")
-    for j in V:
-        print(f"x_{j} =", value(x[j]))
-    print("Sum of decision variables =", value(lpSum([x[j] for j in V])))
+    print("Sum of decision variables =", value(
+        lpSum([x[j] for j in V])))
