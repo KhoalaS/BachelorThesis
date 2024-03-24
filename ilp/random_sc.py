@@ -2,6 +2,7 @@ from pulp import *
 import argparse
 from math import exp, log
 from random import random
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input", metavar="FILE", help="path to input file")
@@ -80,12 +81,12 @@ for i in range(1, n+1):
     prob += e_sum >= 1
 
 print("begin solving...")
-prob.solve()
+prob.solve(HiGHS(mip=False, msg="using HiGHS", threads=os.cpu_count()))
 
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
-    #print("Solution:")
-    #for j in range(1, m+1):
+    # print("Solution:")
+    # for j in range(1, m+1):
     #    print(f"{S_lookup[j]} =", value(x[j]))
     print("Sum of decision variables =", value(
         lpSum([x[j] for j in range(1, m+1)])))
@@ -103,7 +104,7 @@ for j in range(1, m+1):
         for i in S[j]:
             C.add(i)
 
-#get elements not covered by sets
+# get elements not covered by sets
 I_r = set()
 for i in range(1, n+1):
     if i not in C:
@@ -122,7 +123,7 @@ for i in I_r:
         if l_max > max:
             max_id = j
             max = l_max
-    
+
     R_2.append(max_id)
     for v in S[max_id]:
         C.add(v)
