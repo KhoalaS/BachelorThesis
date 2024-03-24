@@ -114,9 +114,9 @@ for i in I_r:
         continue
     max = 0
     max_id = -1
-    for j in S[i]:
+    for j in inc_map[i]:
         l_max = 0
-        for v in inc_map.get(j):
+        for v in S[j]:
             if v not in C:
                 l_max += 1
         if l_max > max:
