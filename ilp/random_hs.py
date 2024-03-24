@@ -9,8 +9,11 @@ args = parser.parse_args()
 file = open(args.input, "r")
 V_lookup = {}
 V_counter = 1
+E_counter = 1
 V = []
 E = []
+
+inc_map = {}
 
 for line in file:
     if V_counter % 1000 == 0:
@@ -58,3 +61,29 @@ if prob.status == LpStatusOptimal:
     print("Solution:")
     print("Sum of decision variables =", value(
         lpSum([x[j] for j in V])))
+
+C = set()
+S_0 = set()
+S_1 = set()
+S_gte = set()
+S_l = set()
+
+_lambda = 0.5
+
+for j in V:
+    val = value(x[j])
+    if val == 0:
+        S_0.add(value(x[j]))
+    elif val == 1:
+        S_1.add(value(x[j]))
+    elif val >= 1.0/_lambda:
+        S_gte.add(value(x[j]))
+    else:
+        S_l.add(value(x[j]))
+
+for j in S_0:
+    V.remove(j)
+    for e in E:
+        if j in e:
+            e.remove(j)
+
