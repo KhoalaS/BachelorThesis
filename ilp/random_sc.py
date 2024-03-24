@@ -66,6 +66,7 @@ n = U_counter-1
 m = len(S)
 
 U = [x for x in range(1, n+1)]
+
 print("instance had {} elements and {} many sets".format(n, m))
 
 prob = LpProblem("SC-Relax", LpMinimize)
@@ -87,7 +88,7 @@ if prob.status == LpStatusOptimal:
     #for j in range(1, m+1):
     #    print(f"{S_lookup[j]} =", value(x[j]))
     print("Sum of decision variables =", value(
-        lpSum([x[j] for j in U])))
+        lpSum([x[j] for j in range(1, m+1)])))
 
 R_1 = []
 R_2 = []
