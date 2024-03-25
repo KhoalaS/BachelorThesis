@@ -208,7 +208,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. Proofs are provided in the case, where the algorithm does not simply follow the definition of a rule.
 
-We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol.
+We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$ maps the value $1$ to the key $0$ in map $\gamma$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Note that unused values are omitted with the underscore symbol.
 
 ### Tiny/Small Edge Rule
 
@@ -867,7 +867,7 @@ $$
 \begin{figure}[t]
     \centering
     \includegraphics[width=\textwidth]{./img/dblp_tvd_rules_strat.png}
-    \caption{Number of rule executions for DBLP coauthor graph per rule strategy, $n=100$}
+    \caption{Mean number of rule executions for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph per rule strategy, $n=100$}
     \label{dblp_rules_strat}
 \end{figure}
 $$
@@ -876,14 +876,14 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Figure \ref{dblp_rules_strat} and \ref{dblp_rules_strat_s} display the number of rule executions per strategy. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
 
 $$
 \begin{table}[t]
     \label{stats_dblp}
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{base rule strategy\label{str_base}}
+        \caption{base rule strategy\label{dblp_str_base}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -899,7 +899,7 @@ $$
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 1\label{str_1}}
+        \caption{rule strategy 1\label{dblp_str_1}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time\\
@@ -917,7 +917,7 @@ $$
     \newline
      \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 2\label{str_2}}
+        \caption{rule strategy 2\label{dblp_str_2}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -933,7 +933,7 @@ $$
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 3\label{str_3}}
+        \caption{rule strategy 3\label{dblp_str_3}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -954,9 +954,9 @@ $$
 
 \todo[backgroundcolor=green]{add amazon graph section}
 
-To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn} \todo{interpretation of results}
+To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn} and figure \ref{amzn_rules_strat}, the algorithm achieves a mean estimated ratio of $1.3136$ and behaves the same as for the DBLP coauthor graph.
 
-
+### ER Graphs
 
 ![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
 
@@ -966,6 +966,7 @@ To validate that our previous findings were not just due to the structure of the
 
 ## Cluster Vertex Deletion
 
+$$
 \begin{table}[h]
 \centering
 \begin{tabular}{llrrrrrrrrrrrr}
@@ -988,6 +989,7 @@ To validate that our previous findings were not just due to the structure of the
 \caption{Results for $\textsc{Cluster Vertex Deletion}$ on the Rome-Graph dataset, $n=100$}
 \label{cvd_rome_stats}
 \end{table}
+$$
 
 \todo{interpretation of results}
 
@@ -1008,5 +1010,92 @@ To validate that our previous findings were not just due to the structure of the
 # Testing
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
+
+\appendix
+
+# Appendix
+
+$$
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{./img/amazon_tvd_rules_strat.png}
+    \caption{Mean number of rule executions for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph per rule strategy, $n=100$}
+    \label{amzn_rules_strat}
+\end{figure}
+$$
+
+$$
+\begin{table}[h]
+    \label{stats_amzn}
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \caption{base rule strategy\label{amzn_str_base}}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.7466 & 95256 & 54539 & 3 sec\\
+            std & 0.0003 & 82 & 41 & 0 sec\\
+            min & 1.7458 & 95032 & 54433 & 3 sec\\
+            median & 1.7466 & 95269 & 54543 & 3 sec\\
+            max & 1.7474 & 95441 & 54632 & 4 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \caption{rule strategy 1\label{amzn_str_1}}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4731 & 86359 & 58624 & 6 sec\\
+            std & 0.0005 & 61 & 36 & 0 sec\\
+            min & 1.4719 & 86213 & 58534 & 6 sec\\
+            median & 1.4731 & 86359 & 58627 & 6 sec\\
+            max & 1.4741 & 86496 & 58723 & 6 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \caption{rule strategy 2\label{amzn_str_2}}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4215 & 84813 & 59666 & 38 sec\\
+            std & 0.0005 & 58 & 32.3300 & 0 sec\\
+            min & 1.4206 & 84670 & 59586 & 37 sec\\
+            median & 1.4215 & 84814 & 59664 & 38 sec\\
+            max & 1.4227 & 84927 & 59740 & 39 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \caption{rule strategy 3\label{amzn_str_3}}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.3136 & 80829 & 61532 & 166 sec\\
+            std & 0.0006 & 59 & 34.6300 & 2 sec\\
+            min & 1.3121 & 80684 & 61444 & 160 sec\\
+            median & 1.3136 & 80836 & 61535 & 166 sec\\
+            max & 1.3149 & 80943 & 61616 & 171 sec\\
+            \bottomrule
+        \end{tabular}
+    \end{subtable}
+    \caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph; $n=100$}
+\end{table}
+$$
+
+\newpage
 
 # References
