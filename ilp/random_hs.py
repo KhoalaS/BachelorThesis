@@ -97,7 +97,7 @@ for j in S_0:
     V.remove(j)
     for e in inc_map[j]:
         E[e].remove(j)
-    del inc_map[j]
+    inc_map[j] = []
 
 for j in S_1:
     C.add(j)
@@ -109,8 +109,6 @@ for j in S_1:
     for e in rem_e:
         for v in E[e]:
             inc_map[v].remove(e)
-            if len(inc_map[v]) == 0:
-                del inc_map[v]
         del E[e]
 
 for j in S_gte:
@@ -123,8 +121,6 @@ for j in S_gte:
     for e in rem_e:
         for v in E[e]:
             inc_map[v].remove(e)
-            if len(inc_map[v]) == 0:
-                del inc_map[v]
         del E[e]
 
 for j in S_l:
@@ -140,8 +136,6 @@ for j in S_l:
         for e in rem_e:
             for v in E[e]:
                 inc_map[v].remove(e)
-                if len(inc_map[v]) == 0:
-                    del inc_map[v]
             del E[e]
 
 if len(E) == 0:
@@ -160,8 +154,6 @@ else:
             for h in rem_e:
                 for v in E[h]:
                     inc_map[v].remove(h)
-                    if len(inc_map[v]) == 0:
-                        del inc_map[v]
                 del E[h]
 
             break
