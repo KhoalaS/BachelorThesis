@@ -102,20 +102,30 @@ for j in S_0:
 for j in S_1:
     C.add(j)
     V.remove(j)
+    rem_e = []
     for e in inc_map[j]:
+        rem_e.append(e)
+
+    for e in rem_e:
         for v in E[e]:
             inc_map[v].remove(e)
+            if len(inc_map[v]) == 0:
+                del inc_map[v]
         del E[e]
-    del inc_map[j]
 
 for j in S_gte:
     C.add(j)
     V.remove(j)
+    rem_e = []
     for e in inc_map[j]:
+        rem_e.append(e)
+
+    for e in rem_e:
         for v in E[e]:
             inc_map[v].remove(e)
+            if len(inc_map[v]) == 0:
+                del inc_map[v]
         del E[e]
-    del inc_map[j]
 
 for j in S_l:
     p = _lambda*value(x[j])
@@ -123,11 +133,16 @@ for j in S_l:
     if r <= p:
         C.add(j)
         V.remove(j)
+        rem_e = []
         for e in inc_map[j]:
+            rem_e.append(e)
+
+        for e in rem_e:
             for v in E[e]:
                 inc_map[v].remove(e)
+                if len(inc_map[v]) == 0:
+                    del inc_map[v]
             del E[e]
-        del inc_map[j]
 
 if len(E) == 0:
     print("found hitting-set of size", len(C))
@@ -137,11 +152,18 @@ else:
             rem = e[0]
             C.add(rem)
             V.remove(rem)
-            for h in inc_map[rem]:
+            
+            rem_e = []
+            for h in inc_map[j]:
+                rem_e.append(h)
+
+            for h in rem_e:
                 for v in E[h]:
-                    inc_map[v].remove(e)
+                    inc_map[v].remove(h)
+                    if len(inc_map[v]) == 0:
+                        del inc_map[v]
                 del E[h]
-            del inc_map[rem]
+
             break
 
 print("found hitting-set of size", len(C))
