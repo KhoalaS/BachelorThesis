@@ -158,7 +158,7 @@ else:
         for _, e in E.items():
             rem = 0
             l_max_deg = 0
-            for v in E[e]:
+            for v in e:
                 if len(inc_map[v]) > l_max_deg:
                     rem = v
 
