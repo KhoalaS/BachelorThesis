@@ -10,8 +10,8 @@ for line in f:
 r_0 = r"(\$\$)\s(\\begin\{align\*\}\s[^$]*)(\$\$)"
 r_1 = re.compile(r"(\$\$)\s(\\begin\{algorithm\}\[H\].*?end{algorithm})\s(\$\$)", re.DOTALL)
 r_2 = re.compile(r"(\$\$)\s(\\begin\{algorithm\}.*?end{algorithm})\s(\$\$)", re.DOTALL)
-r_3 = re.compile(r"(\$\$)\s(\\begin\{table\}\[t\].*?end{table})\s(\$\$)", re.DOTALL)
-r_4 = re.compile(r"(\$\$)\s(\\begin\{figure\}\[t\].*?end{figure})\s(\$\$)", re.DOTALL)
+r_3 = re.compile(r"(\$\$)\s(\\begin\{table\}\[[htb]\].*?end{table})\s(\$\$)", re.DOTALL)
+r_4 = re.compile(r"(\$\$)\s(\\begin\{figure\}\[[htb]\].*?end{figure})\s(\$\$)", re.DOTALL)
 
 out = open("./out/out.MD", "w+")
 text = re.sub(r_0, r"\2", text)
