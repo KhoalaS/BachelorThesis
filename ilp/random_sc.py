@@ -120,20 +120,12 @@ for i in range(1, n+1):
 for i in I_r:
     if i in C:
         continue
-    max = 0
-    max_id = -1
     for j in inc_map[i]:
-        l_max = 0
-        for v in S[j]:
-            if v not in C:
-                l_max += 1
-        if l_max > max:
-            max_id = j
-            max = l_max
-
-    R_2.append(max_id)
-    for v in S[max_id]:
-        C.add(v)
-
+        if j not in R_2:
+            R_2.append(j)
+            for v in S[j]:
+                C.add(v)
+            break
+            
 sc = [S_lookup[j] for j in R_1 + R_2]
 print("Size:", len(sc))
