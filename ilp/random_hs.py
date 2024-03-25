@@ -156,12 +156,7 @@ if len(E) == 0:
 else:
     while len(E) > 0:
         for _, e in E.items():
-            rem = 0
-            l_max_deg = 0
-            for v in e:
-                if len(inc_map[v]) > l_max_deg:
-                    l_max_deg = len(inc_map[v])
-                    rem = v
+            rem = e[0]
 
             C.add(rem)
             V.remove(rem)
