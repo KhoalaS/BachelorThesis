@@ -6,13 +6,13 @@ from opts import rule_names
 import os
 
 df_base = pd.read_csv(
-    "./data/dblp_base/master_CUSTOM_1711049002.csv", delimiter=";")
+    "./data/amazon_base/master_CUSTOM_1711206743.csv", delimiter=";")
 df_str1 = pd.read_csv(
-    "./data/dblp_str1/master_ER_1710866151.csv", delimiter=";")
+    "./data/amazon_str1/master_CUSTOM_1711208193.csv", delimiter=";")
 df_str2 = pd.read_csv(
-    "./data/dblp_str2/master_ER_1710773299.csv", delimiter=";")
+    "./data/amazon_str2/master_CUSTOM_1711209017.csv", delimiter=";")
 df_str3 = pd.read_csv(
-    "./data/dblp_str3/master_CUSTOM_1710947310.csv", delimiter=";")
+    "./data/amazon_str3/master_CUSTOM_1711213524.csv", delimiter=";")
 
 frames = [df_base, df_str1, df_str2, df_str3]
 strat = ["base", "str1", "str2", "str3"]
@@ -24,11 +24,9 @@ colors = ["#3398DB",
 exclude = ["kTiny",
            "kVertDom",
            "kEdgeDom",
-           "kApVertDom",
-           "kApDoubleVertDom",
-           "kFallback"]
+           "kApVertDom"]
 
-out = open("out/dblp_rules.md", "w+")
+out = open("out/amazon_rules.md", "w+")
 
 for df in frames:
     df = df.describe()
@@ -80,8 +78,8 @@ bar_s.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
 
 grid = Grid()
 
-grid.add(bar_s, grid_opts=opts.GridOpts(pos_left="60%"))
-grid.add(bar, grid_opts=opts.GridOpts(pos_right="50%"))
+grid.add(bar_s, grid_opts=opts.GridOpts(pos_left="45%"))
+grid.add(bar, grid_opts=opts.GridOpts(pos_right="65%"))
 
-grid.render("out/dblp_rules.html")
-os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/dblp_rules.html")
+grid.render("out/amazon_rules.html")
+os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/amazon_rules.html")

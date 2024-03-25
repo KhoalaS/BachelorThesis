@@ -15,7 +15,7 @@
 
 # Programming Language
 
-We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. If the situation arises in which we do need to handle memory manually, we can utilize Go's $\texttt{unsafe}$ package in conjunction with C-interop.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The builtin profiler pprof can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
 
 # Datastructures
 
@@ -872,20 +872,11 @@ $$
 \end{figure}
 $$
 
-$$
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\textwidth]{./img/dblp_tvd_rules_strat_s.png}
-    \caption{Number of rule executions for DBLP coauthor graph per rule strategy, $n=100$}
-    \label{dblp_rules_strat_s}
-\end{figure}
-$$
-
 We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/corr/abs-1205-6233] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Figure \ref{dblp_rules_strat} and \ref{dblp_rules_strat_s} display the number of rule executions per strategy. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. 
+Figure \ref{dblp_rules_strat} and \ref{dblp_rules_strat_s} display the number of rule executions per strategy. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
 
 $$
 \begin{table}[t]
@@ -965,76 +956,7 @@ $$
 
 To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn} \todo{interpretation of results}
 
-\begin{table}[t]
-\begin{subtable}[b]{0.3\textwidth}
-\centering
-\caption{unmodified}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7469 & 95252.10 \\
-std & 0.0003 & 74.38 \\
-min & 1.7460 & 95081.00 \\
-median & 1.7469 & 95249.50 \\
-max & 1.7477 & 95435.00 \\
-\bottomrule
-\end{tabular}
-\label{amzn_stock}
-\end{subtable}
-\hfill
-\begin{subtable}[b]{0.3\textwidth}
-\caption{no edge domination rule}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.7404 & 92614.51 \\
-std & 0.0003 & 80.23 \\
-min & 1.7397 & 92382.00 \\
-median & 1.7404 & 92621.00 \\
-max & 1.7413 & 92802.00 \\
-\bottomrule
-\end{tabular}
-\label{amzn_noedom}
-\end{subtable}
-\hfill
-\begin{subtable}[b]{0.3\textwidth}
-\caption{no edge domination rule and small edge rule$(*)$}
-\begin{tabular}{lrr}
-\toprule
-& Ratio & $|C|$ \\
-\midrule
-mean & 1.6894 & 89951.35 \\
-std & 0.0005 & 83.60 \\
-min & 1.6876 & 89742.00 \\
-median & 1.6894 & 89953.00 \\
-max & 1.6905 & 90153.00 \\
-\bottomrule
-\end{tabular}
-\label{amzn_noedomsmall}
-\end{subtable}
-\newline
-\vspace{4mm}
-\newline
-\begin{subtable}[b]{\linewidth}
-\centering
-\caption{Number of rule executions, percent change of mean after not using some rules}
-\begin{tabular}{l|rrrrrrrrrr}
-\toprule
-rules disabled & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 \\
-\midrule
-EDom & 0.99 & 0.42 & -100 & -52.48 & -99.67 & 19.02 & 5.49 & -1.84 & -75.23 & 2.68 \\
-Edom, Small & 20.20 & 4.86 & -100 & -99.89 & -99.58 & 18.93 & 5.52 & -2.38 & -75.56 & 2.85 \\
-\bottomrule
-\end{tabular}
-\label{rules_diff_amazon}
-\end{subtable}
-\caption{Results for \textsc{Triangle Vertex Deletion} on Amazon co-purchasing graph; $n=100$}
-\label{stats_amzn}
-\end{table}
 
-Next we looked at random ER graphs. We conducted the tests on graphs with $1000$ vertices and an edge to vertex ratio of 10 to 25. Data was collected for $100$ graphs per EVR.
 
 ![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
 
@@ -1068,6 +990,8 @@ Next we looked at random ER graphs. We conducted the tests on graphs with $1000$
 \end{table}
 
 \todo{interpretation of results}
+
+## Comparison with LP rounding based Algorithms
 
 ## Preferential Attachment Hypergraphs
 
