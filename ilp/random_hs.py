@@ -148,7 +148,7 @@ else:
             V.remove(rem)
             
             rem_e = []
-            for h in inc_map[j]:
+            for h in inc_map[rem]:
                 rem_e.append(h)
 
             for h in rem_e:
