@@ -93,8 +93,6 @@ for j in V:
     else:
         S_l.add(j)
 
-print(E[55245])
-
 for j in S_0:
     V.remove(j)
     for e in inc_map[j]:
@@ -105,16 +103,18 @@ for j in S_1:
     C.add(j)
     V.remove(j)
     for e in inc_map[j]:
-        if e in E:
-            del E[e]
+        for v in E[e]:
+            inc_map[v].remove(e)
+        del E[e]
     del inc_map[j]
 
 for j in S_gte:
     C.add(j)
     V.remove(j)
     for e in inc_map[j]:
-        if e in E:
-            del E[e]
+        for v in E[e]:
+            inc_map[v].remove(e)
+        del E[e]
     del inc_map[j]
 
 for j in S_l:
@@ -124,8 +124,9 @@ for j in S_l:
         C.add(j)
         V.remove(j)
         for e in inc_map[j]:
-            if e in E:
-                del E[e]
+            for v in E[e]:
+                inc_map[v].remove(e)
+            del E[e]
         del inc_map[j]
 
 if len(E) == 0:
@@ -133,10 +134,14 @@ if len(E) == 0:
 else:
     while len(E) > 0:
         for e in E.items():
-            C.add(e[0])
-            for h in inc_map[e[0]]:
-                if h in E:
-                    del E[h]
+            rem = e[0]
+            C.add(rem)
+            V.remove(rem)
+            for h in inc_map[rem]:
+                for v in E[h]:
+                    inc_map[v].remove(e)
+                del E[h]
+            del inc_map[rem]
             break
 
 print("found hitting-set of size", len(C))
