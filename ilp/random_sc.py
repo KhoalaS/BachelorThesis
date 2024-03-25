@@ -24,7 +24,6 @@ S = {}
 
 inc_map = {}
 delta = 0
-k = 0
 
 for line in file:
     if U_counter % 1000 == 0:
@@ -58,10 +57,6 @@ for line in file:
 
     S.update({S_counter: e_tr})
     S_counter += 1
-
-for _, e in inc_map.items():
-    if len(e) > k:
-        k = len(e)
 
 print("file loaded...")
 
@@ -101,6 +96,8 @@ if prob.status == LpStatusOptimal:
 R_1 = []
 R_2 = []
 C = set()
+
+k = max([len(inc) for _, inc in inc_map.items()])
 
 for j in range(1, m+1):
     alpha = 1 - exp(-1.0 * (log(delta)/float(k-1)))
