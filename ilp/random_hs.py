@@ -4,6 +4,8 @@ from random import random
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input", metavar="FILE", help="path to input graph file")
+parser.add_argument("--highs", action='store_true',
+                    help="use the HiGHS solver")
 
 args = parser.parse_args()
 
@@ -60,7 +62,12 @@ for idx, e in E.items():
     prob += e_sum >= 1
 
 print("begin solving...")
-prob.solve()
+
+if args.highs:
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS",
+           path="/usr/local/bin/highs", threads=os.cpu_count()))
+else:
+    prob.solve()
 
 
 opt = 0.0
