@@ -160,6 +160,7 @@ else:
             l_max_deg = 0
             for v in e:
                 if len(inc_map[v]) > l_max_deg:
+                    l_max_deg = len(inc_map[v])
                     rem = v
 
             C.add(rem)
