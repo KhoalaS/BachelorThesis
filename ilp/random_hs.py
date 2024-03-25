@@ -84,10 +84,16 @@ S_gte = set()
 S_l = set()
 
 
-l = 3.0
+l = max([len(e) for _, e in E.items()])
 e = (l * opt)/(2.0 * m)
 delta = max([len(inc) for _, inc in inc_map.items()])
 _lambda = l*(1.0-e)
+
+print("l =", l) 
+print("e =", e)
+print("delta =", delta)
+print("lambda =", _lambda)
+
 
 for j in V:
     val = value(x[j])
