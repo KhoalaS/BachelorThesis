@@ -142,7 +142,7 @@ if len(E) == 0:
     print("found hitting-set of size", len(C))
 else:
     while len(E) > 0:
-        for e in E.items():
+        for _, e in E.items():
             rem = e[0]
             C.add(rem)
             V.remove(rem)
