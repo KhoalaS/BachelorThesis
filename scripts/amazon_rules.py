@@ -26,7 +26,7 @@ exclude = ["kTiny",
            "kEdgeDom",
            "kApVertDom"]
 
-out = open("out/amazon_rules.md", "w+")
+out = open("out/amazon_rules.tex", "w+")
 
 for df in frames:
     df = df.describe()
@@ -38,7 +38,10 @@ for df in frames:
     df["Opt"] = df["Opt"].round(2)
     df["Time"] = df["Time"].round()
 
-    out.write(df.to_markdown())
+    df_new = df[["Ratio", "HittingSet", "Opt", "Time"]]
+    df_new.rename(columns={
+                  "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est. opt", "Time": "time"}, inplace=True)
+    out.write(df_new.to_latex(float_format="%.4f"))
     out.write("\n\n")
 
 bar = Bar().set_global_opts(toolbox_opts=_opts.img_opts())
