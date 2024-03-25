@@ -65,7 +65,7 @@ print("begin solving...")
 
 if args.highs:
     prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS",
-           path="/usr/local/bin/highs", threads=os.cpu_count()))
+                         path="/usr/local/bin/highs", threads=os.cpu_count()))
 else:
     prob.solve()
 
@@ -89,7 +89,7 @@ e = (l * opt)/(2.0 * m)
 delta = max([len(inc) for _, inc in inc_map.items()])
 _lambda = l*(1.0-e)
 
-print("l =", l) 
+print("l =", l)
 print("e =", e)
 print("delta =", delta)
 print("lambda =", _lambda)
@@ -105,6 +105,11 @@ for j in V:
         S_gte.add(j)
     else:
         S_l.add(j)
+
+print("|S_0| =", len(S_0))
+print("|S_1| =", len(S_1))
+print("|S_≥| =", len(S_gte))
+print("|S_<| =", len(S_l))
 
 for j in S_0:
     V.remove(j)
@@ -160,7 +165,7 @@ else:
 
             C.add(rem)
             V.remove(rem)
-            
+
             rem_e = []
             for h in inc_map[rem]:
                 rem_e.append(h)
