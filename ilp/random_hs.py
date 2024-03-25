@@ -93,19 +93,29 @@ for j in V:
     else:
         S_l.add(j)
 
+print(E[55245])
+
 for j in S_0:
     V.remove(j)
     for e in inc_map[j]:
         E[e].remove(j)
+    del inc_map[j]
 
 for j in S_1:
     C.add(j)
     V.remove(j)
     for e in inc_map[j]:
-        del E[e]
+        if e in E:
+            del E[e]
+    del inc_map[j]
 
 for j in S_gte:
     C.add(j)
+    V.remove(j)
+    for e in inc_map[j]:
+        if e in E:
+            del E[e]
+    del inc_map[j]
 
 for j in S_l:
     p = _lambda*value(x[j])
@@ -116,6 +126,7 @@ for j in S_l:
         for e in inc_map[j]:
             if e in E:
                 del E[e]
+        del inc_map[j]
 
 if len(E) == 0:
     print("found hitting-set of size", len(C))
