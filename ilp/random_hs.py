@@ -21,9 +21,6 @@ E = {}
 inc_map = {}
 
 for line in file:
-    if V_counter % 1000 == 0:
-        print(V_counter)
-
     line_str = line.strip()
     e = [int(ep) for ep in line_str.split()]
     e_tr = []

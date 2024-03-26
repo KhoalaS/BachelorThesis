@@ -28,9 +28,6 @@ inc_map = {}
 delta = 0
 
 for line in file:
-    if U_counter % 1000 == 0:
-        print(U_counter)
-
     line_spl = line.split(":")
     id = int(line_spl[0].strip())
 
