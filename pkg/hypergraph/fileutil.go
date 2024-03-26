@@ -211,3 +211,32 @@ func ReadFromFileRome(filename string) *HyperGraph {
 
 	return g
 }
+
+func WriteToFileSetCover(g *HyperGraph, filename string) {
+	out, _ := os.Create(filename)
+	bufWriter := bufio.NewWriterSize(out, 8192)
+	hashes := make(map[string]bool)
+
+	for v, inc := range g.IncMap{
+		l := fmt.Sprintf("%d: ", v)
+
+		ep := []int32{}
+
+		for e := range inc{
+			ep = append(ep, e)
+			l += strconv.Itoa(int(e)) + " "
+		}
+
+		hash := GetHash(ep...)
+		
+		if hashes[hash]{
+			continue
+		}else{
+			hashes[hash] = true
+		}
+
+		l = l[0:len(l)-1] + "\n"
+		bufWriter.WriteString(l)
+	}
+	bufWriter.Flush()
+}
