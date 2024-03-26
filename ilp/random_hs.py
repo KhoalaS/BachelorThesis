@@ -6,6 +6,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("input", metavar="FILE", help="path to input graph file")
 parser.add_argument("--highs", action='store_true',
                     help="use the HiGHS solver")
+parser.add_argument("--glpk", action='store_true',
+                    help="use the GLPK solver")
 
 args = parser.parse_args()
 
@@ -66,9 +68,10 @@ print("begin solving...")
 if args.highs:
     prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS",
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
+elif args.glpk:
+    prob.solve(GLPK(msg="using GLPK solver"))
 else:
     prob.solve()
-
 
 opt = 0.0
 print("Status:", LpStatus[prob.status])
