@@ -83,33 +83,12 @@ S_1 = set()
 S_gte = set()
 S_l = set()
 
-
-l = max([len(e) for _, e in E.items()])
-e = (l * opt)/(2.0 * m)
-delta = max([len(inc) for _, inc in inc_map.items()])
-_lambda = l*(1.0-e)
-
-print("l =", l)
-print("e =", e)
-print("delta =", delta)
-print("lambda =", _lambda)
-
-
 for j in V:
     val = value(x[j])
     if val == 0:
         S_0.add(j)
     elif val == 1:
         S_1.add(j)
-    elif val >= 1.0/_lambda:
-        S_gte.add(j)
-    else:
-        S_l.add(j)
-
-print("|S_0| =", len(S_0))
-print("|S_1| =", len(S_1))
-print("|S_≥| =", len(S_gte))
-print("|S_<| =", len(S_l))
 
 for j in S_0:
     V.remove(j)
@@ -128,6 +107,29 @@ for j in S_1:
         for v in E[e]:
             inc_map[v].remove(e)
         del E[e]
+
+
+l = max([len(e) for _, e in E.items()])
+e = (l * (opt-len(S_1)))/(2.0 * len(E))
+delta = max([len(inc) for _, inc in inc_map.items()])
+_lambda = l*(1.0-e)
+
+print("l =", l)
+print("e =", e)
+print("delta =", delta)
+print("lambda =", _lambda)
+
+for j in V:
+    val = value(x[j])
+    if val >= 1.0/_lambda:
+        S_gte.add(j)
+    else:
+        S_l.add(j)
+
+print("|S_0| =", len(S_0))
+print("|S_1| =", len(S_1))
+print("|S_≥| =", len(S_gte))
+print("|S_<| =", len(S_l))
 
 for j in S_gte:
     C.add(j)
