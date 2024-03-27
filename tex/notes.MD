@@ -876,7 +876,7 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. \todo{get data for random rule application to compare}
 
 $$
 \begin{table}[t]
@@ -956,65 +956,6 @@ $$
 
 To validate that our previous findings were not just due to the structure of the DBLP coauthor graph, we conduct the same tests with an unrelated network. We chose an Amazon product co-purchasing graph, which had a similar amount of vertices and edges compared to the DBLP coauthor graph. The resulting \textsc{Triangle-Vertex-Deletion} instance only contains 667129 edges and thus should be structurally distinct, compared to the instance obtained from the DBLP coauthor graph. As seen in table \ref{stats_amzn} and figure \ref{amzn_rules_strat}, the algorithm achieves a mean estimated ratio of $1.3136$ and behaves the same as for the DBLP coauthor graph.
 
-### ER Graphs
-
-![Triangle Vertex Deletion on ER graphs, est. appr. ratios](img/er_tvd_ratio.png)
-
-![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=10](img/er_tvd_rules_1.png)
-
-![Triangle Vertex Deletion on ER graphs, amount of rule executions for EVR=25](img/er_tvd_rules_2.png)
-
-## Cluster Vertex Deletion
-
-$$
-\begin{table}[h]
-\centering
-\begin{tabular}{llrrrrrrrrrrrr}
-\toprule
-& & Ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & F3 & $|C|$ \\
-\midrule
-\multirow{5}{4em}{stock} & mean & 1.7529 & 3.07 & 11.69 & 35.54 & 3.10 & 0.03 & 0 & 7.77 & 0.03 & 0.05 & 0 & 25.13 \\
-& std & 0.1703 & 2 & 6.11 & 29.80 & 2.35 & 0.18 & 0.07 & 4.59 & 0.18 & 0.23 & 0.01 & 13.24 \\
-& min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 \\
-& median & 1.7778 & 3 & 11 & 29 & 3 & 0 & 0 & 7 & 0 & 0 & 0 & 23 \\
-& max & 2.6667 & 13 & 37 & 198 & 16 & 2 & 4 & 25 & 3 & 4 & 2 & 62 \\
-\hline
-\multirow{5}{4em}{no EDom and small} & mean & 1.7109 & 3.47 & 12.10 & 0 & 0 & 0 & 0 & 9.75 & 0 & 0 & 0 & 22.98 \\
-& std & 0.1807 & 2.18 & 6.32 & 0 & 0 & 0.06 & 0 & 5.59 & 0.02 & 0 & 0.01 & 12.03 \\
-& min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 \\
-& median & 1.7391 & 3 & 11 & 0 & 0 & 0 & 0 & 9 & 0 & 0 & 0 & 21 \\
-& max & 2.50 & 15 & 42 & 0 & 0 & 2 & 1 & 27 & 2 & 1 & 2 & 56 \\
-\bottomrule
-\end{tabular}
-\caption{Results for $\textsc{Cluster Vertex Deletion}$ on the Rome-Graph dataset, $n=100$}
-\label{cvd_rome_stats}
-\end{table}
-$$
-
-\todo{interpretation of results}
-
-## Comparison with LP rounding based Algorithms
-
-## Preferential Attachment Hypergraphs
-
-![](img/pa_ratio.png)
-![](img/pa_rules_02.png)
-![](img/pa_rules_05.png)
-
-## 3-Uniform ER Hypergraphs
-
-![](img/eru3_ratio.png)
-![](img/eru3_rules_1.png)
-![](img/eru3_rules_2.png)
-
-# Testing
-
-Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
-
-\appendix
-
-# Appendix
-
 $$
 \begin{figure}[t]
     \centering
@@ -1025,7 +966,7 @@ $$
 $$
 
 $$
-\begin{table}[h]
+\begin{table}[t]
     \label{stats_amzn}
     \begin{subtable}[b]{0.45\textwidth}
         \centering
@@ -1095,6 +1036,69 @@ $$
     \caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph; $n=100$}
 \end{table}
 $$
+
+### ER Graphs
+
+## Cluster Vertex Deletion
+
+## Comparison with LP rounding based Algorithms
+
+There exist randomized approximation algorithms for $d-\textsc{-Hitting Set}$ that rely on LP rounding, which promise quite competetive approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the proposed algorithms and end with a comparison to our algorithm.
+
+Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referrring to a vertex or edge using its index, i.e. vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
+
+$$
+\begin{alignat*}{2}
+    & \textnormal{minimize}\quad   && \sum_{i=1}^{n} x_i \\
+    & \textnormal{subject to}\quad && \sum_{i \in e_j} x_i \geq 1 \quad \forall e_j \in E \\
+    &                              && x_i \in \left\{0,1\right\} \quad \forall i \in [n]\\
+\end{alignat*}
+$$
+
+The LP relaxation of this ILP would allow for $x_i$ to be any value in the intervall $[0,1]$ for all $i \in [n]$. The dual to the problem, the $\textsc{Set Cover}$ problem, can be formulated similarly for the unweighted case,
+
+$$
+\begin{alignat*}{2}
+    & \textnormal{minimize}\quad   && \sum_{j=1}^{m} x_j \\
+    & \textnormal{subject to}\quad && \sum_{j: i\in e_j} x_j \geq 1 \quad \forall i \in [n] \\
+    &                              && x_j \in \left\{0,1\right\} \quad \forall j \in [m]\\
+\end{alignat*}
+$$
+
+And again, the LP relaxation of this ILP would allow for $x_j$ to be any value in the intervall $[0,1]$ for all $j \in [m]$.
+
+It might not obvious at first that \textsc{Set Cover} is the dual of \textsc{Hitting Set}, but formulating both problems informally gives it away in an understandable way. One problem tries to cover sets with elements, while the over aims at covering elements with sets. For a formal reduction from \textsc{Hitting Set} to \textsc{Set Cover} let $G=(V,E)$ be a hypergraph and $C \subseteq V$. Let $S_v = \left\{ e \mid v \in e \right\}$ for $v\in V$, i.e. the set of edges that are incident to a vertex $v$. Now $C$ is a hitting set if and only if $S = \left\{ e \in S_v \mid v \in C\right\}$ is a set cover. Let us assume that $C$ is a hitting set for $G$, then it holds that,
+
+$$
+\forall e \in E \mid e \cap C \neq\emptyset \quad\Leftrightarrow\quad \forall e \in E\; \exists v \in C \;\; \textnormal{s.t.} \;\; e \in S_v \quad \Leftrightarrow \quad \bigcup_{v\in C} S_v = E
+$$
+
+The first algorithm we look at was proposed by Ouali et. al. in [@DBLP:journals/tcs/OualiFS14]. Let $G=(V,E)$ be a hypergraph. The algorithm starts by solving the LP relaxation of the hitting set ILP for $G$. Let $\textnormal{Opt}^* = \sum_{i=1}^{n} x_i^*$ be an optimal solution to the LP relaxation. With that solution construct the following four sets:
+
+$$
+\begin{align*}
+     &S_0 = \left\{ i \in [n] \mid x_i^* = 0 \right\}
+     &S_\geq = \left\{ i \in [n] \mid 1\neq x_i^* \geq \tfrac{1}{\lambda} \right\}\\                                                                           \\
+     &S_1 = \left\{ i \in [n] \mid x_i^* = 1 \right\}
+     &S_{<} = \left\{ i \in [n] \mid 0\neq x_i^* < \tfrac{1}{\lambda} \right\}\\
+\end{align*}
+$$
+
+Remove all vertices in $S_0$ from $V$ and remove all edges incident to $S_0$ from $E$. Then put all vertices in $S_1$ and $S_\geq$ into the hitting set $C$, by removing all vertices in $S_1 \cup S_\geq$ from $V$ and removing all edges incident to $S_1 \cup S_\geq$ from $E$. Next is the randomized rounding step. For all vertices $i \in S_<$ include $i$ in the hitting set with probability $\lambda \cdot x_i^*$, independently for all $i$. If $|E|=0$ return the hitting set $C$. Else, as long as $|E|>0$, select a vertex from an uncovered edge and put it into the hitting set $C$.
+
+Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $k$ the maximum number of sets any element in $V$ contains and $\Delta$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha k \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln\Delta}{k-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover. 
+
+## Preferential Attachment Hypergraphs
+
+## 3-Uniform ER Hypergraphs
+
+# Testing
+
+Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
+
+\appendix
+
+# Appendix
 
 \newpage
 
