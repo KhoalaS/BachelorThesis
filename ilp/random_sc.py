@@ -99,6 +99,8 @@ R_2 = []
 C = set()
 
 k = max([len(inc) for _, inc in inc_map.items()])
+print("k =", k)
+print("delta =", delta)
 
 for j in range(1, m+1):
     alpha = 1 - exp(-1.0 * (log(delta)/float(k-1)))
