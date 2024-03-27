@@ -90,11 +90,11 @@ for j in V:
     elif val == 1:
         S_1.add(j)
 
-for j in S_0:
-    V.remove(j)
-    for e in inc_map[j]:
-        E[e].remove(j)
-    inc_map[j] = []
+#for j in S_0:
+#    V.remove(j)
+#    for e in inc_map[j]:
+#        E[e].remove(j)
+#    inc_map[j] = []
 
 for j in S_1:
     C.add(j)
