@@ -110,7 +110,7 @@ for j in S_1:
 
 
 l = max([len(e) for _, e in E.items()])
-e = (l * (opt-len(S_1)))/(2.0 * len(E))
+e = (l * (opt-len(S_1)))/(2.0 * m)
 _lambda = l*(1.0-e)
 
 print("l =", l)
