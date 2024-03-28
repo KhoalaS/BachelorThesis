@@ -10,6 +10,7 @@ parser.add_argument("--highs", action='store_true',
                     help="use the HiGHS solver")
 parser.add_argument("--glpk", action='store_true',
                     help="use the GLPK solver")
+parser.add_argument("-l", action='store_true', help="keep log files")
 
 args = parser.parse_args()
 
@@ -78,13 +79,15 @@ for i in range(1, n+1):
 
 print("begin solving...")
 
+keep_logs = args.l
+
 if args.highs:
-    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=True,
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs,
            path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
-    prob.solve(GLPK(msg="using GLPK solver", keepFiles=True))
+    prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
 else:
-    prob.solve(PULP_CBC_CMD(keepFiles=True))
+    prob.solve(PULP_CBC_CMD(keepFiles=keep_logs))
 
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
