@@ -62,12 +62,12 @@ for idx, e in E.items():
 print("begin solving...")
 
 if args.highs:
-    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS",
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=True,
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
-    prob.solve(GLPK(msg="using GLPK solver"))
+    prob.solve(GLPK(msg="using GLPK solver", keepFiles=True))
 else:
-    prob.solve()
+    prob.solve(PULP_CBC_CMD(keepFiles=True))
 
 opt = 0.0
 print("Status:", LpStatus[prob.status])
