@@ -41,7 +41,7 @@ for line in file:
     E.update({E_counter: e_tr})
     E_counter += 1
 
-
+delta = max([len(inc) for _, inc in inc_map.items()])
 print("file loaded...")
 
 n = V_counter-1
@@ -110,8 +110,7 @@ for j in S_1:
 
 
 l = max([len(e) for _, e in E.items()])
-e = (l * (opt-len(S_1)))/(2.0 * len(E))
-delta = max([len(inc) for _, inc in inc_map.items()])
+e = (l * (opt-len(S_1)))/(2.0 * m)
 _lambda = l*(1.0-e)
 
 print("l =", l)
