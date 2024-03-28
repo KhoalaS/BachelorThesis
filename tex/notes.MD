@@ -880,7 +880,6 @@ Figure \ref{dblp_rules_strat} displays the number of rule executions per strateg
 
 $$
 \begin{table}[t]
-    \label{stats_dblp}
     \begin{subtable}[b]{0.45\textwidth}
         \centering
         \caption{base rule strategy\label{dblp_str_base}}
@@ -947,6 +946,7 @@ $$
         \end{tabular}
     \end{subtable}
     \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
+    \label{stats_dblp}
 \end{table}
 $$
 
@@ -967,7 +967,6 @@ $$
 
 $$
 \begin{table}[t]
-    \label{stats_amzn}
     \begin{subtable}[b]{0.45\textwidth}
         \centering
         \caption{base rule strategy\label{amzn_str_base}}
@@ -1034,6 +1033,7 @@ $$
         \end{tabular}
     \end{subtable}
     \caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph; $n=100$}
+    \label{stats_amzn}
 \end{table}
 $$
 
@@ -1043,7 +1043,7 @@ $$
 
 ## Comparison with LP rounding based Algorithms
 
-There exist randomized approximation algorithms for $d-\textsc{-Hitting Set}$ that rely on LP rounding, which promise quite competetive approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the proposed algorithms and end with a comparison to our algorithm.
+There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competetive (actual) approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will somtimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
 
 Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referrring to a vertex or edge using its index, i.e. vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
 
@@ -1084,9 +1084,34 @@ $$
 \end{align*}
 $$
 
-Remove all vertices in $S_0$ from $V$ and remove all edges incident to $S_0$ from $E$. Then put all vertices in $S_1$ and $S_\geq$ into the hitting set $C$, by removing all vertices in $S_1 \cup S_\geq$ from $V$ and removing all edges incident to $S_1 \cup S_\geq$ from $E$. Next is the randomized rounding step. For all vertices $i \in S_<$ include $i$ in the hitting set with probability $\lambda \cdot x_i^*$, independently for all $i$. If $|E|=0$ return the hitting set $C$. Else, as long as $|E|>0$, select a vertex from an uncovered edge and put it into the hitting set $C$.
+Remove all vertices in $S_0$ from $V$ and remove all edges incident to $S_0$ from $E$. Then put all vertices in $S_1$ and $S_\geq$ into the hitting set $C$, by removing all vertices in $S_1 \cup S_\geq$ from $V$ and removing all edges incident to $S_1 \cup S_\geq$ from $E$. Next is the randomized rounding step. For all vertices $i \in S_<$ include $i$ in the hitting set with probability $\lambda \cdot x_i^*$, independently for all $i$. If $|E|=0$ return the hitting set $C$. Else, as long as $|E|>0$, select a vertex from an uncovered edge and put it into the hitting set $C$. We will further elaborate on the definition of $\lambda$ when discussing the test results of the algorithms.
 
-Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $k$ the maximum number of sets any element in $V$ contains and $\Delta$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha k \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln\Delta}{k-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover. 
+Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $\Delta$ the maximum number of sets any element in $V$ is contained in and $d$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha\Delta \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln d}{\Delta-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover.
+
+We used PuLP [@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python aswell. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall[@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}}))\cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $(3-1)(1-e^{-\frac{ln 551}{3-1}})\cdot \textnormal{Opt}^* = 1.9148\cdot \textnormal{Opt}^*$.
+
+$$
+\begin{table}[t]
+     \centering
+     \begin{tabular}{c|crrrrr}
+          \toprule
+          algorithm                      & solver & ratio UB  & actual ratio &
+          $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
+          \midrule
+          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{2em}{2.9986}         & ?       & 64452.6941 &
+          ?                         & 1 hour                                                             \\
+                                         & CLP    &            & 1.7838       & 64452.6992 & 114972 & 50 sec \\
+                                         & HiGHS  &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
+          \midrule
+          \multirow{3}{4em}{Set Cover(2)}   & GLPK   & \multirow{3}{2em}{1.9148} & 1.5944       & 64452.6940 &
+          102762                         & 1 hour                                                             \\
+                                         & CLP    &            & 1.8068       & 64452.6992 & 116455 & 47 sec \\
+                                         & HiGHS  &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
+     \end{tabular}
+     \caption{Results for LP based rounding algorithms for \textsc{Hitting Set} and \textsc{Set Cover} on \textsc{Triangle Vertex Deletion} instance of Amazon product co-purchasing graph}
+     \label{lp_stats}
+\end{table}
+$$
 
 ## Preferential Attachment Hypergraphs
 
