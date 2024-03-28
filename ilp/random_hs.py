@@ -101,9 +101,9 @@ print("lambda =", _lambda)
 
 for j in V:
     val = value(x[j])
-    if val >= 1.0/_lambda:
+    if val != 1 and val >= 1.0/_lambda:
         S_gte.add(j)
-    else:
+    elif val != 1:
         S_l.add(j)
 
 print("|S_0| =", len(S_0))
