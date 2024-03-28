@@ -90,25 +90,6 @@ for j in V:
     elif val == 1:
         S_1.add(j)
 
-#for j in S_0:
-#    V.remove(j)
-#    for e in inc_map[j]:
-#        E[e].remove(j)
-#    inc_map[j] = []
-
-for j in S_1:
-    C.add(j)
-    V.remove(j)
-    rem_e = []
-    for e in inc_map[j]:
-        rem_e.append(e)
-
-    for e in rem_e:
-        for v in E[e]:
-            inc_map[v].remove(e)
-        del E[e]
-
-
 l = max([len(e) for _, e in E.items()])
 e = (l * (opt-len(S_1)))/(2.0 * m)
 _lambda = l*(1.0-e)
@@ -129,6 +110,24 @@ print("|S_0| =", len(S_0))
 print("|S_1| =", len(S_1))
 print("|S_≥| =", len(S_gte))
 print("|S_<| =", len(S_l))
+
+#for j in S_0:
+#    V.remove(j)
+#    for e in inc_map[j]:
+#        E[e].remove(j)
+#    inc_map[j] = []
+
+for j in S_1:
+    C.add(j)
+    V.remove(j)
+    rem_e = []
+    for e in inc_map[j]:
+        rem_e.append(e)
+
+    for e in rem_e:
+        for v in E[e]:
+            inc_map[v].remove(e)
+        del E[e]
 
 for j in S_gte:
     C.add(j)
