@@ -99,11 +99,13 @@ R_2 = []
 C = set()
 
 k = max([len(inc) for _, inc in inc_map.items()])
+alpha = 1 - exp(-1.0 * (log(delta)/float(k-1)))
+
 print("k =", k)
 print("delta =", delta)
+print("alpha =", alpha)
 
 for j in range(1, m+1):
-    alpha = 1 - exp(-1.0 * (log(delta)/float(k-1)))
     p_j = min([1.0, alpha*k*value(x[j])])
     r = random()
     if r <= p_j:
