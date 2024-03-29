@@ -114,6 +114,7 @@ print("|S_1| =", len(S_1))
 print("|S_≥| =", len(S_gte))
 print("|S_<| =", len(S_l))
 
+print("skip step 4 of lagorithm, not removing vertices in S_0")
 # for j in S_0:
 #    V.remove(j)
 #    for e in inc_map[j]:
