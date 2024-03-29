@@ -136,7 +136,7 @@ for i in I_r:
 
 sc = [S_lookup[j] for j in R_1 + R_2]
 
-ratio_ub = (k-1)*(1-exp(-1*(log(delta)/(k-1))))
+ratio_ub = (k-1)*(1-exp(-1*(log(delta)/(k-1)))) + 1
 ratio = len(sc)/opt
 
 print("ratio upper bound:", ratio_ub)
