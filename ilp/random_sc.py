@@ -11,6 +11,7 @@ parser.add_argument("--highs", action='store_true',
 parser.add_argument("--glpk", action='store_true',
                     help="use the GLPK solver")
 parser.add_argument("-l", action='store_true', help="keep log files")
+parser.add_argument("--log", action='store_true')
 
 args = parser.parse_args()
 
@@ -135,6 +136,14 @@ for i in I_r:
 
 sc = [S_lookup[j] for j in R_1 + R_2]
 
-print("ratio upper bound:", (k-1)*(1-exp(-1*(log(delta)/(k-1)))))
-print("actual ratio:", len(sc)/opt)
-print("found hitting-set of size", len(C))
+ratio_ub = (k-1)*(1-exp(-1*(log(delta)/(k-1))))
+ratio = len(sc)/opt
+
+print("ratio upper bound:", ratio_ub)
+print("actual ratio:", ratio)
+print("found set-cover of size", len(sc))
+
+if args.log:
+    logfile = open("./data/rome_cvd_lpsc.csv", "a+")
+    filename = str(args.input).split("/")[-1]
+    logfile.write("{};{};{};{}\n".format(filename, ratio_ub, ratio, len(sc)))

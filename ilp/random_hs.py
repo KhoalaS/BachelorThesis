@@ -9,6 +9,7 @@ parser.add_argument("--highs", action='store_true',
 parser.add_argument("--glpk", action='store_true',
                     help="use the GLPK solver")
 parser.add_argument("-l", action='store_true', help="keep log files")
+parser.add_argument("--log", action='store_true')
 
 args = parser.parse_args()
 
@@ -181,6 +182,14 @@ else:
 
             break
 
-print("ratio upper bound:", l*(1-((l-1)/(8*delta))))
-print("actual ratio:", len(C)/opt)
+ratio_ub = l*(1-((l-1)/(8*delta)))
+ratio = len(C)/opt
+
+print("ratio upper bound:", ratio_ub)
+print("actual ratio:", ratio)
 print("found hitting-set of size", len(C))
+
+if args.log:
+    logfile = open("./data/rome_cvd_lphs.csv", "a+")
+    filename = str(args.input).split("/")[-1]
+    logfile.write("{};{};{};{}\n".format(filename, ratio_ub, ratio, len(C)))
