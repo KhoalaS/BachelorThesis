@@ -42,7 +42,7 @@ func main() {
 
 			c := make(map[int32]bool)
 
-			execs := alg.ThreeHS_F3ApprPolyFrontier(h, c)
+			execs := alg.ThreeHS_F3ApprPolyFrontierSingle(h, c)
 
 			rules := ""
 			for _, label := range alg.Labels {
