@@ -1090,6 +1090,8 @@ Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/app
 
 We used PuLP [@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python aswell. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall[@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}}))\cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $(3-1)(1-e^{-\frac{ln 551}{3-1}})\cdot \textnormal{Opt}^* = 1.9148\cdot \textnormal{Opt}^*$.
 
+Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time aswell as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size. This is mainly due to the way how both algorithms estimate the hitting set size, which in turn impacts the  
+
 $$
 \begin{table}[t]
      \centering
@@ -1098,8 +1100,8 @@ $$
           algorithm                      & solver & ratio UB  & actual ratio &
           $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
           \midrule
-          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{2em}{2.9986}         & ?       & 64452.6941 &
-          ?                         & 1 hour                                                             \\
+          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{2em}{2.9986}         & 1.5814       & 64452.6941 &
+          101928                         & 1 hour                                                             \\
                                          & CLP    &            & 1.7838       & 64452.6992 & 114972 & 50 sec \\
                                          & HiGHS  &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
           \midrule
