@@ -192,4 +192,4 @@ print("found hitting-set of size", len(C))
 if args.log:
     logfile = open("./data/rome_cvd_lphs.csv", "a+")
     filename = str(args.input).split("/")[-1]
-    logfile.write("{};{};{};{}\n".format(filename, ratio_ub, ratio, len(C)))
+    logfile.write("{};{};{};{};{}\n".format(filename, ratio_ub, ratio, len(C), opt))

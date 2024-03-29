@@ -146,4 +146,4 @@ print("found set-cover of size", len(sc))
 if args.log:
     logfile = open("./data/rome_cvd_lpsc.csv", "a+")
     filename = str(args.input).split("/")[-1]
-    logfile.write("{};{};{};{}\n".format(filename, ratio_ub, ratio, len(sc)))
+    logfile.write("{};{};{};{};{}\n".format(filename, ratio_ub, ratio, len(sc), opt))
