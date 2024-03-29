@@ -83,19 +83,20 @@ keep_logs = args.l
 
 if args.highs:
     prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs,
-           path="/usr/local/bin/highs", threads=os.cpu_count()))
+                         path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
     prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
 else:
     prob.solve(PULP_CBC_CMD(keepFiles=keep_logs))
 
+opt = 0.0
 print("Status:", LpStatus[prob.status])
 if prob.status == LpStatusOptimal:
     # print("Solution:")
     # for j in range(1, m+1):
     #    print(f"{S_lookup[j]} =", value(x[j]))
-    print("Sum of decision variables =", value(
-        lpSum([x[j] for j in range(1, m+1)])))
+    opt = value(lpSum([x[j] for j in range(1, m+1)]))
+    print("Sum of decision variables =", opt)
 
 R_1 = []
 R_2 = []
@@ -131,6 +132,9 @@ for i in I_r:
             for v in S[j]:
                 C.add(v)
             break
-            
+
 sc = [S_lookup[j] for j in R_1 + R_2]
-print("Size:", len(sc))
+
+print("ratio upper bound:", (k-1)*(1-exp(-1*(log(delta)/(k-1)))))
+print("actual ratio:", len(C)/opt)
+print("found hitting-set of size", len(C))

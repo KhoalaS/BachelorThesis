@@ -181,4 +181,6 @@ else:
 
             break
 
+print("ratio upper bound:", l*(1-((l-1)/(8*delta))))
+print("actual ratio:", len(C)/opt)
 print("found hitting-set of size", len(C))
