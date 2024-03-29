@@ -160,7 +160,7 @@ for j in S_l:
             del E[e]
 
 if len(E) == 0:
-    print("found hitting-set of size", len(C))
+    pass
 else:
     while len(E) > 0:
         for _, e in E.items():
