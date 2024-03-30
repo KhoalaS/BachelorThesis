@@ -12,6 +12,9 @@ print("loading csv file...")
 df = pd.read_csv(args.file, delimiter=";")
 
 print("file loaded...")
+
+df = df.loc[df.groupby("File")["HittingSet"].idxmin()]
+
 df.drop(columns=["File", "OVertices", "OEdges",
         "Vertices", "Edges"], inplace=True)
 
