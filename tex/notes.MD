@@ -2,6 +2,8 @@
     title: Implementation and evaluation of a self-monitoring approximation algorithm for 3-Hitting-Set
     link-citations: true
     author: Khoa Le
+    abstract: |
+        In this thesis we implemented an approximation algorithm for the \textsc{Hitting-Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio method. We show test results on real-world networks that can be interpreted as derivate problems of \textsc{Hitting-Set}. At last, we compare these results with two linear programming based algorithms.
 ...
 
 \RestyleAlgo{ruled}
@@ -14,6 +16,8 @@
 \SetKwProg{Fn}{func}{\string:}{}
 
 # Introduction
+
+
 
 # Programming Language
 
@@ -54,7 +58,7 @@ type HyperGraph struct {
 }
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
 
 # Misc. Algorithms/Utilities
 
@@ -160,7 +164,7 @@ $$
 
 The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph.
 
-That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count really fast.
+That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count really fast. The model was primarily used during the implementation phase of the algorithm to gather profiling data.
 
 ## Preferential Attachment Hypergraph Model
 
@@ -639,7 +643,7 @@ $$
 
 ### Small Edge Degree 2 Rule
 
--   small edge degree 2: Let v be a vertex of degree 2, and let the two hyperedges
+-   small edge degree 2: Let $v$ be a vertex of degree 2, and let the two hyperedges
     containing $v$ be $e = \{x, v\}$ and $f = \{v, y, z\}$. Then we can select a hyperedge $g$
     that contains one of the neighbors of $v$ in $f$ but not $x$, for example $g = \{u, w, z\}$
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
@@ -709,6 +713,67 @@ $outer \gets true$\;
 }
 
 \caption{Algorithm for exhaustive application of Small Edge Degree 2 Rule\label{sed2}}
+\end{algorithm}
+$$
+
+### F3 Target Low Degree Rule
+
+-   F3 target low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $x$.If there exists an edge $f$, that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
+
+As seen in algorithm \ref{f3target} we extended this rule in the final implementation. If there is no vertex for which the rule applies, then we check the condition of the rule once again with the vertex $v_{min}$. If this attempt does not work, then we put a random size three edge into the hitting set. 
+
+$$
+\begin{algorithm}[H]
+
+\KwIn{A hypergraph $G=(V,E)$, a set $C$}
+\KwOut{An integer denoting the number of rule applications.}
+\BlankLine
+
+$min \gets \infty$\;
+$v_{min} \gets nil$\;
+$f_0 \gets nil$;
+
+\textbf{check:}\;
+\For{$x \in V$}{
+    \uIf{$deg(x) = 2$}{
+        $found \gets false$\;
+        \textbf{incx:}\;
+        \For{$e$ \textnormal{incident to} $x$}{
+            \For{$v \in e\setminus \{ x \}$}{
+                \For{$f\neq e$ \textnormal{incident to} $v$}{
+                    \If{$x\notin f$ \textnormal{and} $|f| = 3$}{
+                        $found\gets true$\;
+                        $f_0 \gets f$\;
+                        \textbf{break incx}\;
+                    }
+                }
+            }
+        }
+        \If{found}{
+            $C\gets C\cup f_0$\;
+            \For{$v \in f_0$}{
+                \For{$e$ \textnormal{incident to} $e$}{
+                    $E \gets E\setminus \{ e \}$\;
+                }
+            }
+            \KwRet 1\;
+        }
+    }
+    \uElseIf{$deg(x) < min$ \textbf{and} $deg(x) > 1$}{
+        $min \gets deg(x)$\;
+        $v_{min} \gets x$
+    }
+    \BlankLine
+    jump to label \textbf{incx} with $x \gets v_{min}$\;
+
+    \If{$f_0 = nil$}{
+        $f_0 \gets$ random size three edge\;
+    }
+
+    \KwRet $f_0 = nil$\;
+}
+
+\caption{Algorithm that selects a single size three edge to put into the hitting set\label{f3target}}
 \end{algorithm}
 $$
 
@@ -797,7 +862,6 @@ $H \gets$ empty hypergraph\;
 
 \KwRet $C$\;
 
-
 \Fn{\ExpandFrontier{G, l, exp}}{
     $H\gets$ empty hypergraph\;
 
@@ -871,7 +935,7 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. \todo{get data for random rule application to compare}
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. \todo{get data for random rule application to compare}
 
 $$
 \begin{table}[t]
