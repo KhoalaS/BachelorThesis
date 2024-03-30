@@ -857,9 +857,23 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 ## Triangle Vertex Deletion
 
-[PROBLEM DEFINITION]
+$$
+\begin{center}
+\fbox{
+    \begin{minipage}[h]{0.75\textwidth}
+        \textbf{Problem Name:} \textsc{Triangle Vertex Deletion}
 
-\textsc{Triangle Vertex Deletion} can be reduced to the \textsc{3-Hitting Set} problem. Triangles in the input graph will be represented as size 3 edges in a hypergraph, containing the vertices that make up the triangle.
+        \textbf{Given:} A graph $G=(V,E)$
+
+        \textbf{Parameter:} A non-negative integer $k$.
+
+        \textbf{Output:} Is there a set $C\subseteq V$ of size at most $k$, such that $G\setminus C$ is a triangle-free graph.
+    \end{minipage}
+}
+\end{center}
+$$
+
+\textsc{Triangle Vertex Deletion} can be reduced to the \textsc{3-Hitting Set} problem. Triangles in the input graph will be represented as size 3 edges in a hypergraph, containing the vertices that make up the triangle. A hitting set of size at most $k$ on this hypergraph can be used to transform the original standard graph into a triangle-free graph, removing at most $k$ vertices.
 
 ### DBLP Coauthor Graph
 
@@ -1041,6 +1055,48 @@ $$
 
 ## Cluster Vertex Deletion
 
+Another derivative problem of \textsc{Hitting Set} is the \textsc{Cluster Vertex Deletion} problem. The problem can be formulated as follows,
+
+$$
+\begin{center}
+\fbox{
+    \begin{minipage}[h]{0.75\textwidth}
+        \textbf{Problem Name:} \textsc{Cluster Vertex Deletion}
+
+        \textbf{Given:} A graph $G=(V,E)$
+
+        \textbf{Parameter:} A non-negative integer $k$.
+
+        \textbf{Output:} Is there a set $C\subseteq V$ of size at most $k$, such that $G\setminus C$ is a cluster graph.
+    \end{minipage}
+}
+\end{center}
+$$
+
+A cluster graph is a union of disjoint complete graphs which is equivalent to a graph that does not contain an induced path on three vertices, also called a $P_3$. These $P_3$ can be interpreted as edges in a hypergraph. A hitting set of size at most $k$ on this hypergraph can be used to transform the original standard graph into a cluster graph, removing at most $k$ vertices.
+
+We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected graphs used and made available by Di Battista et al. in [@DiBattista1997b]. We ran the algorithm ten times per graph and picked the run with the lowest hitting set size to include during calculation of the statistics. The results can be seen in table \ref{cvd_rome_stats}.
+
+$$
+\begin{table}[h]
+\makebox[\textwidth][c]{
+    \begin{tabular}{lrrrrrrrrrrrrrr}
+    \toprule
+    & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
+    \midrule
+    mean & 1.1188 & 13.77 & 31.58 & 84.01 & 0.21 & 0.05 & 0.01 & 1.38 & 0.07 & 0 & 0.08 & 0 & 18 & 16 \\
+    std & 0.0962 & 7.20 & 15.75 & 56.79 & 0.45 & 0.23 & 0.09 & 1.39 & 0.26 & 0.07 & 0.27 & 0.01 & 9 & 8 \\
+    min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 & 2 \\
+    median & 1.1111 & 12 & 28 & 75 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 16 & 14 \\
+    max & 2 & 32 & 69 & 310 & 5 & 2 & 1 & 9 & 2 & 1 & 2 & 1 & 40 & 33 \\
+    \bottomrule
+    \end{tabular}
+}
+    \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs library. Hitting sets were computed ten times for each graph and the run with the lowest hitting set size was chosen for final calculation.}
+    \label{cvd_rome_stats}
+\end{table}
+$$
+
 ## Comparison with LP rounding based Algorithms
 
 There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competetive (actual) approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will somtimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
@@ -1090,22 +1146,22 @@ Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/app
 
 We used PuLP [@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python aswell. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall[@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
 
-Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time aswell as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size. This is mainly due to the way how both algorithms estimate the hitting set size, which in turn impacts the  
+Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time aswell as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
 
 $$
 \begin{table}[t]
      \centering
-     \begin{tabular}{c|crrrrr}
+     \begin{tabular}{c|rrrrrr}
           \toprule
           algorithm                      & solver & ratio UB  & actual ratio &
           $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
           \midrule
-          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{2em}{2.9986}         & 1.5814       & 64452.6941 &
+          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
           101928                         & 1 hour                                                             \\
                                          & CLP    &            & 1.7838       & 64452.6992 & 114972 & 50 sec \\
                                          & HiGHS  &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
           \midrule
-          \multirow{3}{4em}{Set Cover(2)}   & GLPK   & \multirow{3}{2em}{2.9148} & 1.5944       & 64452.6940 &
+          \multirow{3}{4em}{Set Cover(2)}   & GLPK   & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
           102762                         & 1 hour                                                             \\
                                          & CLP    &            & 1.8068       & 64452.6992 & 116455 & 47 sec \\
                                          & HiGHS  &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
