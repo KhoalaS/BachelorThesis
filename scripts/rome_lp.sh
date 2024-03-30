@@ -13,4 +13,7 @@ for file in (ls ./graphs/rome_cvd)
     for i in (seq 1 10)
         python ilp/random_hs.py --glpk --log graphs/rome_cvd/$file > /dev/null
     end
+    for i in (seq 1 10)
+        python ilp/random_sc.py --glpk --log graphs/rome_cvd_sc/$file > /dev/null
+    end
 end
