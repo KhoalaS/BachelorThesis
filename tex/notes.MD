@@ -13,6 +13,8 @@
 \SetKwFunction{ExpandFrontier}{ExpandFrontier}
 \SetKwProg{Fn}{func}{\string:}{}
 
+# Introduction
+
 # Programming Language
 
 We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The builtin profiler pprof can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
@@ -52,15 +54,17 @@ type HyperGraph struct {
 }
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this $\texttt{Set}$-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
 
 # Misc. Algorithms/Utilities
 
 ## Edge Hashing
 
-Time Complexity: $n + n\cdot \log(n)$, where $n$ denotes the size of $\texttt{arr}$.
+Given a set $S$ of size $n$, compute a unique hash of $S$.
 
-We start by sorting $\texttt{arr}$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $\texttt{arr}$ with the delimiter $"|"$, returning a string of the form $"|id_0|id_1|\dots|id_n|"$. Whenever we refer to $\textit{the hash of an edge}$ we refer to the output of this function, using the endpoints of the edge as the $\texttt{arr}$ argument.
+Time Complexity: $n + n\cdot \log(n)$
+
+We start by sorting $S$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $S$ with the delimiter $"|"$, returning a string of the form $"|i_0|i_1|\dots|i_n|"$. Whenever we refer to \textit{the hash of an edge} we refer to the output of this function, using the endpoints of the edge as the input set. This hash value is useful when we want to check the existence of specific edges.
 
 ## Compute Subsets of Size $s$
 
@@ -93,11 +97,11 @@ $\texttt{FnRecursive}(0,0)$\;
 \end{algorithm}
 $$
 
-Lists in Go are not very memory efficient, but since we exclusively call this function with $arr$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, thus justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that shall be called whenever we find a subset, using the found subset as an argument.
+Lists in Go are not very memory efficient, but since we exclusively call this function with $arr$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that is called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
-Given an array of integers and an integer target $t$, return indices of the two numbers such that they add up to $t$.
+Given an array $\texttt{items}$ of integers and an integer target $t$, return indices of the two numbers such that they add up to $t$.
 
 Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
 
@@ -125,12 +129,7 @@ $lookup \gets \texttt{map}[\mathbb{N}]\mathbb{N}$\;
 \end{algorithm}
 $$
 
-We start by creating a map called $lookup$. Iterating other the elements of $arr$, we check if the entry $lookup[t-arr[i]]$ exists.
-
--   If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value $true$ since we found a solution.
--   If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value.
-
-If no solution was found, we return $nil$ and the boolean value $false$.
+We start by creating a map called $lookup$. Iterating other the elements of $arr$, we check if the entry $lookup[t-arr[i]]$ exists. If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value $true$ since we found a solution. If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value. If no solution was found, we return $nil$ and the boolean value $false$.
 
 This algorithm is an ingredient for the implementation of one of the reduction rules, specifically the approximative vertex domination rule. The actual implementation accepts a map instead of an array as its first parameter. We also implemented a version that finds all solutions, which accepts an additional callback function as a parameter. Instead of returning the solution, we call the callback function with the solution as the first argument. This version is an ingredient for the implementation of the approximative double vertex domination. We refer to this version as $\textssc{Two-SumAll}$ inside the algorithm listings.
 
@@ -161,13 +160,11 @@ $$
 
 The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph.
 
-That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers.
+That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count really fast.
 
 ## Preferential Attachment Hypergraph Model
 
-In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph.
-
-We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al. in [@DBLP:journals/corr/AvinLP15].
+In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex, or will be comprised of vertices already part of the graph. We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al. in [@DBLP:journals/corr/AvinLP15].
 
 ```go
 func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
@@ -202,7 +199,7 @@ The general outline of an algorithm will look as follows,
     - Mutate the graph according to the rule.
     - Mutate the auxiliary data structure according to the rule.
 
-This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time.
+This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time. We can also reuse these algorithms with minimal changes, in the case where we want to only execute a rule once.
 
 ## Algorithms
 
@@ -369,26 +366,26 @@ $$
 
 $O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$, that is incident to all edges in $G$.
 
-We start by iterating other the $AdjCount$ map of the graph, refering to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$-Algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
+We start by iterating other the $AdjCount$ map of the graph, refering to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
 
 $$
 AdjCount[v][a] + AdjCount[v][b] = deg(v)+1
 $$
 
-If such a pair exists, then we conclude that for every edge $f$ such that $v \in f$, it holds that, either $a\in f$ or $b\in f$.
+If such a pair exists, then we conclude that for every edge $f$ incident to $v$, it holds that, either $a\in f$ or $b\in f$.
 
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph. We first remove all edges of size one with the _Tiny Edge Rule_. We then construct our map $AdjCount$. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ implementation on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
+_Proof._ Let $G$ be a hypergraph without size one edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
 
 _Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
-Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and does not contain $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
+Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges, size one edges and not the edge $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore it must be, that the assumption that $\{ v,a,b \}$ does not exist, is false.
 
 Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ can not exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaniously. $\square$
 
-We then add the two vertices in the solution $sol$ to our partial solution $c$.
+We then add the two vertices in the solution $sol$ to our partial solution $C$.
 
 $$
 \begin{algorithm}
@@ -508,7 +505,7 @@ $$
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
-$O(|E|+|V|^2)$ **Algorithm** We start by constructing an adjacency list $\texttt{adjList}$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
+$O(|E|+|V|^2)$ **Algorithm** We start by constructing an adjacency list $adjList$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
 
 This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop, and wrap both procedures with an outer loop which breaks if we dont find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
 
@@ -572,6 +569,8 @@ $$
 -   Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
     there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
 
+$O(|E|^3)$ **Algorithm** We start by iterating over $E$ until we find a size two edge $e$. We then iterate over the vertices of $e$. Let $a$ be the vertex in the current iteration. Assign $a$ to the variable $y$ and $e\setminus \{ y \}$ to $\{ z \}$. Then we iterate over the edges $f$ that are incident to $y$. If $f$ is not of size three or $z\in f$, continue with the iteration. Else, iterate over the edges $g$ that are incident to $z$. If $g\setminus \{ z \} \subset f$, then we found a extended triangle situation. In that case, save $f$ in a variable $f_0$ and break out of the loop that iterates over the edges incident to $y$. If $f_0 \neq nil$ then put $f_0 \cup \{ z \}$ into the partial hitting set $C$ and break out of the loop iterating over the endpoints of $e$.
+
 $$
 \begin{algorithm}[H]
 
@@ -625,6 +624,7 @@ $outer \gets true$\;
                 \For{$h$ \textnormal{incident to} $f\cup \{ z \}$}{
                     $E\gets E\setminus \{ h \}$\;
                 }
+                \textbf{break}\;
             }
         }
     }
@@ -714,9 +714,7 @@ $$
 
 ## Self-Monitoring
 
-Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions.
-
-We store the ratios for each rule in a map of the form:
+Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We store the ratios for each rule in a map of the form:
 
 ```go
 var ratios = map[string]pkg.IntTuple{
@@ -737,23 +735,6 @@ for key, val := range execs {
 	denom += float64(ratios[key].B * val)
 }
 ```
-
-We conducted some preliminary testing on graphs with 10, 100, 1000 and 10000 vertices. We calculateted the estimated approximation factor for these graphs. We did this for ratios $r = \frac{|E|}{|V|}$ of 1 to 20.
-
-![Estimated Approximation Factor for Graphs with 10, 100, 1K, 10K Vertices for $r\in[1,20]$](img/line_fac.png)
-
-We also looked at the number of rule executions for $r=1$ and $r=10$.
-
-![Number of Rule Executions, $r=1$](img/bar_ex_1.png)
-
-![Number of Rule Executions, $r=10$](img/bar_ex_10.png)
-
-Note that the reduction rules alone are sufficient to compute a Hitting-Set for our graphs. The est. ratio is quite low, since we do not need to put whole size 3 edges into our hitting set. This is due to the way our random-graph model works. This will not work for all graph classes, namely 3-uniform graphs.
-
-We can observe a large performance hit, once our graph is near 3-uniform. We present some ideas that could potentially speedup the execution for these graphs.
-
-\todo[backgroundcolor=red]{remove Factor-3 Rule function paragraph}
-**Factor-3 Rule Targeting**. The Factor-3 rule will select the to be removed edge at random. We could alternatively choose an edge $e$, s.t. the removal of $e$ will allow the execution of the Vertex Domination Rule. This could potentially lower the number of Factor-3 Rule executions quite significantly.
 
 # Algorithms
 
@@ -1051,8 +1032,6 @@ $$
 \end{table}
 $$
 
-### ER Graphs
-
 ## Cluster Vertex Deletion
 
 Another derivative problem of \textsc{Hitting Set} is the \textsc{Cluster Vertex Deletion} problem. The problem can be formulated as follows,
@@ -1075,7 +1054,7 @@ $$
 
 A cluster graph is a union of disjoint complete graphs which is equivalent to a graph that does not contain an induced path on three vertices, also called a $P_3$. These $P_3$ can be interpreted as edges in a hypergraph. A hitting set of size at most $k$ on this hypergraph can be used to transform the original standard graph into a cluster graph, removing at most $k$ vertices.
 
-We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected graphs used and made available by Di Battista et al. in [@DiBattista1997b]. We ran the algorithm ten times per graph and picked the run with the lowest hitting set size to include during calculation of the statistics. The results can be seen in table \ref{cvd_rome_stats}.
+We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected graphs used and made available by Di Battista et al. in [@DiBattista1997b]. We ran the algorithm ten times for each derived problem instance and picked the run with the lowest hitting set size to include during calculation of the statistics. The results can be seen in table \ref{cvd_rome_stats}. The algorithm achieved a mean ratio of $1.1188$ with a standard deviation of about $0.1$. We also recorded a ratio of at most 2 for the selected problem instances. It can be observed and inferred from the low ratio, that the most applied rules are exact rules.
 
 $$
 \begin{table}[h]
@@ -1092,14 +1071,15 @@ $$
     \bottomrule
     \end{tabular}
 }
-    \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs library. Hitting sets were computed ten times for each graph and the run with the lowest hitting set size was chosen for final calculation.}
+    \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs collection. Hitting sets were computed ten times for each graph and the run with the lowest hitting set size was chosen for final calculation.}
     \label{cvd_rome_stats}
 \end{table}
 $$
 
 ## Comparison with LP rounding based Algorithms
 
-There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competetive (actual) approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will somtimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
+\todo[backgroundcolor=green]{add LP rounding algorithm section}
+There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competetive approximation ratios. They are also fast, since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will somtimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
 
 Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referrring to a vertex or edge using its index, i.e. vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
 
@@ -1123,7 +1103,7 @@ $$
 
 And again, the LP relaxation of this ILP would allow for $x_j$ to be any value in the intervall $[0,1]$ for all $j \in [m]$.
 
-It might not obvious at first that \textsc{Set Cover} is the dual of \textsc{Hitting Set}, but formulating both problems informally gives it away in an understandable way. One problem tries to cover sets with elements, while the over aims at covering elements with sets. For a formal reduction from \textsc{Hitting Set} to \textsc{Set Cover} let $G=(V,E)$ be a hypergraph and $C \subseteq V$. Let $S_v = \left\{ e \mid v \in e \right\}$ for $v\in V$, i.e. the set of edges that are incident to a vertex $v$. Now $C$ is a hitting set if and only if $S = \left\{ e \in S_v \mid v \in C\right\}$ is a set cover. Let us assume that $C$ is a hitting set for $G$, then it holds that,
+It might not obvious at first that \textsc{Set Cover} is the dual of \textsc{Hitting Set}, but formulating both problems informally gives it away in an understandable way. One problem tries to cover sets with elements, while the over aims at covering elements with sets. For a formal reduction from \textsc{Hitting Set} to \textsc{Set Cover} let $G=(V,E)$ be a hypergraph and $C \subseteq V$. Let $S_v = \left\{ e \in E \mid v \in e \right\}$ for $v\in V$, i.e. the set of edges that are incident to a vertex $v$. Now $C$ is a hitting set if and only if $S = \left\{ e \in S_v \mid v \in C\right\}$ is a set cover. Let us assume that $C$ is a hitting set for $G$, then it holds that,
 
 $$
 \forall e \in E \mid e \cap C \neq\emptyset \quad\Leftrightarrow\quad \forall e \in E\; \exists v \in C \;\; \textnormal{s.t.} \;\; e \in S_v \quad \Leftrightarrow \quad \bigcup_{v\in C} S_v = E
@@ -1140,13 +1120,11 @@ $$
 \end{align*}
 $$
 
-Remove all vertices in $S_0$ from $V$ and remove all edges incident to $S_0$ from $E$. Then put all vertices in $S_1$ and $S_\geq$ into the hitting set $C$, by removing all vertices in $S_1 \cup S_\geq$ from $V$ and removing all edges incident to $S_1 \cup S_\geq$ from $E$. Next is the randomized rounding step. For all vertices $i \in S_<$ include $i$ in the hitting set with probability $\lambda \cdot x_i^*$, independently for all $i$. If $|E|=0$ return the hitting set $C$. Else, as long as $|E|>0$, select a vertex from an uncovered edge and put it into the hitting set $C$. We will further elaborate on the definition of $\lambda$ when discussing the test results of the algorithms.
+Remove all vertices in $S_0$ from $V$ and remove the vertices in $S_0$ from all edges. Then put all vertices in $S_1$ and $S_\geq$ into the hitting set $C$, by removing all vertices in $S_1 \cup S_\geq$ from $V$ and removing all edges incident to $S_1 \cup S_\geq$ from $E$. Next is the randomized rounding step. For all vertices $i \in S_<$ include $i$ in the hitting set with probability $\lambda \cdot x_i^*$, independently for all $i$. If $|E|=0$ return the hitting set $C$. Else, as long as $|E|>0$, select a vertex from an uncovered edge and put it into the hitting set $C$. We will further elaborate on the definition of $\lambda$ when discussing the test results of the algorithms.
 
-Next we look at the algorithm proposed by Saket and Sviridenko in[@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $\Delta$ the maximum number of sets any element in $V$ is contained in and $d$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha\Delta \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln d}{\Delta-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover.
+Next we look at the algorithm proposed by Saket and Sviridenko in [@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $\Delta$ the maximum number of sets any element in $V$ is contained in and $d$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha\Delta \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln d}{\Delta-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover.
 
-We used PuLP [@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python aswell. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall[@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
-
-Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time aswell as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
+We used PuLP[@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python aswell. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall [@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
 
 $$
 \begin{table}[t]
@@ -1156,12 +1134,12 @@ $$
           algorithm                      & solver & ratio UB  & actual ratio &
           $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
           \midrule
-          \multirow{3}{4em}{Hitting Set(1)} & GLPK   & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
+          \multirow{3}{4em}{Hitting Set LP (1)} & GLPK   & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
           101928                         & 1 hour                                                             \\
                                          & CLP    &            & 1.7838       & 64452.6992 & 114972 & 50 sec \\
                                          & HiGHS  &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
           \midrule
-          \multirow{3}{4em}{Set Cover(2)}   & GLPK   & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
+          \multirow{3}{4em}{Set Cover LP (2)}   & GLPK   & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
           102762                         & 1 hour                                                             \\
                                          & CLP    &            & 1.8068       & 64452.6992 & 116455 & 47 sec \\
                                          & HiGHS  &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
@@ -1171,6 +1149,46 @@ $$
 \end{table}
 $$
 
+Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time aswell as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
+
+$$
+\begin{table}[h]
+    \begin{subtable}[b]{0.45\textwidth}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio UB & ratio & $|C|$ & $\textnormal{Opt}^*$ \\
+            \midrule
+            mean & 2.9697 & 1.4246 & 25 & 17 \\
+            std & 0.0197 & 0.4268 & 16 & 8 \\
+            min & 2.7500 & 1 & 2 & 2 \\
+            median & 2.9758 & 1.3565 & 21 & 15 \\
+            max & 2.9925 & 2.5714 & 80 & 35 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Hitting Set LP (1)}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \begin{tabular}{lrrrr}
+            \toprule
+            & ratio UB & ratio & $|C|$ & $\textnormal{Opt}^*$ \\
+            \midrule
+            mean & 2.6132 & 1.4050 & 24 & 17 \\
+            std & 0.1089 & 0.4101 & 16 & 8 \\
+            min & 1.8453 & 1 & 2 & 2 \\
+            median & 2.6408 & 1.3220 & 21 & 15 \\
+            max & 2.8000 & 2.5385 & 76 & 35 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Set Cover LP (2)}
+    \end{subtable}
+    \caption{Results for \textsc{Cluster Vertex Deletion} using LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
+    \label{cvd_rome_stats_lp}
+\end{table}
+$$
+
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a rather high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+
 ## Preferential Attachment Hypergraphs
 
 ## 3-Uniform ER Hypergraphs
@@ -1178,6 +1196,8 @@ $$
 # Testing
 
 Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, that contain structures, which the rules are targeting. We then test for the elements in the partial solution, amount of edges/vertices left in the graph and degree of the vertices left.
+
+# Conclusion
 
 \appendix
 
