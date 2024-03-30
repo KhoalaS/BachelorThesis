@@ -129,7 +129,7 @@ func main() {
 			c = make(map[int32]bool)
 		}
 	} else {
-		execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
+		execs = alg.ThreeHS_F3ApprPolyFrontierSingle(g, c)
 		fmt.Printf("Found a 3-Hitting-Set of size %d\n", len(c))
 		fmt.Printf("Estimated Approximation Factor: %.2f\n", alg.GetRatio(execs))
 		fmt.Println(execs)

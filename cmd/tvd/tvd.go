@@ -154,7 +154,7 @@ func main() {
 		start := time.Now()
 		defer hypergraph.LogTime(start, "Main Algorithm")
 		if *frontier {
-			execs = alg.ThreeHS_F3ApprPolyFrontier(g, c)
+			execs = alg.ThreeHS_F3ApprPolyFrontierSingle(g, c)
 		} else {
 			if *gr {
 				alg.GreedyHighDeg(g, c)
