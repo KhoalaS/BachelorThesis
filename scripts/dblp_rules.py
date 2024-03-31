@@ -30,6 +30,7 @@ exclude = ["kTiny",
 
 out = open("out/dblp_rules.md", "w+")
 
+i = 0
 for df in frames:
     df = df.describe()
     df.drop(["count", "25%", "75%"], inplace=True)
@@ -40,6 +41,8 @@ for df in frames:
     df["Opt"] = df["Opt"].round(2)
     df["Time"] = df["Time"].round()
 
+    frames[i] = df
+    i += 1
     out.write(df.to_markdown())
     out.write("\n\n")
 
@@ -53,9 +56,10 @@ for df in frames:
     arr = []
     for col in df.columns:
         if col in exclude:
-            arr.append(int(df.loc[0, col]))
+            arr.append(df.loc["mean", col])
 
     bar.add_yaxis(strat[i], arr, color=colors[i])
+    print(arr)
     i += 1
 
 bar.set_global_opts(yaxis_opts=opts.AxisOpts(name="rule executions"))
@@ -72,7 +76,7 @@ bar_s.add_xaxis(short_labels)
 
 i = 0
 for df in frames:
-    arr = [x for x in df.loc[0].values[1:-5]]
+    arr = [x for x in df.loc["mean"].values[1:-3]]
     bar_s.add_yaxis(strat[i], arr, color=colors[i])
     i += 1
 

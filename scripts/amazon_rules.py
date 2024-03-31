@@ -28,6 +28,7 @@ exclude = ["kTiny",
 
 out = open("out/amazon_rules.tex", "w+")
 
+i = 0
 for df in frames:
     df = df.describe()
     df.drop(["count", "25%", "75%"], inplace=True)
@@ -38,10 +39,13 @@ for df in frames:
     df["Opt"] = df["Opt"].round(2)
     df["Time"] = df["Time"].round()
 
+    frames[i] = df
+    i += 1
+
     df_new = df[["Ratio", "HittingSet", "Opt", "Time"]]
-    df_new.rename(columns={
-                  "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est. opt", "Time": "time"}, inplace=True)
-    out.write(df_new.to_latex(float_format="%.4f"))
+
+    out.write(df_new.rename(columns={
+        "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est. opt", "Time": "time"}).to_latex(float_format="%.4f"))
     out.write("\n\n")
 
 bar = Bar().set_global_opts(toolbox_opts=_opts.img_opts())
@@ -54,7 +58,7 @@ for df in frames:
     arr = []
     for col in df.columns:
         if col in exclude:
-            arr.append(int(df.loc[0, col]))
+            arr.append(df.loc["mean", col])
 
     bar.add_yaxis(strat[i], arr, color=colors[i])
     i += 1
@@ -73,7 +77,7 @@ bar_s.add_xaxis(short_labels)
 
 i = 0
 for df in frames:
-    arr = [x for x in df.loc[0].values[1:-5]]
+    arr = [x for x in df.loc["mean"].values[1:-3]]
     bar_s.add_yaxis(strat[i], arr, color=colors[i])
     i += 1
 
