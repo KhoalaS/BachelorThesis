@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import argparse
 from dotenv import dotenv_values
@@ -41,13 +42,14 @@ for rule, short in rule_names.items():
     v_1 = noedom_stats.loc["mean", rule]
     vals_stock.append(v_0)
     vals_noedom.append(v_1)
-    d = (v_1 - v_0)/v_0*100
+    d = ((v_1 - v_0)/v_0)*100
+    print(d, rule)
     vals_diff.append(d)
 
 diff_df = pd.DataFrame([vals_diff], columns=short_labels)
-diff_table = diff_df.to_latex()
-diff_out = open("./out/diff_table.md", "w+")
-diff_out.write(diff_table)
+#diff_table = diff_df.to_latex()
+#diff_out = open("./out/diff_table.md", "w+")
+#diff_out.write(diff_table)
 
 page = Page()
 bar = Bar().set_global_opts(title_opts=opts.TitleOpts(
@@ -67,4 +69,5 @@ diff.add_yaxis("percent change", vals_diff, color="#00ff99",
 
 page.add(bar)
 page.add(diff)
-page.render("./test.html")
+page.render("./out/test.html")
+os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' ./out/test.html")
