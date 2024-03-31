@@ -3,6 +3,7 @@ package hypergraph
 import (
 	"container/list"
 	"fmt"
+	"log"
 	"math/rand/v2"
 	"runtime"
 	"sync"
@@ -68,6 +69,12 @@ func S_EdgeDominationRule(gf *HyperGraph, g *HyperGraph, expand map[int32]bool) 
 			gf.F_RemoveEdge(eId, g)
 		}
 	}
+
+
+	if logHistory && exec > 0 {
+		log.Default().Println("S_EDom", exec)
+	}
+
 	return exec
 }
 
@@ -93,6 +100,11 @@ func S_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, ex
 				}
 			}
 		}
+	}
+
+
+	if logHistory && exec > 0 {
+		log.Default().Println("S_RemEdge-", t, exec)
 	}
 
 	return exec
@@ -167,6 +179,11 @@ func S_VertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 	if exec > 0 {
 		gf.F_RemoveDuplicate(g)
 	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("S_VDom", exec)
+	}
+
 	return exec
 }
 
@@ -615,6 +632,9 @@ func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 							continue
 						}
 						if !g.Edges[f].V[x] && len(g.Edges[f].V) == 3 {
+							if logHistory {
+								log.Default().Println("F3_lowdeg = 2")
+							}
 							return f
 						}
 					}
@@ -634,10 +654,18 @@ func F3TargetLowDegreeDetect(g *HyperGraph) int32 {
 			}
 			for f := range g.IncMap[v] {
 				if !g.Edges[f].V[closestId] && len(g.Edges[f].V) == 3 {
+					if logHistory {
+						log.Default().Println("F3_lowdeg > 2")
+					}
 					return f
 				}
 			}
 		}
+	}
+
+
+	if logHistory {
+		log.Default().Println("F3_rand")
 	}
 
 	return F3RuleDetect(g)

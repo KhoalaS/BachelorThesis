@@ -3,10 +3,13 @@ package hypergraph
 import (
 	"container/list"
 	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"time"
 )
+
+var logHistory = true
 
 func FS_EdgeDominationRule(g *HyperGraph, expand map[int32]bool) int {
 	var wg sync.WaitGroup
@@ -65,6 +68,11 @@ func FS_EdgeDominationRule(g *HyperGraph, expand map[int32]bool) int {
 			g.RemoveEdge(eId)
 		}
 	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("EDom")
+	}
+
 	return exec
 }
 
@@ -90,6 +98,10 @@ func FS_TinyEdgeRule(g *HyperGraph, c map[int32]bool, expand map[int32]bool) int
 				}
 			}
 		}
+	}
+	
+	if logHistory && exec > 0 {
+		log.Default().Println("Tiny")
 	}
 
 	return exec
@@ -128,6 +140,11 @@ func FS_VertexDominationRule(g *HyperGraph, expand map[int32]bool) int {
 	if exec > 0 {
 		g.RemoveDuplicate()
 	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("VDom")
+	}
+
 	return exec
 }
 
@@ -153,6 +170,10 @@ func FS_RemoveEdgeRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, t int, e
 			}
 			break
 		}
+	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("RemEdge-", t)
 	}
 
 	return exec
@@ -186,6 +207,10 @@ func FS_ApproxVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[int32]bo
 			}
 		}
 		break
+	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("APVD")
 	}
 
 	return exec
@@ -254,6 +279,10 @@ func FS_ApproxDoubleVertexDominationRule(gf *HyperGraph, g *HyperGraph, c map[in
 		if skip {
 			break
 		}
+	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("APDVD")
 	}
 
 	return exec
@@ -326,6 +355,10 @@ func FS_SmallTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, expan
 			}
 			gf.F_RemoveEdge(e, g)
 		}
+	}
+
+	if logHistory && exec > 0 {
+		log.Default().Println("Tri")
 	}
 
 	return exec
@@ -423,6 +456,10 @@ Outer:
 		}
 	}
 
+	if logHistory && exec > 0 {
+		log.Default().Println("ETri")
+	}
+
 	return exec
 }
 
@@ -468,5 +505,10 @@ func FS_SmallEdgeDegreeTwoRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, 
 			break
 		}
 	}
+
+	if logHistory && exec0 + exec1 > 0 {
+		log.Default().Println("SED2")
+	}
+
 	return exec0, exec1
 }

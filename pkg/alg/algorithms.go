@@ -2,6 +2,7 @@ package alg
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
@@ -267,6 +268,8 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 			fmt.Println("No size 3 edge")
 			continue
 		}
+
+		log.Default().Println("F3")
 
 		for v := range g.Edges[e].V {
 			c[v] = true
