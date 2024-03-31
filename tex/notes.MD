@@ -718,9 +718,9 @@ $outer \gets true$\;
 \end{algorithm}
 $$
 
-### F3 Target Low Degree Rule
+### F3 Low Degree Rule
 
--   F3 target low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $x$.If there exists an edge $f$, that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
+-   F3 low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $x$.If there exists an edge $f$, that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
 
 As seen in algorithm \ref{f3target} we extended this rule in the final implementation. If there is no vertex for which the rule applies, then we check the condition of the rule once again with the vertex $v_{min}$. If this attempt does not work, then we put a random size three edge into the hitting set. The effectiveness of this rule will be discussed in section \ref{appl}.
 
@@ -855,7 +855,7 @@ $H \gets$ empty hypergraph\;
         \textbf{continue}\;
     }
 
-    $e\gets \texttt{F3TargetLowDegree}(G)$\;
+    $e\gets \texttt{F3LowDegree}(G)$\;
     \If{$e = \emptyset$}{
         \textbf{continue}\;
     }
@@ -902,13 +902,13 @@ Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It 
 
 All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22.1. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance. We provide results for $\textsc{Triangle Vertex Deletion}$ and $\textsc{Cluster Vertex Deletion}$ problems using real world networks, as well as randomly generated hypergraphs.
 
-## F3 Target Low Degree Rule
+## F3 Low Degree Rule
 
-The goal of the F3 target low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 target low degree rule on random ER hypergraphs. First we generated 100 random ER hypergraphs with 1000 vertices and approximatly 3000 edges. We ran our algorithm on every graph 10 times each to account for run to run varaince. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low target degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
+The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First we generated 100 random ER hypergraphs with 1000 vertices and approximatly 3000 edges. We ran our algorithm on every graph 10 times each to account for run to run varaince. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low target degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
 
 We do in fact see a slight increase of vertex domination rule executions, with the mean number of executions increasing from about 345 to 349. More interesting observations can be made about the fallback rule and extended triangle rule. The mean number of fallback rule executions decreased from about 44 to 25 when not selecting random edges. The number of extended triangle rule executions increased from about 47 to 63. The mean values for the over rules stay mostly the same. 
 
-To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied. Every time the F3 target low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
+To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
 
 So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects are underwhelming, with the mean hitting set size decreasing from about 592 to 590. Since we did not regress, we chose to keep using this variant of the rule over the random variant.
 
@@ -1315,7 +1315,7 @@ max & 1.9525 & 75 & 382 & 10 & 3 & 1 & 77 & 1 & 9 & 56 & 17 & 40 & 617 & 328 \\
 \bottomrule
 \end{tabular}
 }
-\caption{target low degree edge in F3 rule}
+\caption{F3 low degree rule}
 \end{subtable}
 \caption{Results for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run to run variance.}
 \label{er3_evr3_stats}
