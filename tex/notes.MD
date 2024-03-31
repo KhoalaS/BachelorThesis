@@ -17,7 +17,9 @@
 
 # Introduction
 
+## Preliminaries
 
+A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree with $deg(v)$ for a vertex $v$. An edge $e$ has size $m$, if it contains $m$ elements.
 
 # Programming Language
 
@@ -720,7 +722,7 @@ $$
 
 -   F3 target low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $x$.If there exists an edge $f$, that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
 
-As seen in algorithm \ref{f3target} we extended this rule in the final implementation. If there is no vertex for which the rule applies, then we check the condition of the rule once again with the vertex $v_{min}$. If this attempt does not work, then we put a random size three edge into the hitting set. 
+As seen in algorithm \ref{f3target} we extended this rule in the final implementation. If there is no vertex for which the rule applies, then we check the condition of the rule once again with the vertex $v_{min}$. If this attempt does not work, then we put a random size three edge into the hitting set. The effectiveness of this rule will be discussed in section \ref{appl}.
 
 $$
 \begin{algorithm}[H]
@@ -900,6 +902,12 @@ Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It 
 
 All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22.1. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance. We provide results for $\textsc{Triangle Vertex Deletion}$ and $\textsc{Cluster Vertex Deletion}$ problems using real world networks, as well as randomly generated hypergraphs.
 
+## F3 Target Low Degree Rule
+
+The goal of the F3 target low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. 
+
+We tested the effectiveness of the F3 target low degree rule on random hypergraphs
+
 ## Triangle Vertex Deletion
 
 $$
@@ -935,7 +943,7 @@ We tested the algorithms on a DBLP coauthor graph and ER graphs of varying densi
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all of the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact, that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the amount of edges the algorithm has to process per iteration. One can see the opposite happen in really dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time.\todo{needs proof?}
 
-Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising. This is probably a result of only applying rules one at a time. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. \todo{get data for random rule application to compare}
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see, that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favourable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also rather interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that, as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. \todo{get data for random rule application to compare}
 
 $$
 \begin{table}[t]
@@ -1266,6 +1274,77 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 \appendix
 
 # Appendix
+
+$$
+\begin{table}[h]
+\centering
+\begin{subtable}[b]{\textwidth}
+\makebox[\textwidth][c]{
+\begin{tabular}{lrrrrrrrrrrrrrr}
+\toprule
+ & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
+\midrule
+mean & 1.9196 & 59.99 & 345.23 & 2.40 & 0.46 & 0.04 & 47.26 & 0.03 & 2.02 & 44.47 & 9.16 & 44.33 & 592.46 & 308.68 \\
+std & 0.0273 & 5.86 & 9.71 & 1.56 & 0.63 & 0.19 & 5.27 & 0.18 & 1.35 & 3.93 & 2.67 & 6.54 & 8.59 & 3.51 \\
+min & 1.8344 & 43 & 316 & 0 & 0 & 0 & 29 & 0 & 0 & 31 & 2 & 26 & 564 & 298 \\
+median & 1.9199 & 60 & 345 & 2 & 0 & 0 & 47 & 0 & 2 & 44 & 9 & 45 & 592 & 309 \\
+max & 2.0364 & 79 & 375 & 8 & 3 & 1 & 61 & 2 & 7 & 57 & 19 & 70 & 622 & 320 \\
+\bottomrule
+\end{tabular}
+}
+\caption{random edge in F3 rule}
+\end{subtable}
+\newline
+\vspace{4mm}
+\newline
+\begin{subtable}[b]{\textwidth}
+\makebox[\textwidth][c]{
+\begin{tabular}{lrrrrrrrrrrrrrr}
+\toprule
+ & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
+\midrule
+mean & 1.8690 & 58.28 & 349.60 & 2.33 & 0.47 & 0.05 & 63.68 & 0.03 & 2.01 & 42.57 & 8.59 & 25.51 & 590.66 & 316.06 \\
+std & 0.0225 & 5.93 & 9.64 & 1.57 & 0.62 & 0.21 & 4.10 & 0.16 & 1.39 & 4.06 & 2.70 & 3.73 & 8.98 & 3.3400 \\
+min & 1.7987 & 41 & 321 & 0 & 0 & 0 & 50 & 0 & 0 & 29 & 1 & 16 & 562 & 305 \\
+median & 1.8675 & 58 & 350 & 2 & 0 & 0 & 64 & 0 & 2 & 43 & 9 & 25 & 590 & 316 \\
+max & 1.9525 & 75 & 382 & 10 & 3 & 1 & 77 & 1 & 9 & 56 & 17 & 40 & 617 & 328 \\
+\bottomrule
+\end{tabular}
+}
+\caption{target low degree edge in F3 rule}
+\end{subtable}
+\caption{Results for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run to run variance.}
+\label{er3_evr3_stats}
+\end{table}
+$$
+
+$$
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{./img/er3_evr_f3_rules}
+    \caption{Mean number of rule executions for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run to run variance.}
+    \label{fig:er3_evr3_rules}
+\end{figure}
+$$
+
+$$
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+ & ratio & $|C|$ & est. opt & time \\
+\midrule
+mean & 1.3142 & 80927.77 & 61579.82 & 168 sec\\
+std & 0.0006 & 55.84 & 32.98 & 3 sec\\
+min & 1.3128 & 80786 & 61511 & 161 sec\\
+median & 1.3142 & 80926.50 & 61579.50 & 168 sec\\
+max & 1.3157 & 81071 & 61654 & 176 sec\\
+\bottomrule
+\end{tabular}
+\caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph using rule strategy 3; F3 rule selects a random size three edge;  $n=100$}
+\label{amzn_str_3_f3rand}
+\end{table}
+$$
 
 \newpage
 
