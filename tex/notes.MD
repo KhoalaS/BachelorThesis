@@ -904,9 +904,13 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 ## F3 Target Low Degree Rule
 
-The goal of the F3 target low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. 
+The goal of the F3 target low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 target low degree rule on random ER hypergraphs. First we generated 100 random ER hypergraphs with 1000 vertices and approximatly 3000 edges. We ran our algorithm on every graph 10 times each to account for run to run varaince. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low target degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
 
-We tested the effectiveness of the F3 target low degree rule on random hypergraphs
+We do in fact see a slight increase of vertex domination rule executions, with the mean number of executions increasing from about 345 to 349. More interesting observations can be made about the fallback rule and extended triangle rule. The mean number of fallback rule executions decreased from about 44 to 25 when not selecting random edges. The number of extended triangle rule executions increased from about 47 to 63. The mean values for the over rules stay mostly the same. 
+
+To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied. Every time the F3 target low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
+
+So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects are underwhelming, with the mean hitting set size decreasing from about 592 to 590. Since we did not regress, we chose to keep using this variant of the rule over the random variant.
 
 ## Triangle Vertex Deletion
 
