@@ -2,7 +2,7 @@ package alg
 
 import (
 	"fmt"
-	"log"
+	//"log"
 
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
@@ -250,7 +250,7 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 
 	for len(g.Edges) > 0 {
 		expand := make(map[int32]bool)
-		ApplyRulesSingle(gf, g, c, execs, expand, true)
+		ApplyRulesSingleRand(gf, g, c, execs, expand, true)
 
 		if len(expand) > 0 {
 			gf = hypergraph.ExpandFrontier(g, expDepth, expand)
@@ -269,7 +269,7 @@ func ThreeHS_F3ApprPolyFrontierSingle(g *hypergraph.HyperGraph, c map[int32]bool
 			continue
 		}
 
-		log.Default().Println("F3")
+		//log.Default().Println("F3")
 
 		for v := range g.Edges[e].V {
 			c[v] = true

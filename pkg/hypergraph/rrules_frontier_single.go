@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var logHistory = true
+var logHistory = false
 
 func FS_EdgeDominationRule(g *HyperGraph, expand map[int32]bool) int {
 	var wg sync.WaitGroup
