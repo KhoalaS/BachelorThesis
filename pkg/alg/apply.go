@@ -1,8 +1,6 @@
 package alg
 
 import (
-	"math/rand/v2"
-
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
 
@@ -216,45 +214,48 @@ func ApplyRulesSingleRand(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c
 		execs["kEdgeDom"] += kEdgeDom
 	}
 
-	r := rand.Int64N(6)
+	arr := []int{0, 1, 2, 3, 4, 5}
+	Shuffle(arr)
 
-	switch r {
-	case 0:
-		kApVertDom := hypergraph.FS_ApproxVertexDominationRule(gf, g, c, expand)
-		if kApVertDom > 0 {
-			execs["kApVertDom"] += kApVertDom
-			return
-		}
-	case 1:
-		kApDoubleVertDom := hypergraph.FS_ApproxDoubleVertexDominationRule(gf, g, c, expand)
-		if kApDoubleVertDom > 0 {
-			execs["kApDoubleVertDom"] += kApDoubleVertDom
-			return
-		}
-	case 2:
-		kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.FS_SmallEdgeDegreeTwoRule(gf, g, c, expand)
-		if kSmallEdgeDegTwo+kSmallEdgeDegTwo2 > 0 {
-			execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
-			execs["kSmallEdgeDegTwo2"] += kSmallEdgeDegTwo2
-			return
-		}
-	case 3:
-		kTri := hypergraph.FS_SmallTriangleRule(gf, g, c, expand)
-		if kTri > 0 {
-			execs["kTri"] += kTri
-			return
-		}
-	case 4:
-		kExtTri := hypergraph.FS_ExtendedTriangleRule(gf, g, c, expand)
-		if kExtTri > 0 {
-			execs["kExtTri"] += kExtTri
-			return
-		}
-	default:
-		kSmall := hypergraph.FS_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
-		if kSmall > 0 {
-			execs["kSmall"] += kSmall
-			return
+	for _, r := range arr {
+		switch r {
+		case 0:
+			kApVertDom := hypergraph.FS_ApproxVertexDominationRule(gf, g, c, expand)
+			if kApVertDom > 0 {
+				execs["kApVertDom"] += kApVertDom
+				return
+			}
+		case 1:
+			kApDoubleVertDom := hypergraph.FS_ApproxDoubleVertexDominationRule(gf, g, c, expand)
+			if kApDoubleVertDom > 0 {
+				execs["kApDoubleVertDom"] += kApDoubleVertDom
+				return
+			}
+		case 2:
+			kSmallEdgeDegTwo, kSmallEdgeDegTwo2 := hypergraph.FS_SmallEdgeDegreeTwoRule(gf, g, c, expand)
+			if kSmallEdgeDegTwo+kSmallEdgeDegTwo2 > 0 {
+				execs["kSmallEdgeDegTwo"] += kSmallEdgeDegTwo
+				execs["kSmallEdgeDegTwo2"] += kSmallEdgeDegTwo2
+				return
+			}
+		case 3:
+			kTri := hypergraph.FS_SmallTriangleRule(gf, g, c, expand)
+			if kTri > 0 {
+				execs["kTri"] += kTri
+				return
+			}
+		case 4:
+			kExtTri := hypergraph.FS_ExtendedTriangleRule(gf, g, c, expand)
+			if kExtTri > 0 {
+				execs["kExtTri"] += kExtTri
+				return
+			}
+		case 5:
+			kSmall := hypergraph.FS_RemoveEdgeRule(gf, g, c, hypergraph.SMALL, expand)
+			if kSmall > 0 {
+				execs["kSmall"] += kSmall
+				return
+			}
 		}
 	}
 }
