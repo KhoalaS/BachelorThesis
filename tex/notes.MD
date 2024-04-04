@@ -1353,4 +1353,3 @@ $$
 \newpage
 
 # References
-\todo[backgroundcolor=green]{use title case in title and container-title}
