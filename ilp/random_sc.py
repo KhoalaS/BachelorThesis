@@ -85,7 +85,7 @@ print("begin solving...")
 keep_logs = args.l
 
 if args.highs:
-    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs,
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs, options=["--solver", "ipm"],
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
     prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
