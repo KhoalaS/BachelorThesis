@@ -68,7 +68,7 @@ print("begin solving...")
 keep_logs = args.l
 
 if args.highs:
-    prob.solve(HiGHS_CMD(msg="using HiGHS", keepFiles=keep_logs,
+    prob.solve(HiGHS_CMD(msg="using HiGHS", keepFiles=keep_logs, options=["--solver", "ipm"],
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
     prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
@@ -111,7 +111,7 @@ for j in V:
     val = value(x[j])
     if val != 1 and val >= 1.0/_lambda:
         S_gte.add(j)
-    elif val != 1 and val != 0:
+    elif val != 1:
         S_l.add(j)
 
 print("|S_0| =", len(S_0))
@@ -119,12 +119,12 @@ print("|S_1| =", len(S_1))
 print("|S_≥| =", len(S_gte))
 print("|S_<| =", len(S_l))
 
-#print("skip step 4 of algorithm, not removing vertices in S_0")
-for j in S_0:
-    V.remove(j)
-    for e in inc_map[j]:
-        E[e].remove(j)
-    inc_map[j] = []
+print("skip step 4 of algorithm, not removing vertices in S_0")
+#for j in S_0:
+#    V.remove(j)
+#    for e in inc_map[j]:
+#        E[e].remove(j)
+#    inc_map[j] = []
 
 for j in S_1:
     C.add(j)
