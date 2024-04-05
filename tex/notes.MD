@@ -1,9 +1,9 @@
----
+﻿---
     title: Implementation and evaluation of a self-monitoring approximation algorithm for 3-Hitting-Set
     link-citations: true
     author: Khoa Le
     abstract: |
-        In this thesis we implemented an approximation algorithm for the \textsc{Hitting-Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio method. We show test results on real-world networks that can be interpreted as derivate problems of \textsc{Hitting-Set}. At last, we compare these results with two linear programming based algorithms.
+        In this thesis we implemented an approximation algorithm for the \textsc{Hitting-Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio method. We show test results on real-world networks that can be interpreted as derivative problems of \textsc{Hitting-Set}. At last, we compare these results with two linear programming based algorithms.
 ...
 
 \RestyleAlgo{ruled}
@@ -23,9 +23,9 @@ A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$.
 
 # Programming Language
 
-We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The builtin profiler pprof can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
 
-# Datastructures
+# Data Structures
 
 ## Vertex
 
@@ -60,7 +60,7 @@ type HyperGraph struct {
 }
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like datastructure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally this map will also store the amount of times such a vertex is adjacent to $v$.
 
 # Misc. Algorithms/Utilities
 
