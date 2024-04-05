@@ -111,7 +111,7 @@ func main() {
 			eSize := len(g.Edges)
 
 			start := time.Now()
-			execs := alg.ThreeHS_F3ApprPolyFrontier(g, c)
+			execs := alg.ThreeHS_F3ApprPolyFrontierSingle(g, c)
 			stop := time.Since(start).Seconds()
 
 			msg := fmt.Sprintf("%f;", alg.GetRatio(execs))
