@@ -10,6 +10,8 @@ parser.add_argument("--highs", action='store_true',
                     help="use the HiGHS solver")
 parser.add_argument("--glpk", action='store_true',
                     help="use the GLPK solver")
+parser.add_argument("--cplex", action='store_true',
+                    help="use the CPLEX solver")
 parser.add_argument("-l", action='store_true', help="keep log files")
 parser.add_argument("--log", action='store_true')
 
@@ -87,6 +89,8 @@ if args.highs:
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
     prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
+elif args.cplex:
+    prob.solve(CPLEX_CMD(keepFiles=keep_logs))
 else:
     prob.solve(PULP_CBC_CMD(keepFiles=keep_logs))
 
