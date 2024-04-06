@@ -17,6 +17,8 @@
 
 # Introduction
 
+The \textsc{Hitting Set} problem is one of Karp's 21 NP-complete problems. It has been extensively researched 
+
 ## Preliminaries
 
 A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree with $deg(v)$ for a vertex $v$. An edge $e$ has size $m$, if it contains $m$ elements.
@@ -153,7 +155,7 @@ Let us explain the arguments first:
 -   $\texttt{m}$ is the number of edges the graph will at most have
 -   $\texttt{tinyEdges}$ when $\texttt{false}$ indicates that we do not want to generate edges of size 1.
 
-We use a very naive approach for generating (pseudo-)random graphs. We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows:
+We use a very naive approach for generating (pseudo-)random graphs. We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows.
 
 $$
 size(\texttt{r})=
@@ -182,21 +184,21 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 
 # Reduction Rules
 
-The ususal signature of a reduction rule looks as follows:
+The ususal signature of an implemented reduction rule looks as follows.
 
 ```go
-func NameRule(g HyperGraph, c map[int32]bool) int32
+func NameRule(g *HyperGraph, c map[int32]bool) int32
 ```
 
-We take both a \texttt{HyperGraph} struct \texttt{g} and a _Set_ \texttt{c} as arguments and mutate them. We then return the number of rule executions. We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
+We take both a pointer to a \texttt{HyperGraph} struct \texttt{g} and a map \texttt{c} as arguments and mutate them. We then return the number of rule executions. We prioritize time complexity over memory complexity when implementing rules, which does not equate to ignoring memory complexity completely.
 
 ## Executions
 
-The proposed rules are meant to be applied exhaustively. A one-to-one implementation of a rule will only find one of the structures the rule is targeting. Calling such a rule implementation exhaustively will take polynomial time but will be very inefficient regarding memory writes and execution time. It is therefore necessary to design the algorithms for the rules with the aspect of exhaustive application in mind.
+The proposed rules are meant to be applied exhaustively. A one-to-one implementation of a rule will only find one of the structures the rule is targeting. Calling such a rule implementation exhaustively will take polynomial time but will be very inefficient regarding memory writes and execution time. It is therefore advantageous to design the algorithms for the rules, with the aspect of exhaustive application in mind.
 
-The general outline of an algorithm will look as follows,
+The general outline of an algorithm will look as follows.
 
-1. Construct auxiliary data structures that are used to find parts of the graph, for which the rule can be applied.
+1. (If needed) Construct auxiliary data structures that are used to find parts of the graph, for which the rule can be applied.
 2. If we can apply rules do:
 
     Iterate over the auxiliary data structure, or the vertices/edges themselves.
@@ -205,18 +207,18 @@ The general outline of an algorithm will look as follows,
     - Mutate the graph according to the rule.
     - Mutate the auxiliary data structure according to the rule.
 
-This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time. We can also reuse these algorithms with minimal changes, in the case where we want to only execute a rule once.
+This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time. We can also alter these algorithms with minimal changes, to only execute a rule once. 
 
 ## Algorithms
 
-The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. Proofs are provided in the case, where the algorithm does not simply follow the definition of a rule.
+The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. We do not impose the use of our proposed hypergraph model in those listings. Instead we use general language, for example $e \textnormal{incident to} v$ instead of $e \in H.IncMap[v]$. Proofs are provided in the case, where the algorithm does not simply follow the definition of a rule.
 
 We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$ maps the value $1$ to the key $0$ in map $\gamma$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Unused values are omitted with the underscore symbol.
 
 ### Tiny/Small Edge Rule
 
 -   tiny edges: Delete all hyperedges of size one and place the corresponding vertices into the hitting set.
--   small edges: If $e$ is a hyperedge of size two, i.e., $e = \{ x,y \}$, then put both $x$
+-   small edges: If $e$ is a hyperedge of size two, i.e. $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
 $O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges adjacent to vertices in $e$ from the graph.
@@ -296,7 +298,7 @@ $exec \gets 0$\;
 \end{algorithm}
 $$
 
-The exact time complexity is as follows:
+The exact time complexity is as follows.
 
 $$
 \begin{align*}
@@ -370,9 +372,7 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$ that is incident to all edges in $G$.
-
-We start by iterating other the $AdjCount$ map of the graph, referring to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
+$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$ that is incident to all edges in $G$. We start by iterating other the $AdjCount$ map of the graph, referring to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
 
 $$
 AdjCount[v][a] + AdjCount[v][b] = deg(v)+1
@@ -380,7 +380,7 @@ $$
 
 If such a pair exists, then we conclude that for every edge $f$ incident to $v$, it holds that either $a\in f$ or $b\in f$.
 
-\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
+\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges or size one edges.
 \end{lemma}
 
 _Proof._ Let $G$ be a hypergraph without size one edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
@@ -789,7 +789,7 @@ var ratios = map[string]pkg.IntTuple{
 }
 ```
 
-Where $\texttt{A}$ denotes the number of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the number of vertices present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows:
+Where $\texttt{A}$ denotes the number of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the number of vertices present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
 
 ```go
 execs := ApplyRules(g, c)
@@ -920,9 +920,7 @@ $$
     \begin{minipage}[h]{0.75\textwidth}
         \textbf{Problem Name:} \textsc{Triangle Vertex Deletion}
 
-        \textbf{Given:} A graph $G=(V,E)$
-
-        \textbf{Parameter:} A non-negative integer $k$.
+        \textbf{Given:} A graph $G=(V,E)$ and a non-negative integer $k$.
 
         \textbf{Output:} Is there a set $C\subseteq V$ of size at most $k$, such that $G\setminus C$ is a triangle-free graph.
     \end{minipage}
@@ -945,7 +943,7 @@ $$
 
 We evaluated the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/kais/YangL15] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
 
-Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$.
+Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting-Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$. See figure \ref{flamegraph} for a flamegraph obtained from one of those profiles.
 
 Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. It could also be true that this number stays the same for any precedence. \todo{get data for random rule application to compare}
 
@@ -1116,9 +1114,7 @@ $$
     \begin{minipage}[h]{0.75\textwidth}
         \textbf{Problem Name:} \textsc{Cluster Vertex Deletion}
 
-        \textbf{Given:} A graph $G=(V,E)$
-
-        \textbf{Parameter:} A non-negative integer $k$.
+        \textbf{Given:} A graph $G=(V,E)$ and a non-negative integer $k$.
 
         \textbf{Output:} Is there a set $C\subseteq V$ of size at most $k$, such that $G\setminus C$ is a cluster graph.
     \end{minipage}
@@ -1154,7 +1150,7 @@ $$
 
 There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competitive approximation ratios. They are also fast since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will sometimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
 
-Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referring to a vertex or edge using its index, i.e., vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
+Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referring to a vertex or edge using its index, i.e. vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
 
 $$
 \begin{alignat*}{2}
@@ -1262,7 +1258,7 @@ $$
 \end{table}
 $$
 
-\todo{update with new test results using HiGHS ipm}
+\todo{update with new test results using other solvers}
 We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the HiGHS solver with the interior point method. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
 
 ## Preferential Attachment Hypergraphs
@@ -1275,4 +1271,8 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 
 # Conclusion
 
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms.  
 
+## Further Work
+
+The only part of the algorithm that is parallelized is the edge domination rule. The main algorithm itself could also be parallelized, when using the incremental variant. The graph could at some point during the run of the algorithm consist of multiple connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. Another 

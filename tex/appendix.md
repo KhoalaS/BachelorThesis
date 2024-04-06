@@ -73,3 +73,12 @@ max & 1.3157 & 81071 & 61654 & 176 sec\\
 \label{amzn_str_3_f3rand}
 \end{table}
 $$
+
+$$
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{./img/flamegraph.png}
+    \caption{Flamegraph of pprof CPU performance profile. Graph instance was a dense 3-uniform ER hypergraph with 1000 vertices. }
+    \label{flamegraph}
+\end{figure}
+$$
