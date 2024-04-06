@@ -1203,20 +1203,22 @@ We used PuLP[@GH:pulp] to model the linear programs in Python and implemented th
 $$
 \begin{table}[t]
      \centering
-     \begin{tabular}{c|rrrrrr}
+     \begin{tabular}{c|rrrrrrr}
           \toprule
-          algorithm                      & solver & ratio UB  & actual ratio &
+          algorithm                      & solver & method & ratio UB  & actual ratio &
           $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
           \midrule
-          \multirow{3}{4em}{Hitting Set LP (1)} & GLPK   & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
+          \multirow{3}{4em}{Hitting Set LP (1)} & GLPK & simplex  & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
           101928                         & 1 hour                                                             \\
-                                         & CLP    &            & 1.7838       & 64452.6992 & 114972 & 50 sec \\
-                                         & HiGHS  &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
+                                         & CLP    &  simplex    &      & 1.7838       & 64452.6992 & 114972 & 50 sec \\
+                                         & HiGHS & simplex &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
+                                         & HiGHS & ipm &           & 1.5713       & 64452.6993 & 101276 & 76 sec \\
           \midrule
-          \multirow{3}{4em}{Set Cover LP (2)}   & GLPK   & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
+          \multirow{3}{4em}{Set Cover LP (2)}   & GLPK & simplex  & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
           102762                         & 1 hour                                                             \\
-                                         & CLP    &            & 1.8068       & 64452.6992 & 116455 & 47 sec \\
-                                         & HiGHS  &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
+                                         & CLP    & simplex &           & 1.8068       & 64452.6992 & 116455 & 47 sec \\
+                                         & HiGHS & simplex &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
+                                         & HiGHS & ipm &            & 1.5797       & 64452.6993 & 101820 & 68 sec \\
      \end{tabular}
      \caption{Results for LP based rounding algorithms for \textsc{Hitting Set} and \textsc{Set Cover} on \textsc{Triangle Vertex Deletion} instance of Amazon product co-purchasing graph}
      \label{lp_stats}
