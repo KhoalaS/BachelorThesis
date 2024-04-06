@@ -1,4 +1,4 @@
----
+﻿---
     title: Implementation and evaluation of a self-monitoring approximation algorithm for 3-Hitting-Set
     link-citations: true
     author: Khoa Le
@@ -1224,7 +1224,7 @@ $$
 \end{table}
 $$
 
-Algorithm (1) slightly outperforms algorithm (2). The LP solution obtained with GLPK yields the smallest hitting set for both algorithms, but also takes the longest to compute at an execution time of about one hour. HiGHS is the fastest solver and produces a hitting set that is around five percent larger than GLPK. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
+Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
 
 $$
 \begin{table}[h]
@@ -1262,7 +1262,8 @@ $$
 \end{table}
 $$
 
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+\todo{update with new test results using HiGHS ipm}
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the HiGHS solver with the interior point method. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
 
 ## Preferential Attachment Hypergraphs
 

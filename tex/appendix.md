@@ -41,7 +41,7 @@ max & 1.9525 & 75 & 382 & 10 & 3 & 1 & 77 & 1 & 9 & 56 & 17 & 40 & 617 & 328 \\
 }
 \caption{F3 low degree rule}
 \end{subtable}
-\caption{Results for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run to run variance.}
+\caption{Results for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run-to-run variance.}
 \label{er3_evr3_stats}
 \end{table}
 $$
