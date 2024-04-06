@@ -11,7 +11,7 @@ parser.add_argument("--glpk", action='store_true',
 parser.add_argument("--cplex", action='store_true',
                     help="use the CPLEX solver")
 parser.add_argument("-l", action='store_true', help="keep log files")
-parser.add_argument("--log", action='store_true')
+parser.add_argument("--log")
 parser.add_argument("--ipm", action='store_true')
 
 args = parser.parse_args()
@@ -197,7 +197,7 @@ print("ratio upper bound:", ratio_ub)
 print("actual ratio:", ratio)
 print("found hitting-set of size", len(C))
 
-if args.log:
-    logfile = open("./data/rome_cvd_lphs.csv", "a+")
+if args.log != None:
+    logfile = open(args.log, "a+")
     filename = str(args.input).split("/")[-1]
     logfile.write("{};{};{};{};{}\n".format(filename, ratio_ub, ratio, len(C), opt))
