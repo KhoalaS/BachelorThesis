@@ -1177,7 +1177,7 @@ $$
 
 And again, the LP relaxation of this ILP would allow for $x_j$ to be any value in the interval $[0,1]$ for all $j \in [m]$.
 
-It might not obvious at first that \textsc{Set Cover} is the dual of \textsc{Hitting Set}, but formulating both problems informally gives it away in an understandable way. One problem tries to cover sets with elements, while the over aims at covering elements with sets. For a formal reduction from \textsc{Hitting Set} to \textsc{Set Cover} let $G=(V,E)$ be a hypergraph and $C \subseteq V$. Let $S_v = \left\{ e \in E \mid v \in e \right\}$ for $v\in V$, i.e. the set of edges that are incident to a vertex $v$. Now $C$ is a hitting set if and only if $S = \left\{ e \in S_v \mid v \in C\right\}$ is a set cover. Let us assume that $C$ is a hitting set for $G$, then it holds that,
+It might not obvious at first that \textsc{Set Cover} is the dual of \textsc{Hitting Set}, but formulating both problems informally gives it away in an understandable way. One problem tries to cover sets with elements, while the over aims at covering elements with sets. For a formal reduction from \textsc{Hitting Set} to \textsc{Set Cover} let $G=(V,E)$ be a hypergraph and $C$ be a subset of $V$. Let $S_v = \left\{ e \in E \mid v \in e \right\}$ for $v\in V$, i.e. the set of edges that are incident to a vertex $v$. Now $C$ is a hitting set if and only if $S = \left\{ e \in S_v \mid v \in C\right\}$ is a set cover. Let us assume that $C$ is a hitting set for $G$, then it holds that,
 
 $$
 \forall e \in E \mid e \cap C \neq\emptyset \quad\Leftrightarrow\quad \forall e \in E\; \exists v \in C \;\; \textnormal{s.t.} \;\; e \in S_v \quad \Leftrightarrow \quad \bigcup_{v\in C} S_v = E
