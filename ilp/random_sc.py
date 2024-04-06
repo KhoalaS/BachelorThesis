@@ -14,6 +14,7 @@ parser.add_argument("--cplex", action='store_true',
                     help="use the CPLEX solver")
 parser.add_argument("-l", action='store_true', help="keep log files")
 parser.add_argument("--log", action='store_true')
+parser.add_argument("--ipm", action='store_true')
 
 args = parser.parse_args()
 
@@ -83,9 +84,12 @@ for i in range(1, n+1):
 print("begin solving...")
 
 keep_logs = args.l
+opts = []
+if args.highs and args.ipm:
+    opts = ["--solver", "ipm"]
 
 if args.highs:
-    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs, options=["--solver", "ipm"],
+    prob.solve(HiGHS_CMD(mip=False, msg="using HiGHS", keepFiles=keep_logs, options=opts,
                          path="/usr/local/bin/highs", threads=os.cpu_count()))
 elif args.glpk:
     prob.solve(GLPK(msg="using GLPK solver", keepFiles=keep_logs))
