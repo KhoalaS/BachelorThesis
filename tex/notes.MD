@@ -1152,7 +1152,6 @@ $$
 
 ## Comparison with LP rounding based Algorithms
 
-\todo[backgroundcolor=green]{add LP rounding algorithm section}
 There exist randomized approximation algorithms for $d-\textsc{Hitting Set}$ that rely on LP rounding, which promise quite competitive approximation ratios. They are also fast since most of the work happens during the solving of the LP. We will begin by explaining the ILP/LP formulation of $\textsc{Hitting Set}$ and its dual problem $\textsc{Set Cover}$, since one of the algorithms is actually a $\textsc{Set Cover}$ algorithm. After that we will briefly examine the two proposed algorithms and end with a comparison to our algorithm. Note that we will sometimes use slightly different notation and variable names than the original papers to avoid confusion (for example $\Delta$ is defined in both, in one as maximum vertex degree and the other as maximum edge size).
 
 Let $G=(V,E)$ be a hypergraph with $n:=|V|$ and $m:=|E|$. Let $V= \left\{ v_1, v_2, \dots \right\}$ and $E = \left\{ e_1, e_2, \dots \right\}$ be the set of vertices and edges respectively. Abusing notation, we also allow referring to a vertex or edge using its index, i.e., vertex $1$ and vertex $v_1$ shall mean the same. The $\textsc{Hitting Set}$ problem can now be formulated as an integer linear program as follows,
