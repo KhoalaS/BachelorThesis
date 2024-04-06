@@ -20,7 +20,7 @@ rome_stats.rename(index={"50%": "median"}, inplace=True)
 rome_stats["Ratio"] = rome_stats["Ratio"].round(4)
 rome_stats["HittingSet"] = rome_stats["HittingSet"].round()
 rome_stats["Opt"] = rome_stats["Opt"].round()
-rome_stats.rename(columns={"Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est. opt"}, inplace=True)
+rome_stats.rename(columns={"Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "$\\textnormal{Opt}^*$"}, inplace=True)
 
 rome_tbl = rome_stats.to_latex(float_format="%.4f")
 
