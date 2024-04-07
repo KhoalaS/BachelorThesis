@@ -17,11 +17,10 @@
 
 # Introduction
 
-The \textsc{Hitting Set} problem is one of Karp's 21 NP-complete problems. It has been extensively researched 
 
 ## Preliminaries
 
-A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree with $deg(v)$ for a vertex $v$. An edge $e$ has size $m$, if it contains $m$ elements.
+A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ with $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements.
 
 # Programming Language
 
@@ -60,9 +59,17 @@ type HyperGraph struct {
 	IncMap         map[int32]map[int32]bool
 	AdjCount       map[int32]map[int32]int32
 }
+
+func (g *HyperGraph) AddVertex(id int32, data int)
+func (g *HyperGraph) RemoveVertex(id int32) bool
+func (g *HyperGraph) RemoveElem(elem int32) bool
+func (g *HyperGraph) AddEdge(eps ...int32)
+func (g *HyperGraph) RemoveEdge(e int32) bool
+func (g *HyperGraph) Deg(v int32) int
+func (g *HyperGraph) RemoveDuplicate()
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$.
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$. We also provide various struct methods to do basic operations on the hypergraph. All of these methods handle mutations to the \texttt{IncMap} and \texttt{AdjCount} fields of the receiving hypergraph struct. For example, calling \texttt{RemoveEdge(0)} on a hypergraph struct \texttt{g} will remove the edge with id 0 from \texttt{g.E} and will remove \texttt{0} from all entries \texttt{g.IncMap[v]}, where \texttt{v} is an endpoint of the removed edge. 
 
 # Misc. Algorithms/Utilities
 
@@ -784,7 +791,7 @@ $$
 Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We store the ratios for each rule in a map of the form:
 
 ```go
-var ratios = map[string]pkg.IntTuple{
+var Ratios = map[string]pkg.IntTuple{
 	"kRulename": {A:1, B:1},
 }
 ```
@@ -792,15 +799,21 @@ var ratios = map[string]pkg.IntTuple{
 Where $\texttt{A}$ denotes the number of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the number of vertices present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
 
 ```go
-execs := ApplyRules(g, c)
+g := NewHypergraph()
+c := make(map[int32]bool)
+execs := make(map[string]int)
 
-var nom float64 = 0
+ApplyRules(g, c, execs)
+
+var num float64 = 0
 var denom float64 = 0
 
 for key, val := range execs {
-	nom += float64(ratios[key].A * val)
-	denom += float64(ratios[key].B * val)
+	num += float64(Ratios[key].A * val)
+	denom += float64(Ratios[key].B * val)
 }
+
+ratio := num / denom
 ```
 
 # Algorithms
@@ -1259,7 +1272,7 @@ $$
 $$
 
 \todo{update with new test results using other solvers}
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the HiGHS solver with the interior point method. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
 
 ## Preferential Attachment Hypergraphs
 
@@ -1271,10 +1284,12 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms.  
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
 
-## Further Work
+## Further Questions
 
-The only part of the algorithm that is parallelized is the edge domination rule. The main algorithm itself could also be parallelized, when using the incremental variant. The graph could at some point during the run of the algorithm consist of multiple connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
+The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
 
-There already exist algorithms for vertex and edge domination, which run on a GPU, see [ref_gpu]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation.
+There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
+
+Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic.
