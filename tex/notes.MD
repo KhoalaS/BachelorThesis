@@ -1142,17 +1142,7 @@ We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected g
 $$
 \begin{table}[h]
 \makebox[\textwidth][c]{
-    \begin{tabular}{lrrrrrrrrrrrrrr}
-    \toprule
-    & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
-    \midrule
-    mean & 1.1188 & 13.77 & 31.58 & 84.01 & 0.21 & 0.05 & 0.01 & 1.38 & 0.07 & 0 & 0.08 & 0 & 18 & 16 \\
-    std & 0.0962 & 7.20 & 15.75 & 56.79 & 0.45 & 0.23 & 0.09 & 1.39 & 0.26 & 0.07 & 0.27 & 0.01 & 9 & 8 \\
-    min & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 2 & 2 \\
-    median & 1.1111 & 12 & 28 & 75 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 16 & 14 \\
-    max & 2 & 32 & 69 & 310 & 5 & 2 & 1 & 9 & 2 & 1 & 2 & 1 & 40 & 33 \\
-    \bottomrule
-    \end{tabular}
+    \input{"out/rome_cvd"}
 }
     \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs collection. Hitting sets were computed ten times for each graph and the run with the lowest hitting set size was chosen for final calculation.}
     \label{cvd_rome_stats}
@@ -1238,41 +1228,19 @@ Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. T
 $$
 \begin{table}[h]
     \begin{subtable}[b]{0.45\textwidth}
-        \begin{tabular}{lrrrr}
-            \toprule
-            & ratio UB & ratio & $|C|$ & $\textnormal{Opt}^*$ \\
-            \midrule
-            mean & 2.9697 & 1.4246 & 25 & 17 \\
-            std & 0.0197 & 0.4268 & 16 & 8 \\
-            min & 2.7500 & 1 & 2 & 2 \\
-            median & 2.9758 & 1.3565 & 21 & 15 \\
-            max & 2.9925 & 2.5714 & 80 & 35 \\
-            \bottomrule
-        \end{tabular}
-        \caption{Hitting Set LP (1)}
+        \input{"out/rome_cvd_lphs_glpk"}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
-        \begin{tabular}{lrrrr}
-            \toprule
-            & ratio UB & ratio & $|C|$ & $\textnormal{Opt}^*$ \\
-            \midrule
-            mean & 2.6132 & 1.4050 & 24 & 17 \\
-            std & 0.1089 & 0.4101 & 16 & 8 \\
-            min & 1.8453 & 1 & 2 & 2 \\
-            median & 2.6408 & 1.3220 & 21 & 15 \\
-            max & 2.8000 & 2.5385 & 76 & 35 \\
-            \bottomrule
-        \end{tabular}
-        \caption{Set Cover LP (2)}
+        \input{"out/rome_cvd_lpsc_glpk"}
     \end{subtable}
-    \caption{Results for \textsc{Cluster Vertex Deletion} using LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
-    \label{cvd_rome_stats_lp}
+    \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
+    \label{cvd_rome_glpk}
 \end{table}
 $$
 
 \todo{update with new test results using other solvers}
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem. The results can be seen in table \ref{cvd_rome_stats_lp}. Both algorithms perform very similarly, with almost identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size, which is almost double the size compared to our algorithm. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem. The results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
 
 ## Preferential Attachment Hypergraphs
 

@@ -82,3 +82,47 @@ $$
     \label{flamegraph}
 \end{figure}
 $$
+
+$$
+\begin{table}[h]
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lphs_glpk"}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lpsc_glpk"}
+    \end{subtable}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lphs_clp"}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lpsc_clp"}
+    \end{subtable}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lphs_highs"}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \input{"out/rome_cvd_lpsc_highs"}
+    \end{subtable}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subtable}[t]{0.45\textwidth}
+        \input{"out/rome_cvd_lphs_highs_imp"}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[t]{0.45\textwidth}
+        \input{"out/rome_cvd_lpsc_highs_imp"}
+    \end{subtable}
+    \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark. Assume simplex method if not specifed otherwise.}
+    \label{A:cvd_rome_all}
+\end{table}
+$$
