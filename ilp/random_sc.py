@@ -122,9 +122,14 @@ for j in range(1, m+1):
     p_j = min([1.0, alpha*k*value(x[j])])
     r = random()
     if r <= p_j:
-        R_1.append(j)
+        covered = True
         for i in S[j]:
+            if i not in C:
+                covered = False
             C.add(i)
+        if not covered:
+            R_1.append(j)
+        
 
 # get elements not covered by sets
 I_r = set()

@@ -115,7 +115,7 @@ for j in V:
     val = value(x[j])
     if val != 1 and val >= 1.0/_lambda:
         S_gte.add(j)
-    elif val != 1:
+    elif val < 1.0/_lambda and val != 0:
         S_l.add(j)
 
 print("|S_0| =", len(S_0))
@@ -123,14 +123,16 @@ print("|S_1| =", len(S_1))
 print("|S_≥| =", len(S_gte))
 print("|S_<| =", len(S_l))
 
-print("skip step 4 of algorithm, not removing vertices in S_0")
-#for j in S_0:
-#    V.remove(j)
-#    for e in inc_map[j]:
-#        E[e].remove(j)
-#    inc_map[j] = []
+# print("skip step 4 of algorithm, not removing vertices in S_0")
+for j in S_0:
+    V.remove(j)
+    for e in inc_map[j]:
+        E[e].remove(j)
+    inc_map[j] = []
 
 for j in S_1:
+    if len(inc_map[j]) == 0:
+        continue
     C.add(j)
     V.remove(j)
     rem_e = []
@@ -143,6 +145,8 @@ for j in S_1:
         del E[e]
 
 for j in S_gte:
+    if len(inc_map[j]) == 0:
+        continue
     C.add(j)
     V.remove(j)
     rem_e = []
@@ -155,6 +159,8 @@ for j in S_gte:
         del E[e]
 
 for j in S_l:
+    if len(inc_map[j]) == 0:
+        continue
     p = _lambda*value(x[j])
     r = random()
     if r <= p:
@@ -200,4 +206,5 @@ print("found hitting-set of size", len(C))
 if args.log != None:
     logfile = open(args.log, "a+")
     filename = str(args.input).split("/")[-1]
-    logfile.write("{};{};{};{};{}\n".format(filename, ratio_ub, ratio, len(C), opt))
+    logfile.write("{};{};{};{};{}\n".format(
+        filename, ratio_ub, ratio, len(C), opt))
