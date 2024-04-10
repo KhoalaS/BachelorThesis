@@ -16,6 +16,22 @@
 \SetKwProg{Fn}{func}{\string:}{}
 
 # Introduction
+__why hitting set is important__
+
+__what algorithm__
+    - techniques: 
+        - local ratio
+        - self monitoring
+
+__objectives and scope__
+    - performance
+    - comparison LP based
+
+__methodology__
+    - real world networks
+    - random ER, PA
+
+__outline__
 
 
 ## Preliminaries
@@ -390,7 +406,7 @@ If such a pair exists, then we conclude that for every edge $f$ incident to $v$,
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges or size one edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph without size one edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
+_Proof._ Let $G$ be a hypergraph without size one and duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
 
 _Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
@@ -448,7 +464,7 @@ $$
 $\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets of vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.
 
 \begin{lemma}
-Algorithm \ref{apdvdom} is correct.
+Algorithm \ref{apdvdom} is correct, under the assumption that the underlying graph does not contain any size one edges.
 \end{lemma}
 
 _Proof_.

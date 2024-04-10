@@ -158,10 +158,10 @@
   <macro name="title">
     <choose>
       <if type="bill book graphic legal_case legislation motion_picture song" match="any">
-        <text text-case="title" variable="title" font-style="italic" />
+        <text variable="title" font-style="italic" />
       </if>
       <else>
-        <text text-case="title" variable="title" />
+        <text variable="title" />
       </else>
     </choose>
   </macro>
