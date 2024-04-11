@@ -3,7 +3,7 @@
     link-citations: true
     author: Khoa Le
     abstract: |
-        In this thesis we implemented an approximation algorithm for the \textsc{Hitting Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio method. We show test results on real-world networks that can be interpreted as derivative problems of \textsc{Hitting Set}. At last, we compare these results with two linear programming based algorithms.
+        In this thesis we implemented an approximation algorithm for the \textsc{Hitting Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio technique. We show test results on real-world networks that can be interpreted as derivative problems of \textsc{Hitting Set}. At last, we compare these results with two linear programming based algorithms.
 ...
 
 \RestyleAlgo{ruled}
@@ -22,6 +22,9 @@ __what algorithm__
     - techniques: 
         - local ratio
         - self monitoring
+
+We are going to implement a 3-\textsc{Hitting Set} algorithm proposed by Brankovic and Fernau in [@10.1007/978-3-642-29116-6_6]. Note that this is a preliminary version of the paper, the full version is currently being submitted to ?. The algorithm is based on exact and approximative reduction rules and the analysis is made via the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is, to view an $r$-approximate solution to a problem as a decomposition of its cost and lower bound. An algorithm conforming to this theorem is practically building this composition step by step. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation.  
+
 
 __objectives and scope__
     - performance
@@ -743,7 +746,7 @@ $$
 
 ### F3 Low Degree Rule
 
--   F3 low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $x$. If there exists an edge $f$ that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
+-   F3 low degree: Let $v$ be a vertex with degree 2 and let $e$ be an edge that is incident to $v$. If there exists an edge $f$ that is incident to a vertex in $e$ and does not contain $v$, put $f$ into the hitting set.
 
 As seen in algorithm \ref{f3target} we extended this rule in the final implementation. If there is no vertex for which the rule applies, then we check the condition of the rule once again with the vertex $v_{min}$. If this attempt does not work, then we put a random size three edge into the hitting set. The effectiveness of this rule will be discussed in section \ref{appl}.
 
@@ -933,7 +936,7 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 ## F3 Low Degree Rule
 
-The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First, we generated 100 random ER hypergraphs with 1000 vertices and approximately 3000 edges. We ran our algorithm on every graph 10 times each to account for run-to-run variance. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low target degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
+The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First, we generated 100 random ER hypergraphs with 1000 vertices and approximately 3000 edges. We ran our algorithm on every graph 10 times each to account for run-to-run variance. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
 
 We do in fact see a slight increase of vertex domination rule executions, with the mean number of executions increasing from about 345 to 349. More interesting observations can be made about the fallback rule and extended triangle rule. The mean number of fallback rule executions decreased from about 44 to 25 when not selecting random edges. The number of extended triangle rule executions increased from about 47 to 63. The mean values for the over rules stay mostly the same. 
 
@@ -1212,32 +1215,9 @@ Remove all vertices in $S_0$ from $V$ and remove the vertices in $S_0$ from all 
 
 Next, we look at the algorithm proposed by Saket and Sviridenko in [@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $\Delta$ the maximum number of sets any element in $V$ is contained in and $d$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha\Delta \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln d}{\Delta-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover.
 
-We used PuLP[@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python as well. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall [@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
+We used PuLP[@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python as well. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall [@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of at most $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
 
-$$
-\begin{table}[t]
-     \centering
-     \begin{tabular}{c|rrrrrrr}
-          \toprule
-          algorithm                      & solver & method & ratio UB  & actual ratio &
-          $\textnormal{Opt}^*$           & $|C|$  & solver time                                               \\
-          \midrule
-          \multirow{3}{4em}{Hitting Set LP (1)} & GLPK & simplex  & \multirow{3}{3em}{2.9986}         & 1.5814       & 64452.6941 &
-          101928                         & 1 hour                                                             \\
-                                         & CLP    &  simplex    &      & 1.7838       & 64452.6992 & 114972 & 50 sec \\
-                                         & HiGHS & simplex &            & 1.6709       & 64452.6993 & 107697 & 17 sec \\
-                                         & HiGHS & ipm &           & 1.5713       & 64452.6993 & 101276 & 76 sec \\
-          \midrule
-          \multirow{3}{4em}{Set Cover LP (2)}   & GLPK & simplex  & \multirow{3}{3em}{2.9148} & 1.5944       & 64452.6940 &
-          102762                         & 1 hour                                                             \\
-                                         & CLP    & simplex &           & 1.8068       & 64452.6992 & 116455 & 47 sec \\
-                                         & HiGHS & simplex &            & 1.6826       & 64452.6993 & 108447 & 19 sec \\
-                                         & HiGHS & ipm &            & 1.5797       & 64452.6993 & 101820 & 68 sec \\
-     \end{tabular}
-     \caption{Results for LP based rounding algorithms for \textsc{Hitting Set} and \textsc{Set Cover} on \textsc{Triangle Vertex Deletion} instance of Amazon product co-purchasing graph}
-     \label{lp_stats}
-\end{table}
-$$
+\input{"./out/amazon_cvd_lp"}
 
 Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
 
@@ -1255,8 +1235,7 @@ $$
 \end{table}
 $$
 
-\todo{update with new test results using other solvers}
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem. The results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes. Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This is can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem, the results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes.\todo{reword this} Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
 
 ## Preferential Attachment Hypergraphs
 
