@@ -88,7 +88,7 @@ func (g *HyperGraph) Deg(v int32) int
 func (g *HyperGraph) RemoveDuplicate()
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$. We also provide various struct methods to do basic operations on the hypergraph. All of these methods handle mutations to the \texttt{IncMap} and \texttt{AdjCount} fields of the receiving hypergraph struct. For example, calling \texttt{RemoveEdge(0)} on a hypergraph struct \texttt{g} will remove the edge with id 0 from \texttt{g.E} and will remove \texttt{0} from all entries \texttt{g.IncMap[v]}, where \texttt{v} is an endpoint of the removed edge. 
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$. We also provide various struct methods to do basic operations on the hypergraph. All of these methods handle mutations to the \texttt{IncMap} and \texttt{AdjCount} fields of the receiving hypergraph struct. For example, calling \texttt{RemoveEdge(0)} on a hypergraph struct \texttt{g} will remove the edge with id 0 from \texttt{g.E} and will remove \texttt{0} from all entries \texttt{g.IncMap[v]}, \texttt{v} being an endpoint of the removed edge. 
 
 # Misc. Algorithms/Utilities
 
@@ -983,7 +983,6 @@ $$
 \begin{table}[t]
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{base rule strategy\label{dblp_str_base}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -995,11 +994,11 @@ $$
             max & 1.7610 & 115998 & 65904 & 19 sec\\
             \bottomrule
         \end{tabular}
+        \caption{base rule strategy\label{dblp_str_base}}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 1\label{dblp_str_1}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time\\
@@ -1011,13 +1010,13 @@ $$
             max & 1.5727 & 106500 & 67797 & 31 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 1\label{dblp_str_1}}
     \end{subtable}
     \newline
     \vspace{4mm}
     \newline
      \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 2\label{dblp_str_2}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1029,11 +1028,11 @@ $$
             max & 1.5453 & 105261 & 68146 & 110 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 2\label{dblp_str_2}}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 3\label{dblp_str_3}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1045,6 +1044,7 @@ $$
             max & 1.4215 & 99575 & 70133 & 493 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 3\label{dblp_str_3}}
     \end{subtable}
     \caption{Results for \textsc{Triangle Vertex Deletion} on DBLP coauthor graph; $n=100$}
     \label{stats_dblp}
@@ -1108,7 +1108,7 @@ $$
             & ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.4215 & 84813 & 59666 & 38 sec\\
-            std & 0.0005 & 58 & 32.3300 & 0 sec\\
+            std & 0.0005 & 58 & 32.33 & 0 sec\\
             min & 1.4206 & 84670 & 59586 & 37 sec\\
             median & 1.4215 & 84814 & 59664 & 38 sec\\
             max & 1.4227 & 84927 & 59740 & 39 sec\\
@@ -1124,7 +1124,7 @@ $$
             & ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.3136 & 80829 & 61532 & 166 sec\\
-            std & 0.0006 & 59 & 34.6300 & 2 sec\\
+            std & 0.0006 & 59 & 34.63 & 2 sec\\
             min & 1.3121 & 80684 & 61444 & 160 sec\\
             median & 1.3136 & 80836 & 61535 & 166 sec\\
             max & 1.3149 & 80943 & 61616 & 171 sec\\
@@ -1219,23 +1219,26 @@ We used PuLP[@GH:pulp] to model the linear programs in Python and implemented th
 
 \input{"./out/amazon_cvd_lp"}
 
-Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, both algorithm (1) and (2) yield hitting sets with bigger size.
+Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. On inspection of the logs for each solver, both the GLPK and HiGHS interior point method solutions contain significantly more variables with a value of 1 or 0 than the over solvers. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, only algorithm (1) using the HiGHS solver with the interior point method yielded a hitting set with comparable size. 
+
+We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). A solution with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
 
 $$
 \begin{table}[h]
-    \begin{subtable}[b]{0.45\textwidth}
+    \begin{subtable}[t]{0.45\textwidth}
         \input{"out/rome_cvd_lphs_glpk"}
     \end{subtable}
     \hfill
-    \begin{subtable}[b]{0.45\textwidth}
-        \input{"out/rome_cvd_lpsc_glpk"}
+    \begin{subtable}[t]{0.45\textwidth}
+        \input{"out/rome_cvd_short"}
+        \caption{Incremental 3-approximation algorithm for 3-HS, strategy 3}
     \end{subtable}
     \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
     \label{cvd_rome_glpk}
 \end{table}
 $$
 
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem, the results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes.\todo{reword this} Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.
+We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem, the results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes.\todo{reword this} Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.\todo{update with new data}
 
 ## Preferential Attachment Hypergraphs
 
