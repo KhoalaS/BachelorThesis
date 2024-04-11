@@ -290,8 +290,8 @@ func (gf *HyperGraph) F_RemoveDuplicate(g *HyperGraph) {
 	for eId, e := range gf.Edges {
 		hash := e.getHash()
 		if hashes[hash] {
-			delete(gf.Edges, eId)
 			g.RemoveEdge(eId)
+			delete(gf.Edges, eId)
 		} else {
 			hashes[hash] = true
 		}
