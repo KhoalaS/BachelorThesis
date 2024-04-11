@@ -116,11 +116,11 @@ $$
     \vspace{4mm}
     \newline
     \begin{subtable}[t]{0.45\textwidth}
-        \input{"out/rome_cvd_lphs_highs_imp"}
+        \input{"out/rome_cvd_lphs_highs_ipm"}
     \end{subtable}
     \hfill
     \begin{subtable}[t]{0.45\textwidth}
-        \input{"out/rome_cvd_lpsc_highs_imp"}
+        \input{"out/rome_cvd_lpsc_highs_ipm"}
     \end{subtable}
     \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark. Assume simplex method if not specifed otherwise.}
     \label{A:cvd_rome_all}
