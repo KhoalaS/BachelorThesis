@@ -19,20 +19,20 @@
 __why hitting set is important__
 
 __what algorithm__
-    - techniques: 
-        - local ratio
-        - self monitoring
+- [x] local ratio
+- [ ] reduction rules
+- [ ] self monitoring
 
 We are going to implement a 3-\textsc{Hitting Set} algorithm proposed by Brankovic and Fernau in [@10.1007/978-3-642-29116-6_6]. Note that this is a preliminary version of the paper, the full version is currently being submitted to ?. The algorithm is based on exact and approximative reduction rules and the analysis is made via the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is, to view an $r$-approximate solution to a problem as a decomposition of its cost and lower bound. An algorithm conforming to this theorem is practically building this composition step by step. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation.  
 
 
 __objectives and scope__
-    - performance
-    - comparison LP based
+- [ ] performance
+- [ ] comparison LP based
 
 __methodology__
-    - real world networks
-    - random ER, PA
+- [ ] real world networks
+- [ ] random ER, PA
 
 __outline__
 
@@ -919,8 +919,8 @@ $H \gets$ empty hypergraph\;
         }
         $exp\gets next$\;
     }
-    $H.IncMap = G.IncMap$\;
-    $H.AdjCount = G.AdjCount$\;
+    $H.IncMap \gets G.IncMap$\;
+    $H.AdjCount \gets G.AdjCount$\;
     \KwRet $H$\;
 }
 
@@ -1221,7 +1221,7 @@ We used PuLP[@GH:pulp] to model the linear programs in Python and implemented th
 
 Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. On inspection of the logs for each solver, both the GLPK and HiGHS interior point method solutions contain significantly more variables with a value of 1 or 0 than the over solvers. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, only algorithm (1) using the HiGHS solver with the interior point method yielded a hitting set with comparable size. 
 
-We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). A solution with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
+We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). Such solutions with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
 
 $$
 \begin{table}[h]
