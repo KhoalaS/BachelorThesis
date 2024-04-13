@@ -13,11 +13,14 @@ parser.add_argument("--cplex", action='store_true',
 parser.add_argument("-l", action='store_true', help="keep log files")
 parser.add_argument("--log")
 parser.add_argument("--ipm", action='store_true')
+parser.add_argument("--sol")
+
 
 args = parser.parse_args()
 
 file = open(args.input, "r")
 V_lookup = {}
+V_lookup_inv = {}
 V_counter = 1
 E_counter = 1
 V = []
@@ -33,6 +36,7 @@ for line in file:
     for v in e:
         if v not in V_lookup:
             V_lookup.update({v: V_counter})
+            V_lookup_inv.update({V_counter: v})
             e_tr.append(V_counter)
             V_counter += 1
         else:
@@ -87,6 +91,27 @@ if prob.status == LpStatusOptimal:
     print("Solution:")
     opt = value(lpSum([x[j] for j in V]))
     print("Sum of decision variables =", opt)
+
+if args.sol != None:
+    buffer = []
+    counter = 0
+    os.remove("VC-Relax.sol")
+    out = open("VC-Relax.sol", "ab+")
+
+    for val in V:
+        if value(x[val]) >= float(args.sol):
+            buffer.append(V_lookup_inv[val])
+            counter += 1
+            if counter == 8192:
+                out.write(b''.join([j.to_bytes(4, byteorder='big', signed=False) for j in buffer]))  # Assuming 32-bit integers
+                counter = 0
+                buffer.clear()
+
+    if counter > 0:
+        out.write(b''.join([j.to_bytes(4, byteorder='big', signed=False) for j in buffer]))
+
+    out.close()
+    sys.exit(0)
 
 C = set()
 S_0 = set()
