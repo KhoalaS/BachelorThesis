@@ -3,7 +3,7 @@
     link-citations: true
     author: Khoa Le
     abstract: |
-        In this thesis we implemented an approximation algorithm for the \textsc{Hitting Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio technique. We show test results on real-world networks that can be interpreted as derivative problems of \textsc{Hitting Set}. At last, we compare these results with two linear programming based algorithms.
+        In this thesis we implemented an approximation algorithm for the \textsc{$3$-Hitting Set} problem. The algorithm is based on various reduction rules and the approximation ratio is estimated with the local ratio technique. We show test results on real-world networks that can be interpreted as derivative problems of \textsc{Hitting Set}. At last, we compare these results with two linear programming based algorithms.
 ...
 
 \RestyleAlgo{ruled}
@@ -18,32 +18,53 @@
 # Introduction
 __why hitting set is important__
 
-__what algorithm__
-- [x] local ratio
-- [ ] reduction rules
-- [ ] self monitoring
+The \textsc{$d$-Hitting Set} problem is the basically the \textsc{Vertex Cover} problem on hypergraphs, which are a generalization of standard graphs by allowing an edge to have an arbitrary amount of endpoints. The problem can be formulated as follows.
 
-We are going to implement a 3-\textsc{Hitting Set} algorithm proposed by Brankovic and Fernau in [@10.1007/978-3-642-29116-6_6]. Note that this is a preliminary version of the paper, the full version is currently being submitted to ?. The algorithm is based on exact and approximative reduction rules and the analysis is made via the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is, to view an $r$-approximate solution to a problem as a decomposition of its cost and lower bound. An algorithm conforming to this theorem is practically building this composition step by step. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation.  
+$$
+\begin{center}
+\fbox{
+    \begin{minipage}[h]{0.75\textwidth}
+        \textbf{Problem Name:} \textsc{$d$-Hitting Set}
 
+        \textbf{Given:} A hypergraph $G=(V,E)$ with edges of size at most $d$ and a non-negative integer $k$.
 
-__objectives and scope__
-- [ ] performance
-- [ ] comparison LP based
+        \textbf{Output:} Is there a \textit{hitting set} $C\subseteq V$ of size at most $k$, such that for all $e \in E$ it holds that $e\cap C \neq \emptyset$.
+    \end{minipage}
+}
+\end{center}
+$$
 
-__methodology__
-- [ ] real world networks
-- [ ] random ER, PA
+The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for $r \geq 1$. 
 
-__outline__
+We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the full version is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. 
 
+We are going to use graphs obtained from real world networks and randomly generated graphs for our testing. The primary metrics we are focusing on are execution time, hitting set size and estimated ratio. We will then compare our algorithm to two linear programming based algorithms.
 
 ## Preliminaries
 
-A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ with $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements.
+A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ by $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements. 
+
+We also need to specify the term of a minimization problem, we are going to follow the definition in [@BraFer]. A minimization problem $\mathcal{P}$ can be specified by a triple $(I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$, where 
+
+1. $I_\mathcal{P}$ is the set of input instances of $\mathcal{P}$;
+2. $\textnormal{SOL}_\mathcal{P}(x)$ is a set of feasible solutions of $x$, where $x \in I_\mathcal{P}$;
+3. $m_\mathcal{P}$ is a function that maps $(x, y)$ to a non-negative integer $m_\mathcal{P} (x, y)$, which denotes the size of the solution $y$ to instance $x$. 
+
+The value $m_\mathcal{P} (x, y^*)$ is also referred to as $m_\mathcal{P}^*(x)$ for brevity.
+
+Given a minimization problem $\mathcal{P}$, a factor-$\alpha$ approximation, $\alpha \geq 1$, associates to each $x \in I_\mathcal{P}$ some $y \in \textnormal{SOL}_\mathcal{P} (x)$ such that $m_\mathcal{P} (x, y) \leq \alpha \cdot m_\mathcal{P}^* (x)$.
+A solution $y \in \textnormal{SOL}_\mathcal{P} (x)$ satisfying $m_\mathcal{P} (x, y) \leq \alpha \cdot m_\mathcal{P}^* (x)$ is also called an $\alpha$-approximate solution for $x$.
+
+We already mentioned the use of reduction rules, specifically we are using $\alpha$-_preserving reduction rules_. A $\alpha$-preserving reduction rule consits of a pair of mappings $\texttt{inst}_\mathcal{P}: I_\mathcal{P} \rightarrow I_\mathcal{P}$ and $\texttt{sol}_\mathcal{P}: \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P}(x)) \rightarrow \textnormal{SOL}_\mathcal{P} (x)$. 
+
+
+
+## Reduction Rules
+\todo{TODO}
 
 # Programming Language
 
-We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
 
 # Data Structures
 
@@ -406,10 +427,10 @@ $$
 
 If such a pair exists, then we conclude that for every edge $f$ incident to $v$, it holds that either $a\in f$ or $b\in f$.
 
-\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges or size one edges.
+\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph without size one and duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
+_Proof._ Let $G$ be a hypergraph without duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
 
 _Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
@@ -418,6 +439,8 @@ Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algor
 Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ cannot exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaneously. $\square$
 
 We then add the two vertices in the solution $sol$ to our partial solution $C$.
+
+\todo{add how duplicate edges impact alg (deg+1 but t+2)}
 
 $$
 \begin{algorithm}
@@ -473,6 +496,8 @@ Algorithm \ref{apdvdom} is correct, under the assumption that the underlying gra
 _Proof_.
 Let $G=(V,E)$ be a hypergraph. Let $x$ be the current vertex in the algorithm's iteration over $V$. If $T = \textsc{Two-SumAll}(AdjCount[x], deg(x))$ is empty, then $x$ will not be able to trigger a approximative double vertex domination situation. If $T$ is not empty, then we know that there exist sets $\{ a,b \}$, such that all edges incident to $x$ either contain $a$ or $b$. If $tsHashes[\{ a,b \}]$ is empty, then there are currently no other vertices for which $\{ a,b \}$ is a \textsc{Two-Sum} solution. In that case we add $x$ to $tsHashes[\{ a,b \}]$. Otherwise there exist vertices $y$, such that $\{ a,b \}$ is a \textsc{Two-Sum} solution for $y$. All edges incident to $x$ and $y$ either contain $a$ or $b$. If for one of these vertices $y$ there exists a size three edge $\{ x,y,a \}$, or without loss of generality $\{ x,y,b \}$, then we found a approximative double vertex domination situation at $\{ x,y,a \}$ or $\{ x,y,b \}$ respectively. If none of these edges exist, then $x$ could still trigger another approximative double vertex situation with another vertex. Thus we need to add $x$ to $tsHashes[\{ a,b \}]$.
 $\square$
+
+
 
 $$
 \begin{algorithm}
@@ -839,7 +864,7 @@ ratio := num / denom
 
 ## Main Algorithm
 
-It is crucial to apply the rules in a given order. Some rules expect that other rules cannot be applied. As for the exact rules, one can save execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@10.1007/978-3-642-29116-6_6], also referred to as precedence of rule executions. We will just use the shorter term _precedence_ going forward.
+It is crucial to apply the rules in a given order. Some rules expect that other rules cannot be applied. As for the exact rules, one can save execution time, if a specific order is enforced when executing them. We use the order proposed in the original paper [@BraFer], also referred to as precedence of rule executions. We will just use the shorter term _precedence_ going forward.
 
 1. Exact Rules: vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination
 2. approximate (double) vertex domination rules
@@ -942,7 +967,7 @@ We do in fact see a slight increase of vertex domination rule executions, with t
 
 To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
 
-So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects are underwhelming, with the mean hitting set size decreasing from about 592 to 590. Since we did not regress, we chose to keep using this variant of the rule over the random variant.
+So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects are underwhelming, with the mean hitting set size decreasing from about 592 to 590. The ratio did improve from 1.92 to 1.87, caused by a higher estimated optimum. Since we did not regress, we chose to keep using this variant of the rule over the random variant.
 
 ## Triangle Vertex Deletion
 
@@ -1259,3 +1284,6 @@ The only part of the algorithm that is parallelized is the edge domination rule.
 There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
 
 Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic.
+
+One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for new "entry points", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+
