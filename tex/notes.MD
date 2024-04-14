@@ -849,7 +849,15 @@ Each of the reduction rule functions returns a $\texttt{int32}$ value, which ind
 
 ```go
 var Ratios = map[string]pkg.IntTuple{
-	"kRulename": {A:1, B:1},
+	"kTiny":             {A: 1, B: 1},
+	"kSmall":            {A: 1, B: 2},
+	"kTri":              {A: 2, B: 3},
+	"kExtTri":           {A: 2, B: 4},
+	"kApVertDom":        {A: 1, B: 2},
+	"kApDoubleVertDom":  {A: 1, B: 2},
+	"kSmallEdgeDegTwo":  {A: 2, B: 4},
+	"kSmallEdgeDegTwo2": {A: 2, B: 3},
+	"kFallback":         {A: 1, B: 3},
 }
 ```
 
@@ -980,9 +988,9 @@ The goal of the F3 low degree rule is to reduce the degree of a vertex, which pr
 
 We do in fact see a slight increase of vertex domination rule executions, with the mean number of executions increasing from about 345 to 349. More interesting observations can be made about the fallback rule and extended triangle rule. The mean number of fallback rule executions decreased from about 44 to 25 when not selecting random edges. The number of extended triangle rule executions increased from about 47 to 63. The mean values for the over rules stay mostly the same. 
 
-To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
+To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied, see \ref{A:f3_logs} for the first 30 lines. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
 
-So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects are underwhelming, with the mean hitting set size decreasing from about 592 to 590. The ratio did improve from 1.92 to 1.87, caused by a higher estimated optimum. Since we did not regress, we chose to keep using this variant of the rule over the random variant.
+So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects on the hitting set size are underwhelming, with the mean hitting set size decreasing from about 592 to 590. The ratio did improve from 1.92 to 1.87, caused by a higher estimated optimum. Since we did not regress and even improved the ratio, we chose to keep using this variant of the rule instead of the random variant.
 
 ## Triangle Vertex Deletion
 
@@ -1290,7 +1298,7 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. It is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
 
 ## Further Questions
 
