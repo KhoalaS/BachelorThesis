@@ -18,8 +18,8 @@ func GetRatio(execs map[string]int) float64 {
 	var denom float64 = 0
 
 	for key, val := range execs {
-		num += float64(Ratios[key].A * val)
-		denom += float64(Ratios[key].B * val)
+		num += float64(Ratios[key].B * val)
+		denom += float64(Ratios[key].A * val)
 	}
 	return num / denom
 }
