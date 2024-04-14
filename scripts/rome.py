@@ -13,7 +13,7 @@ df = pd.read_csv(args.file, delimiter=";")
 
 print("file loaded...")
 
-df = df.loc[df.groupby("File")["HittingSet"].idxmin()]
+df = df.loc[df.groupby("File")["Ratio"].idxmin()]
 
 df.drop(columns=["File", "OVertices", "OEdges",
         "Vertices", "Edges"], inplace=True)
@@ -33,8 +33,8 @@ for k, v in rule_names.items():
     rome_stats.rename(columns={k: v}, inplace=True)
 
 rome_tbl = rome_stats.to_latex(float_format="%.4f")
+print(rome_stats)
 
 f = open(args.out, "w+")
 f.write(rome_tbl)
 f.close()
-print(rome_stats)
