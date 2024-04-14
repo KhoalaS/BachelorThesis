@@ -278,7 +278,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 ## Algorithms
 
-The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. We do not impose the use of our proposed hypergraph model in those listings. Instead we use general language, for example $e \textnormal{incident to} v$ instead of $e \in H.IncMap[v]$. Proofs are provided in the case, where the algorithm does not simply follow the description of a rule.
+The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. We do not impose the use of our proposed hypergraph model in those listings. Instead we use general language, for example "$e$ incident to $v$" instead of $e \in G.IncMap[v]$. Proofs are provided in the case, where the algorithm does not simply follow the description of a rule.
 
 We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$ maps the value $1$ to the key $0$ in map $\gamma$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Unused values are omitted with the underscore symbol.
 
@@ -853,7 +853,7 @@ var Ratios = map[string]pkg.IntTuple{
 }
 ```
 
-Where $\texttt{A}$ denotes the number of vertices put into the partial solution by a single rule execution. And $\texttt{B}$ denotes the number of vertices present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
+Where $\texttt{B}$ denotes the number of vertices put into the partial hitting set by a single rule execution. And $\texttt{A}$ denotes the number of these vertices that are present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
 
 ```go
 g := NewHypergraph()
@@ -894,7 +894,7 @@ The third strategy tries to maximize the exact rule executions. We start by appl
 
 ## Incremental Frontier Algorithm
 
-As experienced with the DBLP coauthor graph, there are some graph instances that do not work well with the prior algorithm. These instances do not admit any rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule, or in fact any rule, was applied. We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
+There are some graph instances that do not work well with the prior algorithm. These instances do not admit any rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule, or in fact any rule, was applied. We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
 
 We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges, we are done. Else we try to find a size three edge $e$, which will trigger a vertex domination situation if removed. We choose a random size three edge if there is none. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user\todo{proof that expansion step of 1 is sufficient ?}. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus, changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
@@ -1108,7 +1108,6 @@ $$
 \begin{table}[t]
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{base rule strategy\label{amzn_str_base}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1120,11 +1119,11 @@ $$
             max & 1.7474 & 95441 & 54632 & 4 sec\\
             \bottomrule
         \end{tabular}
+        \caption{base rule strategy\label{amzn_str_base}}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 1\label{amzn_str_1}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1136,13 +1135,13 @@ $$
             max & 1.4741 & 86496 & 58723 & 6 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 1\label{amzn_str_1}}
     \end{subtable}
     \newline
     \vspace{4mm}
     \newline
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 2\label{amzn_str_2}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1154,11 +1153,11 @@ $$
             max & 1.4227 & 84927 & 59740 & 39 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 2\label{amzn_str_2}}
     \end{subtable}
     \hfill
     \begin{subtable}[b]{0.45\textwidth}
         \centering
-        \caption{rule strategy 3\label{amzn_str_3}}
         \begin{tabular}{lrrrr}
             \toprule
             & ratio & $|C|$ & est. opt & time \\
@@ -1170,6 +1169,7 @@ $$
             max & 1.3149 & 80943 & 61616 & 171 sec\\
             \bottomrule
         \end{tabular}
+        \caption{rule strategy 3\label{amzn_str_3}}
     \end{subtable}
     \caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph; $n=100$}
     \label{stats_amzn}
