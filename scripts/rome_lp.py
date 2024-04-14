@@ -23,6 +23,7 @@ rome_stats["Opt"] = rome_stats["Opt"].round(2)
 rome_stats.rename(columns={"RatioUB": "ratio UB", "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "$\\textnormal{Opt}^*$"}, inplace=True)
 
 rome_tbl = rome_stats.to_latex(float_format="%.4f")
+print(rome_stats)
 
 f = open(args.out, "w+")
 f.write(rome_tbl)
