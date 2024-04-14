@@ -4,14 +4,8 @@ import os
 f = open("./tex/notes.MD")
 a = open("./tex/appendix.md")
 
-text = ""
-appendix = ""
-
-for line in f:
-    text += line
-
-for line in a:
-    appendix += line
+text = f.read()
+appendix = a.read()
 
 r = re.compile(r"(\$\$)\s(\\begin.*?)(\$\$)", re.DOTALL)
 
