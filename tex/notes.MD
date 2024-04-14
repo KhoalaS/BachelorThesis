@@ -16,7 +16,6 @@
 \SetKwProg{Fn}{func}{\string:}{}
 
 # Introduction
-__why hitting set is important__
 
 The \textsc{$d$-Hitting Set} problem is the basically the \textsc{Vertex Cover} problem on hypergraphs, which are a generalization of standard graphs by allowing an edge to have an arbitrary amount of endpoints. The problem can be formulated as follows.
 
@@ -34,17 +33,17 @@ $$
 \end{center}
 $$
 
-The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for $r \geq 1$. 
+The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for some $r \geq 1$. 
 
-We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the full version is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. 
+We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the full version is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via techniques reminiscent of the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. 
 
 We are going to use graphs obtained from real world networks and randomly generated graphs for our testing. The primary metrics we are focusing on are execution time, hitting set size and estimated ratio. We will then compare our algorithm to two linear programming based algorithms.
 
 ## Preliminaries
 
-A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ by $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements. 
+A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ by $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements. A hypergraph is said to be $d$-_uniform_ if all edges of the hypergraph are of size $d$. 
 
-We also need to specify the term of a minimization problem, we are going to follow the definition in [@BraFer]. A minimization problem $\mathcal{P}$ can be specified by a triple $(I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$, where 
+We also need to define what a minimization problem and an $\alpha$-preserving reduction is. We are going to follow the definitions in [@BraFer]. A minimization problem $\mathcal{P}$ can be specified by a triple $(I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$, where 
 
 1. $I_\mathcal{P}$ is the set of input instances of $\mathcal{P}$;
 2. $\textnormal{SOL}_\mathcal{P}(x)$ is a set of feasible solutions of $x$, where $x \in I_\mathcal{P}$;
@@ -55,12 +54,29 @@ The value $m_\mathcal{P} (x, y^*)$ is also referred to as $m_\mathcal{P}^*(x)$ f
 Given a minimization problem $\mathcal{P}$, a factor-$\alpha$ approximation, $\alpha \geq 1$, associates to each $x \in I_\mathcal{P}$ some $y \in \textnormal{SOL}_\mathcal{P} (x)$ such that $m_\mathcal{P} (x, y) \leq \alpha \cdot m_\mathcal{P}^* (x)$.
 A solution $y \in \textnormal{SOL}_\mathcal{P} (x)$ satisfying $m_\mathcal{P} (x, y) \leq \alpha \cdot m_\mathcal{P}^* (x)$ is also called an $\alpha$-approximate solution for $x$.
 
-We already mentioned the use of reduction rules, specifically we are using $\alpha$-_preserving reduction rules_. A $\alpha$-preserving reduction rule consits of a pair of mappings $\texttt{inst}_\mathcal{P}: I_\mathcal{P} \rightarrow I_\mathcal{P}$ and $\texttt{sol}_\mathcal{P}: \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P}(x)) \rightarrow \textnormal{SOL}_\mathcal{P} (x)$. 
+__Definition.__ Let $\mathcal{P} = (I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$ be a minimization problem. An $\alpha$-preserving reduction, with $\alpha \geq 1$, is a pair of mappings $\texttt{inst}_\mathcal{P} : I_\mathcal{P} \rightarrow I_\mathcal{P}$ and $\texttt{sol}_\mathcal{P} : \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P} (x)) \rightarrow \textnormal{SOL}_\mathcal{P} (x)$ satisfying the following conditions. Function $\texttt{inst}_\mathcal{P}$ maps $x$ into $\texttt{inst}_\mathcal{P} (x)$, where $x, \texttt{inst}_\mathcal{P} (x) \in I_\mathcal{P}$. Function $\texttt{sol}_\mathcal{P}$ maps $y' \in \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P} (x))$ into some $y \in \textnormal{SOL}_\mathcal{P} (x)$ such that there are constants $a, b \geq 0$ satisfying the following inequalities:
 
+1. $b \leq \alpha \cdot a$,
+2. $m_\mathcal{P}^* (\texttt{inst}_\mathcal{P} (x)) + a \leq m_\mathcal{P}^* (x)$, and
+3. $\forall y' \in \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P} (x))( m_\mathcal{P} (\texttt{inst}_\mathcal{P} (x), y') + b \geq m_\mathcal{P} (x, \texttt{sol}_\mathcal{P} (y')))$.
 
+We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, with $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum htting set of $G$. 
 
-## Reduction Rules
-\todo{TODO}
+_Proof._ Let $Y$ be the vertices that $R$ puts into the hitting set and let $G'$ be the hypergraph obtained by applying $R$. For every hitting set $C'$ of $G'$, by adding the vertices in $Y$ to $C'$, we obtain a hitting set $C$ for $G$ with 
+
+$$
+|C'| + |Y| \geq |C|.
+$$ 
+
+Let $C^*$ be a minimum hitting set of $G$. Let $G''$ be the hypergraph obtained by removing the vertices in $Z = \{ v \mid v \in Y,\; v \in C^*\}$ and all edges incident to $Z$ from $G$. Since $C^*\setminus Z$ is a hitting set for $G''$, it holds that $|C^*| - |Z| \geq |C''^*|$, with $C''^*$ being a minimal hitting set of $G''$. Since $Z$ is a subset of $Y$, $G'$ has to be a subgraph of $G''$. The size of $C'^*$ is then at most the size of $C''^*$. It then holds that,
+
+$$
+\begin{align*}
+\: & |C'^*| \leq |C''^*| \quad \wedge \quad  |C^*| - |Z| \geq |C''^*|\\ \Leftrightarrow \: & |C'^*| \leq |C''^*| \quad \wedge \quad |C''^*| + |Z| \leq |C^*|\\
+\Leftrightarrow  \: & |C'^*| + |Z| \leq |C''^*| + |Z| \leq |C^*|\\
+\end{align*}
+\qed
+$$
 
 # Programming Language
 
@@ -72,22 +88,22 @@ We chose the [_Go_](https://go.dev/) programming language. It is a statically ty
 
 ```go
 type Vertex struct {
-	id int32
-	data any
+	Id int32
+	Data int
 }
 ```
 
-The $\texttt{Vertex}$ datatype has two fields. The field $\texttt{id}$ is an arbitrary identifier and $\texttt{data}$ serves as a placeholder for actual data associated with the vertex.
+The $\texttt{Vertex}$ datatype has two fields. The field $\texttt{Id}$ is an arbitrary identifier and $\texttt{Data}$ serves as a placeholder for actual data associated with the vertex.
 
 ## Edge
 
 ```go
 type Edge struct {
-	v map[int32]bool
+	V map[int32]bool
 }
 ```
 
-The $\texttt{Edge}$ datatype has one field. The field $\texttt{v}$ is a map with keys of type $\texttt{int32}$ and values of type $\texttt{bool}$. When working with the endpoints of an edge, we are usually not interested in the associated values, since we never mutate the edges. This simulates a _Set_ datatype while allowing faster access times than simple arrays/slices.
+The $\texttt{Edge}$ datatype has one field. The field $\texttt{V}$ is a map with keys of type $\texttt{int32}$ and values of type $\texttt{bool}$. When working with the endpoints of an edge, we are usually not interested in the associated values, since we never mutate the edges. This simulates a _Set_ datatype while allowing faster access times than simple arrays/slices.
 
 ## Hypergraph
 
@@ -109,7 +125,7 @@ func (g *HyperGraph) Deg(v int32) int
 func (g *HyperGraph) RemoveDuplicate()
 ```
 
-The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ to all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$. We also provide various struct methods to do basic operations on the hypergraph. All of these methods handle mutations to the \texttt{IncMap} and \texttt{AdjCount} fields of the receiving hypergraph struct. For example, calling \texttt{RemoveEdge(0)} on a hypergraph struct \texttt{g} will remove the edge with id 0 from \texttt{g.E} and will remove \texttt{0} from all entries \texttt{g.IncMap[v]}, \texttt{v} being an endpoint of the removed edge. 
+The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertices}$ and $\texttt{Edges}$ are maps with keys of type $\texttt{int32}$ and values of type $\texttt{Vertex}$ and $\texttt{Edge}$ respectively. We chose this set-like data structure over lists again because of faster access times, but also operations that remove edges/vertices are built-in to the map type. The field $\texttt{edgeCounter}$ is an internal counter used to assign ids to added edges. The field $\texttt{IncMap}$ is a map of maps, essentially storing the hypergraph as a sparse incidence matrix. We will also derive vertex degrees from this map. And at last the $\texttt{AdjCount}$ map, which will associate every vertex $v \in V$ with all vertices adjacent to $v$. Additionally, this map will also store the number of times such a vertex is adjacent to $v$. We also provide various struct methods to do basic operations on the hypergraph. All of these methods handle mutations to the \texttt{IncMap} and \texttt{AdjCount} fields of the receiving hypergraph struct. For example, calling \texttt{RemoveEdge(0)} on a hypergraph struct \texttt{g} will remove the edge with id $0$ from \texttt{g.E} and will remove \texttt{0} from all entries \texttt{g.IncMap[v]}, \texttt{v} being an endpoint of the removed edge. 
 
 # Misc. Algorithms/Utilities
 
@@ -125,12 +141,14 @@ We start by sorting $S$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the
 
 Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s$.
 
+Time Complexity: $2^d$, where $d$ denotes the size of $arr$.
+
 $$
 \begin{algorithm}[H]
 \label{subset}
 
 \KwIn{An array $arr$, the subset size $s$ and a list $subsets$.}
-\KwOut{}
+\KwOut{None}
 \BlankLine
 
 $data\gets [\;]$\;
@@ -151,6 +169,8 @@ $\texttt{FnRecursive}(0,0)$\;
 \caption{An algorithm to compute all subsets of size $s$}
 \end{algorithm}
 $$
+
+\todo{description}
 
 Lists in Go are not very memory efficient, but since we exclusively call this function with $arr$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that is called whenever we find a subset, using the found subset as an argument.
 
@@ -186,7 +206,7 @@ $$
 
 We start by creating a map called $lookup$. Iterating other the elements of $arr$, we check if the entry $lookup[t-arr[i]]$ exists. If the entry exists, we return a pair $(i, lookup[t-arr[i]])$ and the boolean value $true$ since we found a solution. If the entry does not exist, we add a new entry to the $lookup$ map using $arr[i]$ as key and $i$ as value. If no solution was found, we return $nil$ and the boolean value $false$.
 
-This algorithm is an ingredient for the implementation of one of the reduction rules, specifically the approximative vertex domination rule. The actual implementation accepts a map instead of an array as its first parameter. We also implemented a version that finds all solutions, which accepts an additional callback function as a parameter. Instead of returning the solution, we call the callback function with the solution as the first argument. This version is an ingredient for the implementation of the approximative double vertex domination. We refer to this version as $\textssc{Two-SumAll}$ inside the algorithm listings.
+This algorithm is an ingredient for the implementation of one of the reduction rules, specifically the approximative vertex domination rule. The actual implementation accepts a map instead of an array as its first parameter. We also implemented a version that finds all solutions, which accepts an additional callback function as a parameter. Instead of returning the solution, we call the callback function with the solution as the first argument. This version is an ingredient for the implementation of the approximative double vertex domination. We refer to this version as $\textssc{Two-SumAll}$ in the algorithm listings.
 
 # Hypergraph Models
 
@@ -258,7 +278,7 @@ This way we minimize memory writes by reusing existing data structures we built 
 
 ## Algorithms
 
-The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. We do not impose the use of our proposed hypergraph model in those listings. Instead we use general language, for example $e \textnormal{incident to} v$ instead of $e \in H.IncMap[v]$. Proofs are provided in the case, where the algorithm does not simply follow the definition of a rule.
+The algorithm descriptions occasionally omit implementation details. We do this to try and keep these descriptions as concise as possible. The real implementations correspond to the pseudocode listings. We do not impose the use of our proposed hypergraph model in those listings. Instead we use general language, for example $e \textnormal{incident to} v$ instead of $e \in H.IncMap[v]$. Proofs are provided in the case, where the algorithm does not simply follow the description of a rule.
 
 We further introduce a $map$ data structure in our pseudocode with syntax $\texttt{map}[A]B$, which describes a mapping from $A$ into $B$. We use square brackets to indicate access and mutation of the mapping, e.g. $\gamma[0] \gets 1$ maps the value $1$ to the key $0$ in map $\gamma$. The map type also exposes a primitive function with the signature $delete(\gamma, x)$, which simply means that we want to delete the entry with key $x$ from our map. When iterating over a map in a \texttt{for}-loop we destructure the entries into a $(key, value)$-pair, e.g. $\texttt{for}\; (\_,v) \in map\; \texttt{do}$. Unused values are omitted with the underscore symbol.
 
@@ -353,20 +373,15 @@ T &= |E| \cdot d\cdot \log (d) + (|E| \cdot (d + 2^d + (2^d \cdot d \cdot \log(d
 \end{align*}
 $$
 
-Specifically applied to $d=3$, this results in a time complexity of:
-
-$$
-\begin{align*}
-T &= |E| \cdot 3\cdot \log (3) + (|E| \cdot (11 + 24 \cdot \log(3))) \\
-&=|E| \cdot(3\cdot\log(3) + (11 + 24 \cdot \log(3)))
-\end{align*}
-$$
+This rule can be modified to work for hypergraphs with an edge size $d>3$. Do note that the time complexity of this algorithm could become exponential in the input size, if $d \geq \min \{|V|, |E|\}$.
 
 \begin{lemma}
 Algorithm \ref{edom} finds all edges of G that are dominated, iff G has no size one edges.
 \end{lemma}
 
-_Proof._ Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. $\square$
+\begin{proof} 
+Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. 
+\end{proof}
 
 This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of approximately $2$ on a six-core CPU and a pseudo-random graph with one million vertices and two million edges.
 
@@ -430,13 +445,15 @@ If such a pair exists, then we conclude that for every edge $f$ incident to $v$,
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
-_Proof._ Let $G$ be a hypergraph without duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
+\begin{proof}
+Let $G$ be a hypergraph without duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
 
-_Proposition._ If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
+\textit{Proposition.} If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
 
-Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges, size one edges and not the edge $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore the assumption that $\{ v,a,b \}$ does not exist, must be false.
+Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and not the edge $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore the assumption that $\{ v,a,b \}$ does not exist, must be false.
 
-Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ cannot exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaneously. $\square$
+Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ cannot exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaneously.
+\end{proof}
 
 We then add the two vertices in the solution $sol$ to our partial solution $C$.
 
@@ -493,11 +510,9 @@ $\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsH
 Algorithm \ref{apdvdom} is correct, under the assumption that the underlying graph does not contain any size one edges.
 \end{lemma}
 
-_Proof_.
+\begin{proof}
 Let $G=(V,E)$ be a hypergraph. Let $x$ be the current vertex in the algorithm's iteration over $V$. If $T = \textsc{Two-SumAll}(AdjCount[x], deg(x))$ is empty, then $x$ will not be able to trigger a approximative double vertex domination situation. If $T$ is not empty, then we know that there exist sets $\{ a,b \}$, such that all edges incident to $x$ either contain $a$ or $b$. If $tsHashes[\{ a,b \}]$ is empty, then there are currently no other vertices for which $\{ a,b \}$ is a \textsc{Two-Sum} solution. In that case we add $x$ to $tsHashes[\{ a,b \}]$. Otherwise there exist vertices $y$, such that $\{ a,b \}$ is a \textsc{Two-Sum} solution for $y$. All edges incident to $x$ and $y$ either contain $a$ or $b$. If for one of these vertices $y$ there exists a size three edge $\{ x,y,a \}$, or without loss of generality $\{ x,y,b \}$, then we found a approximative double vertex domination situation at $\{ x,y,a \}$ or $\{ x,y,b \}$ respectively. If none of these edges exist, then $x$ could still trigger another approximative double vertex situation with another vertex. Thus we need to add $x$ to $tsHashes[\{ a,b \}]$.
-$\square$
-
-
+\end{proof}
 
 $$
 \begin{algorithm}
@@ -563,8 +578,6 @@ $$
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
 $O(|E|+|V|^2)$ **Algorithm** We start by constructing an adjacency list $adjList$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation, we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
-
-This last step will introduce the quadratic complexity, since in the worst case, for a vertex $v$ in a triangle, there could exist $|V|$ many size two edges that contain $v$. This worst case occurs very rarely, which justifies using this quadratic algorithm. We could alternatively move the last step of the algorithm outside of the loop and wrap both procedures with an outer loop which breaks if we do not find any more triangles. This simulates calling the rule exhaustively, while achieving a linear time complexity.
 
 $$
 \begin{algorithm}
@@ -853,8 +866,8 @@ var num float64 = 0
 var denom float64 = 0
 
 for key, val := range execs {
-	num += float64(Ratios[key].A * val)
-	denom += float64(Ratios[key].B * val)
+	num += float64(Ratios[key].B * val)
+	denom += float64(Ratios[key].A * val)
 }
 
 ratio := num / denom
@@ -957,7 +970,9 @@ Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It 
 
 # Applications and Results {#appl}
 
-All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22.1. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance. We provide results for $\textsc{Triangle Vertex Deletion}$ and $\textsc{Cluster Vertex Deletion}$ problems using real world networks, as well as randomly generated hypergraphs.
+All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thread CPU and 32 gigabytes of 3200 MT/s DDR4 RAM. The machine was running Ubuntu Server 22.04.04 LTS and the binaries were compiled with Go version 1.22.1. Measured execution times do not include the time it takes to load in a graph from disk or the time needed to transform the graph to a new problem instance. We provide results for $\textsc{Triangle Vertex Deletion}$ and $\textsc{Cluster Vertex Deletion}$ problems using real world networks, as well as randomly generated hypergraphs. The code is available on a public GitHub repository[^1].
+
+[^1]: [https://github.com/KhoalaS/BachelorThesis](https://github.com/KhoalaS/BachelorThesis)
 
 ## F3 Low Degree Rule
 
@@ -1249,7 +1264,7 @@ Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. T
 We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). Such solutions with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
 
 $$
-\begin{table}[h]
+\begin{table}[b]
     \begin{subtable}[t]{0.45\textwidth}
         \input{"out/rome_cvd_lphs_glpk"}
     \end{subtable}
@@ -1279,7 +1294,7 @@ The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large
 
 ## Further Questions
 
-The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
+The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
 
 There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
 
