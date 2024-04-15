@@ -31,6 +31,7 @@ rome_stats.rename(columns={"Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est.
 for k, v in rule_names.items():
     rome_stats[k] = rome_stats[k].round(2)
     rome_stats.rename(columns={k: v}, inplace=True)
+    #rome_stats.drop(columns=[k], inplace=True)
 
 rome_tbl = rome_stats.to_latex(float_format="%.4f")
 print(rome_stats)
