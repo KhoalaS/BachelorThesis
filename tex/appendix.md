@@ -79,9 +79,21 @@ $$
 $$
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{./img/flamegraph.png}
-    \caption{Flamegraph of pprof CPU performance profile. Graph instance was a dense 3-uniform ER hypergraph with 1000 vertices. }
-    \label{flamegraph}
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{img/flame_fr_base.png}
+        \caption{3-unifrom ER graph with 1000 vertices and 20000 edges, using rule strategy 2}
+        \label{A:flame_base}
+   \end{subfigure}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{img/flame_fr_dblp.png}
+        \caption{\textsc{Triangle Vertex Deletion} instance from DBLP coauthor graph, using rule strategy 3}
+        \label{A:flame_dblp}
+    \end{subfigure}
+    \caption{Flamegraph of pprof CPU performance profile. Sections marked with a red box are related to frontier expansion.}
+    \label{A:flamegraph}
 \end{figure}
 $$
 

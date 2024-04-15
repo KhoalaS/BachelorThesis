@@ -133,15 +133,15 @@ The $\texttt{HyperGraph}$ datatype has five fields. Both fields $\texttt{Vertice
 
 Given a set $S$ of size $n$, compute a unique hash of $S$.
 
-Time Complexity: $n + n\cdot \log(n)$
+Time Complexity: $O(n + n\cdot \log(n))$, assuming an average of $O(n \cdot \log(n))$ comparisons for $\textsc{Quick-Sort}$
 
-We start by sorting $S$ with a $\textsc{Quick-Sort}$-Algorithm. We then join the elements of $S$ with the delimiter $"|"$, returning a string of the form $"|i_0|i_1|\dots|i_n|"$. Whenever we refer to \textit{the hash of an edge} we refer to the output of this function, using the endpoints of the edge as the input set. This hash value is useful when we want to check the existence of specific edges.
+We start by sorting $S$ with a $\textsc{Quick-Sort}$-algorithm. We then join the elements of $S$ with the delimiter $"|"$, returning a string of the form $"|i_0|i_1|\dots|i_n|"$. Whenever we refer to \textit{the hash of an edge} we refer to the output of this function, using the endpoints of the edge as the input set. This hash value is useful when we want to check the existence of specific edges.
 
 ## Compute Subsets of Size $s$
 
 Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s$.
 
-Time Complexity: $2^d$, where $d$ denotes the size of $arr$.
+Time Complexity: $O(2^n)$, where $n$ denotes the size of $arr$.
 
 $$
 \begin{algorithm}[H]
@@ -178,7 +178,7 @@ Lists in Go are not very memory efficient, but since we exclusively call this fu
 
 Given an array $\texttt{items}$ of integers and an integer target $t$, return indices of the two numbers such that they add up to $t$.
 
-Time Complexity: $n$, where $n$ denotes the size of $\texttt{items}$.
+Time Complexity: $O(n)$, where $n$ denotes the size of $\texttt{items}$.
 
 $$
 \begin{algorithm}
@@ -974,7 +974,7 @@ $H \gets$ empty hypergraph\;
 \end{algorithm}
 $$
 
-Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It is not compatible with strategy 3, since the auxiliary graph could at some point be empty and thus $|exp| = 0$, with the original graph still admitting rule applications. In such a case, we apply the first applicable rule in the precedence and use the neighborhood of the removed vertices to rebuild the auxiliary graph.
+Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It is not compatible with strategy 3, since the auxiliary graph could at some point be empty and thus $|exp| = 0$, with the original graph still admitting rule applications. In such a case, we apply the first applicable rule in the precedence and use the neighborhood of the removed vertices as an "entry point" to rebuild the auxiliary graph.
 
 # Applications and Results {#appl}
 
@@ -982,7 +982,7 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 [^1]: [https://github.com/KhoalaS/BachelorThesis](https://github.com/KhoalaS/BachelorThesis)
 
-## F3 Low Degree Rule
+## F3 Low Degree Rule/Fallback
 
 The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First, we generated 100 random ER hypergraphs with 1000 vertices and approximately 3000 edges. We ran our algorithm on every graph 10 times each to account for run-to-run variance. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
 
@@ -1023,7 +1023,7 @@ $$
 
 We evaluated the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/kais/YangL15] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
 
-Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$. See figure \ref{flamegraph} for a flamegraph obtained from one of those profiles.
+Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$. See figure \ref{A:flame_base} for a flamegraph obtained from one of those profiles.
 
 Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. It could also be true that this number stays the same for any precedence. \todo{get data for random rule application to compare}
 
@@ -1204,14 +1204,14 @@ $$
 
 A cluster graph is a union of disjoint complete graphs which is equivalent to a graph that does not contain an induced path on three vertices, also called a $P_3$. These $P_3$ can be interpreted as edges in a hypergraph. A hitting set of size at most $k$ on this hypergraph can be used to transform the original standard graph into a cluster graph, removing at most $k$ vertices.
 
-We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected graphs used and made available by Di Battista et al. in [@DiBattista1997b]. We ran the algorithm ten times for each derived problem instance and picked the run with the lowest hitting set size to include during calculation of the statistics. The results can be seen in table \ref{cvd_rome_stats}. The algorithm achieved a mean ratio of $1.1188$ with a standard deviation of about $0.1$. We also recorded a ratio of at most 2 for the selected problem instances. It can be observed and inferred from the low ratio that the most applied rules are exact rules.
+We tested our algorithm on the _Rome Graphs_, a collection of 11534 undirected graphs used and made available by Di Battista et al. in [@DiBattista1997b]. We ran the algorithm ten times for each derived problem instance and picked the run with the lowest ratio to include during calculation of the statistics. The results can be seen in table \ref{cvd_rome_stats}. The algorithm achieved a mean ratio of $1.1082$ with a standard deviation of $0.0851$. We also recorded a ratio of at most $1.75$ for the selected problem instances. It can be observed and inferred from the low ratio, that the most of the applied rules were exact rules.
 
 $$
 \begin{table}[h]
 \makebox[\textwidth][c]{
-    \input{"out/rome_cvd"}
+    \input{"out/rome_cvd_minratio"}
 }
-    \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs collection. Hitting sets were computed ten times for each graph and the run with the lowest hitting set size was chosen for final calculation.}
+    \caption{Results for \textsc{Cluster Vertex Deletion} on graphs from the Rome Graphs collection. Hitting sets were computed ten times for each graph and the run with the lowest ratio was chosen for final calculation.}
     \label{cvd_rome_stats}
 \end{table}
 $$
@@ -1263,22 +1263,27 @@ Remove all vertices in $S_0$ from $V$ and remove the vertices in $S_0$ from all 
 
 Next, we look at the algorithm proposed by Saket and Sviridenko in [@DBLP:conf/approx/SaketS12]. Let $V$ be a ground set and $E \subseteq 2^V$ a set system. We also want to define two variables, $\Delta$ the maximum number of sets any element in $V$ is contained in and $d$ the maximum size of any set in $E$. The algorithm starts by solving the LP relaxation to the $\textsc{Set Cover}$ ILP for $(V,E)$. Let $\textnormal{Opt}^* = \sum_{j=1}^{m} x_j^*$ be an optimal solution to the LP relaxation. For all $j \in [m]$, choose to include set $e_j$ with probability $p_j=\min\left\{1, \alpha\Delta \cdot x_j^*\right\}$, where $\alpha = 1-e^{-\frac{\ln d}{\Delta-1}}$. Let $I^r$ be the set of elements of $V$ that are uncovered. For all $v \in I^r$, choose a set with the lowest weight in $E$ that contains $v$ and include it in the cover.
 
+$$
+\begin{table}[t]
+    \input{out/amazon_cvd_lp}
+\end{table}
+$$
+
 We used PuLP[@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python as well. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall [@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of at most $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
 
-\input{"./out/amazon_cvd_lp"}
 
 Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. On inspection of the logs for each solver, both the GLPK and HiGHS interior point method solutions contain significantly more variables with a value of 1 or 0 than the over solvers. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, only algorithm (1) using the HiGHS solver with the interior point method yielded a hitting set with comparable size. 
 
 We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). Such solutions with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
 
 $$
-\begin{table}[b]
+\begin{table}[t]
     \begin{subtable}[t]{0.45\textwidth}
         \input{"out/rome_cvd_lphs_glpk"}
     \end{subtable}
     \hfill
     \begin{subtable}[t]{0.45\textwidth}
-        \input{"out/rome_cvd_short"}
+        \input{"out/rome_cvd_minratio_short"}
         \caption{Incremental 3-approximation algorithm for 3-HS, strategy 3}
     \end{subtable}
     \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
@@ -1288,9 +1293,9 @@ $$
 
 We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem, the results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes.\todo{reword this} Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.\todo{update with new data}
 
-## Preferential Attachment Hypergraphs
+### Preferential Attachment Hypergraphs
 
-## 3-Uniform ER Hypergraphs
+### 3-Uniform ER Hypergraphs
 
 # Testing
 
@@ -1298,7 +1303,7 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. It is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. It is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but not feasible for larger 3-uniform hypergraphs. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
 
 ## Further Questions
 
@@ -1306,7 +1311,7 @@ The only part of the algorithm that is parallelized is the edge domination rule.
 
 There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
 
-Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic.
+Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic. 
 
-One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for new "entry points", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
 
