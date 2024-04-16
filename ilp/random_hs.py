@@ -60,7 +60,7 @@ print("graph had {} vertices and {} many edges".format(n, m))
 
 prob = LpProblem("VC-Relax", LpMinimize)
 
-x = LpVariable.dicts("x", range(1, n+1), 0, 1, LpInteger)
+x = LpVariable.dicts("x", range(1, n+1), 0, 1)
 prob += lpSum([x[j] for j in range(1, n+1)])
 
 
