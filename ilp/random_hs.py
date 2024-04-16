@@ -13,7 +13,7 @@ parser.add_argument("--cplex", action='store_true',
 parser.add_argument("-l", action='store_true', help="keep log files")
 parser.add_argument("--log")
 parser.add_argument("--ipm", action='store_true')
-parser.add_argument("--sol")
+parser.add_argument("--sol", action='store_true')
 
 
 args = parser.parse_args()
@@ -60,7 +60,7 @@ print("graph had {} vertices and {} many edges".format(n, m))
 
 prob = LpProblem("VC-Relax", LpMinimize)
 
-x = LpVariable.dicts("x", range(1, n+1), 0, 1)
+x = LpVariable.dicts("x", range(1, n+1), 0, 1, LpInteger)
 prob += lpSum([x[j] for j in range(1, n+1)])
 
 
@@ -92,7 +92,7 @@ if prob.status == LpStatusOptimal:
     opt = value(lpSum([x[j] for j in V]))
     print("Sum of decision variables =", opt)
 
-if args.sol != None:
+if args.sol:
     buffer = []
     counter = 0
     os.remove("VC-Relax.sol")
