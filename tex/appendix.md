@@ -10,7 +10,7 @@ $$
 \makebox[\textwidth][c]{
 \begin{tabular}{lrrrrrrrrrrrrrr}
 \toprule
- & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
+ & est. ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
 \midrule
 mean & 1.9196 & 59.99 & 345.23 & 2.40 & 0.46 & 0.04 & 47.26 & 0.03 & 2.02 & 44.47 & 9.16 & 44.33 & 592.46 & 308.68 \\
 std & 0.0273 & 5.86 & 9.71 & 1.56 & 0.63 & 0.19 & 5.27 & 0.18 & 1.35 & 3.93 & 2.67 & 6.54 & 8.59 & 3.51 \\
@@ -29,7 +29,7 @@ max & 2.0364 & 79 & 375 & 8 & 3 & 1 & 61 & 2 & 7 & 57 & 19 & 70 & 622 & 320 \\
 \makebox[\textwidth][c]{
 \begin{tabular}{lrrrrrrrrrrrrrr}
 \toprule
- & ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
+ & est. ratio & Tiny & VD & ED & Small & Tri & ETri & AVD & ADVD & SED2 & SED2* & F3 & $|C|$ & est. opt \\
 \midrule
 mean & 1.8690 & 58.28 & 349.60 & 2.33 & 0.47 & 0.05 & 63.68 & 0.03 & 2.01 & 42.57 & 8.59 & 25.51 & 590.66 & 316.06 \\
 std & 0.0225 & 5.93 & 9.64 & 1.57 & 0.62 & 0.21 & 4.10 & 0.16 & 1.39 & 4.06 & 2.70 & 3.73 & 8.98 & 3.3400 \\
@@ -62,7 +62,7 @@ $$
 \centering
 \begin{tabular}{lrrrr}
 \toprule
- & ratio & $|C|$ & est. opt & time \\
+ & est. ratio & $|C|$ & est. opt & time \\
 \midrule
 mean & 1.3142 & 80927.77 & 61579.82 & 168 sec\\
 std & 0.0006 & 55.84 & 32.98 & 3 sec\\
