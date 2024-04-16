@@ -12,7 +12,16 @@ df = pd.read_csv(args.file, delimiter=";")
 
 print("file loaded...")
 
+opt = pd.read_csv("data_final/rome_cvd_ilphs_clp.csv", delimiter=";")
+opt.drop(columns=["RatioUB", "Ratio", "HittingSet"], inplace=True)
+opt.rename(columns={"Opt": "opt"}, inplace=True)
+opt["File"] = opt["File"]
+
+df = pd.merge(df, opt, how="inner", on="File")
+
 df = df.loc[df.groupby("File")["HittingSet"].idxmin()]
+
+df["actual ratio"] = df["HittingSet"]/df["opt"]
 
 rome_stats = df.describe()
 rome_stats.drop(["count", "25%", "75%"], inplace=True)
@@ -22,7 +31,8 @@ rome_stats["HittingSet"] = rome_stats["HittingSet"].round(2)
 rome_stats["Opt"] = rome_stats["Opt"].round(2)
 rome_stats.rename(columns={"RatioUB": "ratio UB", "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "$\\textnormal{Opt}^*$"}, inplace=True)
 
-rome_tbl = rome_stats.to_latex(float_format="%.4f")
+rome_tbl = rome_stats[["ratio UB", "ratio", "actual ratio", "$\\textnormal{Opt}^*$",
+                      "opt", "$|C|$"]].to_latex(float_format="%.4f")
 print(rome_stats)
 
 f = open(args.out, "w+")
