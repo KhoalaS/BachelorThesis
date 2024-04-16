@@ -167,7 +167,7 @@
   </macro>
   <macro name="booktitle">
     <choose>
-      <if type="inproceedings bill book graphic legal_case legislation motion_picture song" match="any">
+      <if type="inbook inproceedings bill book graphic legal_case legislation motion_picture song" match="any">
         <text text-case="title" variable="booktitle" font-style="italic" />
       </if>
       <else>

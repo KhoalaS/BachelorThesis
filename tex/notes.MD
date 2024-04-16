@@ -10,7 +10,6 @@
 \DontPrintSemicolon
 \SetAlgoVlined
 \LinesNumbered
-\listoftodos
 \SetKwFunction{FRecurs}{FnRecursive}
 \SetKwFunction{ExpandFrontier}{ExpandFrontier}
 \SetKwProg{Fn}{func}{\string:}{}
@@ -35,15 +34,15 @@ $$
 
 The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for some $r \geq 1$. 
 
-We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the full version is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via techniques reminiscent of the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. 
+We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the latest version contains full proofs and is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via techniques reminiscent of the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. This method of analyzing the approximation ratio has been described as _a posteriori analysis_ or _self-monitoring_ by Fernau in [@WS:fernau/fptapprox].
 
-We are going to use graphs obtained from real world networks and randomly generated graphs for our testing. The primary metrics we are focusing on are execution time, hitting set size and estimated ratio. We will then compare our algorithm to two linear programming based algorithms.
+We are going to use hypergraphs obtained from real world networks and randomly generated hypergraphs for our testing. The primary metrics we are focusing on are execution time, hitting set size and estimated ratio. We will then compare our algorithm to two linear programming based algorithms.
 
 ## Preliminaries
 
-A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ by $deg(v)$. An edge $e$ has size $m$, if it contains $m$ elements. A hypergraph is said to be $d$-_uniform_ if all edges of the hypergraph are of size $d$. 
+A hypergraph $G=(V,E)$ consists of a set of vertices $V$ and a set of edges $E$. Each element of $E$ is a subset of $V$. The degree of a vertex $v$ is the number of edges that are incident to $v$. We also denote the degree of a vertex $v$ by $deg(v)$. The maximum degree of a hypergraph is denoted by $\Delta$. An edge $e$ has size $l$, if it contains $l$ elements. A hypergraph is said to be $d$-_uniform_ if all edges of the hypergraph are of size $d$.
 
-We also need to define what a minimization problem and an $\alpha$-preserving reduction is. We are going to follow the definitions in [@BraFer]. A minimization problem $\mathcal{P}$ can be specified by a triple $(I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$, where 
+We also need to define what a minimization problem and an $\alpha$-preserving reduction is. We are going to follow the definitions in [@WS:fernau/fptapprox]. A minimization problem $\mathcal{P}$ can be specified by a triple $(I_\mathcal{P} , \textnormal{SOL}_\mathcal{P} , m_\mathcal{P} )$, where 
 
 1. $I_\mathcal{P}$ is the set of input instances of $\mathcal{P}$;
 2. $\textnormal{SOL}_\mathcal{P}(x)$ is a set of feasible solutions of $x$, where $x \in I_\mathcal{P}$;
@@ -60,7 +59,7 @@ __Definition.__ Let $\mathcal{P} = (I_\mathcal{P} , \textnormal{SOL}_\mathcal{P}
 2. $m_\mathcal{P}^* (\texttt{inst}_\mathcal{P} (x)) + a \leq m_\mathcal{P}^* (x)$, and
 3. $\forall y' \in \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P} (x))( m_\mathcal{P} (\texttt{inst}_\mathcal{P} (x), y') + b \geq m_\mathcal{P} (x, \texttt{sol}_\mathcal{P} (y')))$.
 
-We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, with $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum htting set of $G$. 
+We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, for $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum htting set of $G$. 
 
 _Proof._ Let $Y$ be the vertices that $R$ puts into the hitting set and let $G'$ be the hypergraph obtained by applying $R$. For every hitting set $C'$ of $G'$, by adding the vertices in $Y$ to $C'$, we obtain a hitting set $C$ for $G$ with 
 
@@ -80,7 +79,7 @@ $$
 
 ## Programming Language
 
-We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flamegraphs or standard graphs, which makes it easy to spot performance bottlenecks.
 
 # Data Structures
 
@@ -139,21 +138,21 @@ We start by sorting $S$ with a $\textsc{Quick-Sort}$-algorithm. We then join the
 
 ## Compute Subsets of Size $s$
 
-Given an array $arr$ and an integer $s$, compute all subsets of $arr$ of size $s$.
+Given an array $arr$ and an integer $k$, compute all subsets of $arr$ of size $k$.
 
-Time Complexity: $O(2^n)$, where $n$ denotes the size of $arr$.
+Time Complexity: $O(n^k)$, where $n$ denotes the size of $arr$. 
 
 $$
 \begin{algorithm}[H]
 \label{subset}
 
-\KwIn{An array $arr$, the subset size $s$ and a list $subsets$.}
+\KwIn{An array $arr$, the subset size $k$ and a list $subsets$.}
 \KwOut{None}
 \BlankLine
 
 $data\gets [\;]$\;
 $n\gets |arr|$\;
-$last\gets s-1$\;
+$last\gets k-1$\;
 $\texttt{FnRecursive}(0,0)$\;
 
 \Fn{\FRecurs{i, next}}{
@@ -166,7 +165,7 @@ $\texttt{FnRecursive}(0,0)$\;
         }
     }
 }
-\caption{An algorithm to compute all subsets of size $s$}
+\caption{An algorithm to compute all subsets of size $k$}
 \end{algorithm}
 $$
 
@@ -218,11 +217,11 @@ func GenerateTestGraph(n int32, m int32, tinyEdges bool) *HyperGraph
 
 Let us explain the arguments first:
 
--   $\texttt{n}$ are the number of vertices the graph will have
--   $\texttt{m}$ is the number of edges the graph will at most have
+-   $\texttt{n}$ are the number of vertices the hypergraph will have
+-   $\texttt{m}$ is the number of edges the hypergraph will at most have
 -   $\texttt{tinyEdges}$ when $\texttt{false}$ indicates that we do not want to generate edges of size 1.
 
-We use a very naive approach for generating (pseudo-)random graphs. We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that graph. We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows.
+We use a very naive approach for generating (pseudo-)random hypergraphs. We first create an empty Hypergraph struct and add $\texttt{n}$ many vertices to that hypergraph. We then compute a random $\texttt{float32}$ value $\texttt{r}$ in the half-open interval $[ 0.0, 1.0 )$. This value will be used to determine the size of an edge $e$. The edges are distributed based on their size as follows.
 
 $$
 size(\texttt{r})=
@@ -235,18 +234,18 @@ $$
 
 The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph.
 
-That results in the graph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the graph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count fast. The model was primarily used during the implementation phase of the algorithm to gather profiling data.
+That results in the hypergraph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the hypergraph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count fast. The model was primarily used during the implementation phase of the algorithm to gather profiling data.
 
 ## Preferential Attachment Hypergraph Model
 
-In the Preferential Attachment Model, one will add edges to an existing graph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex or will be comprised of vertices already part of the graph. We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al. in [@DBLP:conf/asunam/AvinLNP19].
+In the Preferential Attachment Model, one will add edges to an existing hypergraph, with a probability proportional to the degree of the endpoints of that edge. This edge will either contain a newly added vertex or will be comprised of vertices already part of the hypergraph. We will use an implementation by Antelmi et al. as reference [@SimpleHypergraphs.js], which is part of their work on _SimpleHypergraphs.jl_ [@DBLP:journals/im/SpagnuoloCSPSKA20], a hypergraph software library written in the Julia language. The implementation is based on a preferential attachment model proposed by Avin et al. in [@DBLP:conf/asunam/AvinLNP19].
 
 ```go
 func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 ```
 
--   $\texttt{n}$ is the amount of vertices the graph will have
--   $\texttt{p}$ is the probability of adding a new vertex to the graph
+-   $\texttt{n}$ is the amount of vertices the hypergraph will have
+-   $\texttt{p}$ is the probability of adding a new vertex to the hypergraph
 -   $\texttt{maxEdgesize}$ is the maximum size of a generated edge
 
 # Reduction Rules
@@ -265,13 +264,13 @@ The proposed rules are meant to be applied exhaustively. A one-to-one implementa
 
 The general outline of an algorithm will look as follows.
 
-1. (If needed) Construct auxiliary data structures that are used to find parts of the graph, for which the rule can be applied.
+1. (If needed) Construct auxiliary data structures that are used to find parts of the hypergraph, for which the rule can be applied.
 2. If we can apply rules do:
 
     Iterate over the auxiliary data structure, or the vertices/edges themselves.
 
     - Identify targets of the rule.
-    - Mutate the graph according to the rule.
+    - Mutate the hypergraph according to the rule.
     - Mutate the auxiliary data structure according to the rule.
 
 This way we minimize memory writes by reusing existing data structures we built in step 1, but also save on execution time, since we mutate and iterate the auxiliary data structure at the same time. We can also alter these algorithms with minimal changes, to only execute a rule once. 
@@ -288,7 +287,7 @@ We further introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e. $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E|^2)$ **Algortihm**. We iterate over all edges of the graph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges adjacent to vertices in $e$ from the graph.
+$O(|E|\cdot\Delta)$ **Algortihm**. We iterate over all edges of the hypergraph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges incident to vertices in $e$ from the hypergraph.
 
 $$
 \begin{algorithm}
@@ -373,7 +372,7 @@ T &= |E| \cdot d\cdot \log (d) + (|E| \cdot (d + 2^d + (2^d \cdot d \cdot \log(d
 \end{align*}
 $$
 
-This rule can be modified to work for hypergraphs with an edge size $d>3$. Do note that the time complexity of this algorithm could become exponential in the input size, if $d \geq \min \{|V|, |E|\}$.
+This rule can be modified to work for hypergraphs with an edge size $d>3$. In that case, the time complexity of this algorithm could become exponential in the input size, if $d \geq \min \{|V|, |E|\}$.
 
 \begin{lemma}
 Algorithm \ref{edom} finds all edges of G that are dominated, iff G has no size one edges.
@@ -383,7 +382,7 @@ Algorithm \ref{edom} finds all edges of G that are dominated, iff G has no size 
 Let $e$ be a dominated edge. Since there are no size one edges, edges with size two cannot be dominated. Thus $e$ has to be of size three. Then simply removing $e$ will not create or eliminate an edge domination situation. It is therefore sufficient to only check size three edges for the domination condition. 
 \end{proof}
 
-This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of approximately $2$ on a six-core CPU and a pseudo-random graph with one million vertices and two million edges.
+This also allows us to parallelize the main part of the algorithm, where we check each edge in our $dom$ set. We can achieve a speedup of approximately $2$ on a six-core CPU and a pseudo-random hypergraph with one million vertices and two million edges.
 
 ### Vertex Domination Rule
 
@@ -391,7 +390,7 @@ This also allows us to parallelize the main part of the algorithm, where we chec
     belongs to some hyperedge $e$, then $y$ also belongs to $e$. Then, we can simply
     delete $x$ from the vertex set and from all edges it belongs to.
 
-$O(|V|^2 \cdot |E|)$ **Algorithm**
+$O(|V| \cdot \Delta)$ **Algorithm**
 A vertex $v$ is dominated, if one of the entries in $AdjCount[v]$ is equal to $deg(v)$. In that case we remove $v$ from all edges and our vertex set.
 
 $$
@@ -434,7 +433,7 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$ that is incident to all edges in $G$. We start by iterating other the $AdjCount$ map of the graph, referring to the current value in the iteration as $AdjCount[x]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(y,z)$ in $AdjCount[x]$, s.t. for $(y,z)$ holds,
+$O(|V| \cdot \Delta)$ **Algorithm**. We start by iterating other the $AdjCount$ map of the hypergraph, referring to the current value in the iteration as $AdjCount[x]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(y,z)$ in $AdjCount[x]$, s.t. for $(y,z)$ holds,
 
 $$
 AdjCount[x][y] + AdjCount[x][z] = deg(x)+1
@@ -442,7 +441,7 @@ $$
 
 If such a pair exists, then we conclude that for every edge $f$ incident to $x$, it holds that either $y\in f$ or $z\in f$.
 
-\begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
+\begin{lemma} Algorithm \ref{apvdom} is correct, under the assumption that the underlying hypergraph does not contain any duplicate edges.
 \end{lemma}
 
 \begin{proof}
@@ -450,7 +449,7 @@ Let $G$ be a hypergraph without duplicate edges. Let $x$ be an entry in $AdjCoun
 
 \textit{Proposition.} If $sol$ is non-empty, then the edge $\{ x,y,z \}$ exists.
 
-Let $sol=(y,z)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[x]$ with a target sum of $n=deg(x)+1$. For the sake of contradiction let us assume that the edge $\{ x,y,z \}$ does not exist. Since our graph does not contain duplicate edges and not the edge $\{ x,y,z \}$, there exist $deg(x)+1$ many edges that contain either $\{y,x\}$ or $\{z,x\}$. This however contradicts that there only exist $deg(x)$ many edges containing $x$. Therefore the assumption that $\{ x,y,z \}$ does not exist, must be false.
+Let $sol=(y,z)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[x]$ with a target sum of $n=deg(x)+1$. For the sake of contradiction let us assume that the edge $\{ x,y,z \}$ does not exist. Since our hypergraph does not contain duplicate edges and not the edge $\{ x,y,z \}$, there exist $deg(x)+1$ many edges that contain either $\{y,x\}$ or $\{z,x\}$. This however contradicts that there only exist $deg(x)$ many edges containing $x$. Therefore the assumption that $\{ x,y,z \}$ does not exist, must be false.
 
 Since $\{ x,y,z \}$ exists, $y$ and $z$ can only occur $n-2 = deg(x) - 1$ times in other edges containing $x$. Since duplicate edges of $\{ x,y,z \}$ cannot exist, we know that every other edge containing $x$ also contains $y$ or $z$, but not both simultaneously.
 \end{proof}
@@ -504,10 +503,10 @@ $$
     hyperedge $h$, then $a$ or $b$ also belong to $h$. Then, we put $a$ and $b$ together
     into the hitting set that we produce.
 
-$\mathcal{O}(|V|^2 + |E|)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets of vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.
+$O(|V|^2 \cdot \Delta^2)$ **Algorithm**. We start by creating a map called $tsHashes$, which maps subsets of $E$ to subsets of vertices. We then iterate over all vertices in $V$. For the current vertex $x$, compute all \textsc{Two-Sum} solutions with input array/map $AdjCount[x]$ and target $deg(x)$. If there exists a solution $sol = \{ z_0, z_1 \}$, such that $tsHashes[sol]\neq \emptyset$, then for all $y \in tsHashes[sol], y\neq x$ construct two edges $\{ x,y,z_0 \}$ and $\{ x,y,z_1 \}$. If one of these two edges exists in $E$, then we found a approximative double vertex domination situation. If $tsHashes[sol] = \emptyset$, map $tsHashes[sol]$ to $tsHashes[sol]\cup \{ x \}$.
 
 \begin{lemma}
-Algorithm \ref{apdvdom} is correct, under the assumption that the underlying graph does not contain any size one edges.
+Algorithm \ref{apdvdom} is correct, under the assumption that the hypergraph does not contain any size one edges.
 \end{lemma}
 
 \begin{proof}
@@ -577,7 +576,7 @@ $$
 
 -   small triangle situation: Assume there are three small hyperedges $e = \{y, z\}$, $f = \{x, y\}$, $g = \{x, z\}$. This describes a triangle situation $(e, f, g)$. Then, we put $\{x, y, z\}$ together into the hitting set, and we can even choose another hyperedge of size three to worsen the ratio.
 
-$O(|E|+|V|^2)$ **Algorithm** We start by constructing an adjacency list $adjList$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation, we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
+$O(|E| + |V| \cdot \Delta^4)$ **Algorithm** We start by constructing an adjacency list $adjList$ for all edges of size two. We then iterate over the entries of the list. For the current entry $adjList[v]$ we compute all subsets of size two of the entry. If there exists a subset $s$ such that $s \in E$, then we found a small triangle situation. If we find a triangle situation, we put the corresponding vertices in our partial solution and alter the adjacency list to reflect these changes. We do this by iterating over all vertices that are adjacent to the triangle. For every vertex $w$ of these vertices we delete all vertices of the triangle from the entry $adjList[w]$.
 
 $$
 \begin{algorithm}
@@ -639,7 +638,7 @@ $$
 -   Assume that the hypergraph contains a small edge $e = \{y, z\}$. Moreover,
     there are hyperedges $f, g$ such that $e \cap f = \{ y \}$, $e \cap g = \{z\}$, $f \cup g=\{v, x, y, z\}$ and $|f| = 3$. Then, put all of $f \cup g$ into the hitting set.
 
-$O(|E|^3)$ **Algorithm** We start by iterating over $E$ until we find a size two edge $e$. We then iterate over the vertices of $e$. Let $a$ be the vertex in the current iteration. Assign $a$ to the variable $y$ and $e\setminus \{ y \}$ to $\{ z \}$. Then we iterate over the edges $f$ that are incident to $y$. If $f$ is not of size three or $z\in f$, continue with the iteration. Else, iterate over the edges $g$ that are incident to $z$. If $g\setminus \{ z \} \subset f$, then we found a extended triangle situation. In that case, save $f$ in a variable $f_0$ and break out of the loop that iterates over the edges incident to $y$. If $f_0 \neq nil$ then put $f_0 \cup \{ z \}$ into the partial hitting set $C$ and break out of the loop iterating over the endpoints of $e$.
+$O(|E| \cdot (\Delta^2 + \Delta) )$ **Algorithm** We start by iterating over $E$ until we find a size two edge $e$. We then iterate over the vertices of $e$. Let $a$ be the vertex in the current iteration. Assign $a$ to the variable $y$ and $e\setminus \{ y \}$ to $\{ z \}$. Then we iterate over the edges $f$ that are incident to $y$. If $f$ is not of size three or $z\in f$, continue with the iteration. Else, iterate over the edges $g$ that are incident to $z$. If $g\setminus \{ z \} \subset f$, then we found a extended triangle situation. In that case, save $f$ in a variable $f_0$ and break out of the loop that iterates over the edges incident to $y$. If $f_0 \neq nil$ then put $f_0 \cup \{ z \}$ into the partial hitting set $C$ and break out of the loop iterating over the endpoints of $e$.
 
 $$
 \begin{algorithm}[H]
@@ -715,7 +714,7 @@ $$
     (when $y = w$ is possible as a special case) or $g = \{u, z\}$. We put $x, u$ and $z$
     and $w$ (when existing) into the hitting set.
 
-$O(|V|\cdot |E|)$ **Algorithm** We start by iterating other all vertices in $V$. If the vertex $v$ in the current iteration is of degree two, check if there is a size two edge $e$ and a size three edge $f$ incident to $v$. If these two edges exist, save $e\setminus \{ v \}$ in a variable $x$. Then iterate over the vertices $w$ in $f\setminus{v}$ and check if there exists an edge $h$ incident to $w$, such that $h\neq f$ and $x\notin h$. If such an edge exists, then we found a small edge degree 2 situation. We then put both $x$ and all vertices of $h$ into the partial hitting set.
+$O(|V|\cdot \Delta)$ **Algorithm** We start by iterating other all vertices in $V$. If the vertex $v$ in the current iteration is of degree two, check if there is a size two edge $e$ and a size three edge $f$ incident to $v$. If these two edges exist, save $e\setminus \{ v \}$ in a variable $x$. Then iterate over the vertices $w$ in $f\setminus{v}$ and check if there exists an edge $h$ incident to $w$, such that $h\neq f$ and $x\notin h$. If such an edge exists, then we found a small edge degree 2 situation. We then put both $x$ and all vertices of $h$ into the partial hitting set.
 
 $$
 \begin{algorithm}[H]
@@ -861,14 +860,13 @@ var Ratios = map[string]pkg.IntTuple{
 }
 ```
 
-Where $\texttt{B}$ denotes the number of vertices put into the partial hitting set by a single rule execution. And $\texttt{A}$ denotes the number of these vertices that are present in an optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
+Where $\texttt{B}$ denotes the number of vertices put into the partial hitting set by a single rule execution. And $\texttt{A}$ denotes the number of these vertices that are present in any optimal solution. We can then use these values to calculate the estimated approximation factor as follows.
 
 ```go
 g := NewHypergraph()
 c := make(map[int32]bool)
-execs := make(map[string]int)
 
-ApplyRules(g, c, execs)
+execs := ThreeHS_F3ApprPoly(g, c)
 
 var num float64 = 0
 var denom float64 = 0
@@ -894,7 +892,7 @@ It is crucial to apply the rules in a given order. Some rules expect that other 
 5. extended triangle rule
 6. small edge rule
 
-The main algorithm will apply all rules exhaustively according to the precedence, possibly mutating the input graph. If the graph has no more edges, then we are done. If not, put a size three edge into the partial hitting set and start over with the rule application. Note that the step of "applying all rules exhaustively" leaves room for interpretation and that the produced hitting sets are highly dependant on the actions taken during this step. We will refer to the procedure in this step as _rule strategy_ or just _strategy_ if the context allows it. We now present three strategies to apply the rules in the precedence.
+The main algorithm will apply all rules exhaustively according to the precedence, possibly mutating the input hypergraph. If the hypergraph has no more edges, then we are done. If not, put a size three edge into the partial hitting set and start over with the rule application. Note that the step of "applying all rules exhaustively" leaves room for interpretation and that the produced hitting sets are highly dependant on the actions taken during this step. We will refer to the procedure in this step as _rule strategy_ or just _strategy_ if the context allows it. We now present three strategies to apply the rules in the precedence.
 
 The base strategy is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check, wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics that preserve the fast execution time and improve on effectiveness. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times. By just doing this, we can recoup a lot of cascades we might have missed with the base strategy. Iteration values higher than three did not yield better results. We should also execute this cascade after rules that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules.
 The second strategy is also derived from the same base strategy. The only modification is that we start over with the vertex domination rule, whenever one of the rules was applied at least once. This should in theory lead to more exact rules being executed, while sacrificing a bit of execution time.
@@ -902,11 +900,11 @@ The third strategy tries to maximize the exact rule executions. We start by appl
 
 ## Incremental Frontier Algorithm
 
-There are some graph instances that do not work well with the prior algorithm. These instances do not admit any rule executions after applying the fallback rule. Running the algorithm on the whole graph again, knowing that only small parts of the graph have changed is not very time efficient. The algorithm should only look at the part of the graph where the fallback rule, or in fact any rule, was applied. We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
+There are some hypergraphs that do not work well with the prior algorithm. These instances do not admit any rule executions after applying the fallback rule. Running the algorithm on the whole hypergraph again, knowing that only small parts of the hypergraph have changed is not very time efficient. The algorithm should only look at the part of the hypergraph where the fallback rule, or in fact any rule, was applied. We therefore propose a new approach, which involves the usage of a _vertex frontier_. Such frontiers are common in search algorithms such as BFS, where each vertex in the frontier has the same distance to the root vertex. But let us explain the general structure of the algorithm first.
 
-We first apply all reduction rules exhaustively for the entire graph $G$. If the graph has no more edges, we are done. Else we try to find a size three edge $e$, which will trigger a vertex domination situation if removed. We choose a random size three edge if there is none. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new graph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user\todo{proof that expansion step of 1 is sufficient ?}. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus, changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
+We first apply all reduction rules exhaustively for the entire hypergraph $G$. If $G$ has no more edges, we are done. Else we try to find a size three edge $e$, which will trigger a vertex domination situation if removed. We choose a random size three edge if there is none. We then build up our initial frontier. We put all vertices into the frontier that are adjacent to a vertex in $e$, excluding vertices in $e$ itself. Then remove all edges that are incident to vertices in $e$. Next the frontier will be expanded, by adding all edges incident to the frontier to a new hypergraph $H$. All vertices in $H$ that were not part of the frontier will form the next frontier. The amount of expansion steps can be set by the user\todo{proof that expansion step of 1 is sufficient ?}. The fields \texttt{AdjCount} and \texttt{IncMap} of $G$ will be reused by $H$. Thus, changes in $H$ will be reflected in $G$ and vice versa. The main loop will be explained next.
 
-We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices adjacent to vertices in a modified/removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original graph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
+We apply the rules as usual, but only on $H$. The rules are modified, such that they also return the vertices adjacent to vertices in a modified/removed edge. If there are any, then $H$ will be expanded at these vertices and the loop will be continued. If not, apply the targeted fallback rule, considering the edges in the original hypergraph $G$ and expand accordingly. This will be repeated until $G$ has no more edges.
 
 $$
 \begin{algorithm}[H]
@@ -974,7 +972,7 @@ $H \gets$ empty hypergraph\;
 \end{algorithm}
 $$
 
-Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It is not compatible with strategy 3, since the auxiliary graph could at some point be empty and thus $|exp| = 0$, with the original graph still admitting rule applications. In such a case, we apply the first applicable rule in the precedence and use the neighborhood of the removed vertices as an "entry point" to rebuild the auxiliary graph.
+Algorithm \ref{3hs_frontier} was designed around both rule strategy 1 and 2. It is not compatible with strategy 3, since the auxiliary hypergraph could at some point be empty and thus $|exp| = 0$, with the original hypergraph still admitting rule applications. In such a case, we apply the first applicable rule in the precedence and use the neighborhood of the removed vertices as an "entry point" to rebuild the auxiliary hypergraph.
 
 # Applications and Results {#appl}
 
@@ -984,11 +982,11 @@ All tests were run on a machine with a AMD Ryzen 5 3600 3.6 GHz six-core, 12-thr
 
 ## F3 Low Degree Rule/Fallback
 
-The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First, we generated 100 random ER hypergraphs with 1000 vertices and approximately 3000 edges. We ran our algorithm on every graph 10 times each to account for run-to-run variance. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
+The goal of the F3 low degree rule is to reduce the degree of a vertex, which preferably has a degree of two. Applying the rule would lower the degree of the vertex to one, making the vertex domination rule applicable. We tested the effectiveness of the F3 low degree rule on random ER hypergraphs. First, we generated 100 random ER hypergraphs with 1000 vertices and approximately 3000 edges. We ran our algorithm on every hypergraph 10 times each to account for run-to-run variance. We collected data for two datasets. For the first dataset we selected a random size three edge when applying the fallback rule. For the second dataset we used the F3 low degree rule instead. The results can be seen in table \ref{er3_evr3_stats}.
 
 We do in fact see a slight increase of vertex domination rule executions, with the mean number of executions increasing from about 345 to 349. More interesting observations can be made about the fallback rule and extended triangle rule. The mean number of fallback rule executions decreased from about 44 to 25 when not selecting random edges. The number of extended triangle rule executions increased from about 47 to 63. The mean values for the over rules stay mostly the same. 
 
-To investigate these changing values, we reran the algorithm with both fallback variants on some of the graphs. This time keeping a log of all the rules that are applied, see \ref{A:f3_logs} for the first 30 lines. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
+To investigate these changing values, we reran the algorithm with both fallback variants on some of the hypergraphs. This time keeping a log of all the rules that are applied, see \ref{A:f3_logs} for the first 30 lines. Every time the F3 low degree rule is executed, the $F3\rightarrow VDom\rightarrow ETri$ cascade is most likely triggered. For the random variant, one can see batches of fallback rule executions and the occasional $F3\rightarrow VDom\rightarrow ETri$ cascade in the logs. 
 
 So what happens is, that the second variant substitutes multiple fallback rule executions with a single $F3\rightarrow VDom\rightarrow ETri$ cascade. The desired effects on the hitting set size are underwhelming, with the mean hitting set size decreasing from about 592 to 590. The ratio did improve from 1.92 to 1.87, caused by a higher estimated optimum. Since we did not regress and even improved the ratio, we chose to keep using this variant of the rule instead of the random variant.
 
@@ -1021,9 +1019,9 @@ $$
 \end{figure}
 $$
 
-We evaluated the algorithms on a DBLP coauthor graph and ER graphs of varying densities. It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/kais/YangL15] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
+It was considered to use the complete DBLP coauthor graph, which was quite large. We ultimately decided to use a dataset of the largest connected component. The network is made available by the [Stanford Network Analysis Project](https://snap.stanford.edu/data/com-DBLP.html) and part of a paper by J. Yang and J. Leskovec [@DBLP:journals/kais/YangL15] about community detection in real-world networks. The network contains 2224385 triangles, resulting in a \textsc{3-Hitting Set} instance of the same size. We now present the collected data during a run of the algorithm on this hypergraph, which can be found in table \ref{stats_dblp}.
 
-Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$. See figure \ref{A:flame_base} for a flamegraph obtained from one of those profiles.
+Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary hypergraph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary hypergraph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary hypergraph $H$. See figure \ref{A:flame_base} for a flamegraph obtained from one of those profiles.
 
 Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
 
@@ -1292,10 +1290,6 @@ We also conducted the same benchmark from the Cluster Vertex Deletion section wi
 
 ### 3-Uniform ER Hypergraphs
 
-# Testing
-
-Every reduction rule is tested for their correctness with unit tests. We create small graphs in these tests, which contain structures, which the rules are targeting. We then test for the elements in the partial solution, number of edges/vertices left in the graph and degree of the vertices left.
-
 # Conclusion
 
 The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade for hypergraphs with millions of edges.
@@ -1304,9 +1298,9 @@ The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large
 
 ## Further Questions
 
-- The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
+- The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The hypergraph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
 - There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
 - Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic. 
-- One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+- One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary hypergraph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
 - Do better rule strategies exist? 
 
