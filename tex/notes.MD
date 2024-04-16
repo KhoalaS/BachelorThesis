@@ -78,7 +78,7 @@ $$
 \qed
 $$
 
-# Programming Language
+## Programming Language
 
 We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flame graphs or standard graphs, which makes it easy to spot performance bottlenecks.
 
@@ -434,30 +434,30 @@ $$
 
 -   approximative vertex domination: Assume there is a hyperedge $e = \{ x,y,z \}$ such that, whenever $x$ belongs to some hyperedge $h$, then $y$ or $z$ also belong to $h$. Then, we put $y$ and $z$ together into the hitting set that we produce.
 
-$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$ that is incident to all edges in $G$. We start by iterating other the $AdjCount$ map of the graph, referring to the current value in the iteration as $AdjCount[v]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(a,b)$ in $AdjCount[v]$, s.t. for $(a,b)$ holds,
+$O(|V|^2 \cdot |E|)$ **Algorithm**. The additional factor $|E|$ looks scary at first, but will only occur in the worst case, if there exists a vertex $v$ that is incident to all edges in $G$. We start by iterating other the $AdjCount$ map of the graph, referring to the current value in the iteration as $AdjCount[x]$. We then use the $\textsc{Two-Sum}$ algorithm to compute and return the first pair $(y,z)$ in $AdjCount[x]$, s.t. for $(y,z)$ holds,
 
 $$
-AdjCount[v][a] + AdjCount[v][b] = deg(v)+1
+AdjCount[x][y] + AdjCount[x][z] = deg(x)+1
 $$
 
-If such a pair exists, then we conclude that for every edge $f$ incident to $v$, it holds that either $a\in f$ or $b\in f$.
+If such a pair exists, then we conclude that for every edge $f$ incident to $x$, it holds that either $y\in f$ or $z\in f$.
 
 \begin{lemma} The outlined procedure above is correct, under the assumption that the underlying graph does not contain any duplicate edges.
 \end{lemma}
 
 \begin{proof}
-Let $G$ be a hypergraph without duplicate edges. Let $v$ be an entry in $AdjCount$ and $sol=(a,b)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$.
+Let $G$ be a hypergraph without duplicate edges. Let $x$ be an entry in $AdjCount$ and $sol=(y,z)$ the result of calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[x]$ with a target sum of $n=deg(x)+1$.
 
-\textit{Proposition.} If $sol$ is non-empty, then the edge $\{ v,a,b \}$ exists.
+\textit{Proposition.} If $sol$ is non-empty, then the edge $\{ x,y,z \}$ exists.
 
-Let $sol=(a,b)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[v]$ with a target sum of $n=deg(v)+1$. For the sake of contradiction let us assume that the edge $\{ v,a,b \}$ does not exist. Since our graph does not contain duplicate edges and not the edge $\{ v,a,b \}$, there exist $deg(v)+1$ many edges that contain either $\{a,v\}$ or $\{b,v\}$. This however contradicts that there only exist $deg(v)$ many edges containing $v$. Therefore the assumption that $\{ v,a,b \}$ does not exist, must be false.
+Let $sol=(y,z)$ be the solution obtained by calling our $\textsc{Two-Sum}$ algorithm on $AdjCount[x]$ with a target sum of $n=deg(x)+1$. For the sake of contradiction let us assume that the edge $\{ x,y,z \}$ does not exist. Since our graph does not contain duplicate edges and not the edge $\{ x,y,z \}$, there exist $deg(x)+1$ many edges that contain either $\{y,x\}$ or $\{z,x\}$. This however contradicts that there only exist $deg(x)$ many edges containing $x$. Therefore the assumption that $\{ x,y,z \}$ does not exist, must be false.
 
-Since $\{ v,a,b \}$ exists, $a$ and $b$ can only occur $n-2 = deg(v) - 1$ times in other edges containing $v$. Since duplicate edges of $\{ v,a,b \}$ cannot exist, we know that every other edge containing $v$ also contains $a$ or $b$, but not both simultaneously.
+Since $\{ x,y,z \}$ exists, $y$ and $z$ can only occur $n-2 = deg(x) - 1$ times in other edges containing $x$. Since duplicate edges of $\{ x,y,z \}$ cannot exist, we know that every other edge containing $x$ also contains $y$ or $z$, but not both simultaneously.
 \end{proof}
 
 We then add the two vertices in the solution $sol$ to our partial solution $C$.
 
-\todo{add how duplicate edges impact alg (deg+1 but t+2)}
+The proof did not specifically mention why we have to assume that duplicate edges do not exist in the hypergraph. Let us construct a simple example to illustrate the importance of duplicate edges. Let $G$ be a hypergraph without duplicate edges. Let $e= \{ x,y,z \}$ be an edge $G$ for which the approximative vertex domination rule applies, i.e. all edges incident to $x$ contain either $y$ or $z$. Since there are no duplicate edges in $G$, it follows that $AdjCount[x][y] + AdjCount[x][z] = deg(x)+1$. We now add the edge $e_d = \{ x,y,z \}$ to our hypergraph. This will increase the degree of $x$ by 1, but will also increase both $AdjCount[x][y]$ and $AdjCount[x][z]$ by 1 each. Our algorithm would now fail to identify the approximative vertex domination situation at $e$.
 
 $$
 \begin{algorithm}
@@ -471,8 +471,8 @@ $exec \gets 0$\;
 $outer \gets true$\;
 \While{$outer$}{
     $outer \gets false$\;
-    \For{$(v, count) \in AdjCount$}{
-        $sol, ex \gets \texttt{TwoSum}(count, deg(v)+1)$\;
+    \For{$(x, count) \in AdjCount$}{
+        $sol, ex \gets \texttt{TwoSum}(count, deg(x)+1)$\;
         \If{\textbf{not} $ex$}{
             \textbf{continue}\;
         }
@@ -1025,7 +1025,7 @@ We evaluated the algorithms on a DBLP coauthor graph and ER graphs of varying de
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary graph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary graph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary graph $H$. See figure \ref{A:flame_base} for a flamegraph obtained from one of those profiles.
 
-Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions. It could also be true that this number stays the same for any precedence. \todo{get data for random rule application to compare}
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1.\todo{explanation ?} Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
 
 $$
 \begin{table}[t]
@@ -1033,7 +1033,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.7594 & 115672 & 65745 & 17 sec \\
             std & 0.0005 & 79 & 41 & 1 sec\\
@@ -1049,7 +1049,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time\\
+            & est. ratio & $|C|$ & est. opt & time\\
             \midrule
             mean & 1.5708 & 106339 & 67697 & 29 sec\\
             std & 0.0006 & 65 & 40 & 1 sec\\
@@ -1067,7 +1067,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.5437 & 105084 & 68071 & 104 sec \\
             std & 0.0006 & 63 & 35 & 2 sec\\
@@ -1083,7 +1083,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.4195 & 99456 & 70066 & 474 sec\\
             std & 0.0009 & 52 & 31 & 7 sec\\
@@ -1118,7 +1118,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.7466 & 95256 & 54539 & 3 sec\\
             std & 0.0003 & 82 & 41 & 0 sec\\
@@ -1134,7 +1134,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.4731 & 86359 & 58624 & 6 sec\\
             std & 0.0005 & 61 & 36 & 0 sec\\
@@ -1152,7 +1152,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.4215 & 84813 & 59666 & 38 sec\\
             std & 0.0005 & 58 & 32.33 & 0 sec\\
@@ -1168,7 +1168,7 @@ $$
         \centering
         \begin{tabular}{lrrrr}
             \toprule
-            & ratio & $|C|$ & est. opt & time \\
+            & est. ratio & $|C|$ & est. opt & time \\
             \midrule
             mean & 1.3136 & 80829 & 61532 & 166 sec\\
             std & 0.0006 & 59 & 34.63 & 2 sec\\
@@ -1271,27 +1271,22 @@ $$
 
 We used PuLP[@GH:pulp] to model the linear programs in Python and implemented the algorithms in Python as well. Both algorithms were tested with three open source solvers GLPK[@GH:glpk], CLP[@GH:clp] and HiGHS[@GH:highs] a comparatively newer solver that uses a parallel dual simplex method developed by Q. Huangfu and J. A. J. Hall [@DBLP:journals/mpc/HuangfuH18]. Table \ref{lp_stats} shows the results for both algorithms on the \textsc{Triangle Vertex Deletion} instance of the Amazon product co-purchasing graph, which is a 3-uniform hypergraph with maximum vertex degree of 551. Algorithm (1) promises a hitting set size of $|C| \leq d(1-\frac{d-1}{8\Delta})\cdot \textnormal{Opt}^*$ with probability $\frac{3}{4}$, under the assumption that the hypergraph is $d$-uniform and $3 \leq d \leq \frac{16}{3}\Delta$. Our hypergraph fulfills both of these requirements, which should result in a ratio of at most $3(1-\frac{3-1}{8 \cdot 551})\cdot \textnormal{Opt}^* = 2.9986 \cdot \textnormal{Opt}^*$. This upper bound is only valid for $\lambda = l(1-\epsilon)$ where $\epsilon = \frac{l\textnormal{Opt}^*-|S_1|}{2m}$. Algorithm (2) promises a hitting set size of at most $|C| \leq ((\Delta -1)(1-e^{-\frac{ln d}{\Delta -1}})+1) \cdot \textnormal{Opt}^*$. Applied to our set cover instance, this yields a ratio of $((3-1)(1-e^{-\frac{ln 551}{3-1}})+1)\cdot \textnormal{Opt}^* = 2.9148\cdot \textnormal{Opt}^*$.
 
+Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. On inspection of the logs for each solver, both the GLPK and HiGHS interior point method solutions contain significantly more variables with a value of 1 or 0 than the over solvers. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, only algorithm (1) using the HiGHS solver with the interior point method yielded a hitting set with comparable size.
 
-Algorithm (1) slightly outperforms algorithm (2) in terms of hitting set size. The LP solution obtained with the HiGHS solver using the interior point method yields the smallest hitting set for both algorithms, with a execution time of about 1 minute. The hitting set obtained with the GLPK solver comes close but at a way higher execution time of about 1 hour. On inspection of the logs for each solver, both the GLPK and HiGHS interior point method solutions contain significantly more variables with a value of 1 or 0 than the over solvers. The CLP solver is not very well suited for the algorithms on this specific problem instance. Execution time as well as the resulting hitting set size are worse compared to HiGHS and GLPK. Compared to our algorithm, only algorithm (1) using the HiGHS solver with the interior point method yielded a hitting set with comparable size. 
+We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). Such solutions with more variables close to or equal 1 seem to be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
 
-We already mentioned how different solutions of the LPs can influence the output of the algorithms. We have seen this for solutions obtained with GLPK and HiGHS (ipm), which assigned exact integer values to more variables compared to CLP and HiGHS (simplex). Such solutions with more variables close to or equal 1 should be "more optimal" than a solution with less of such variables. This intuition is reasonable but not true in general. For our application these solutions do lead to better results.
+Also note that our implementations of the algorithms are not strict one-to-one implementations. Both algorithms do not check if a vertex $v$ is isolated, before adding it to the hitting set. It would not make sense to add $v$ to the hitting set, since $v$ does not cover any edges. We assume that this check is not mentioned in the algorithm descriptions to make the analysis easier, since omitting this check does not influence the upper bound of the approximation ratio. We did run the benchmark on naive implementations of the algorithms, the results can be seen in table \ref{amzn_lp_stats_naive}. Not adding this simple check resulted in hitting sets with about 20 thousand more vertices.
 
 $$
 \begin{table}[t]
-    \begin{subtable}[t]{0.45\textwidth}
-        \input{"out/rome_cvd_lphs_glpk"}
-    \end{subtable}
-    \hfill
-    \begin{subtable}[t]{0.45\textwidth}
-        \input{"out/rome_cvd_minratio_short"}
-        \caption{Incremental 3-approximation algorithm for 3-HS, strategy 3}
-    \end{subtable}
+    \centering
+    \input{out/rome_cvd_opt_multi}
     \caption{Results for \textsc{Cluster Vertex Deletion} with LP rounding based algorithms on graphs from the Rome Graphs collection. Same method as previous CVD benchmark.}
-    \label{cvd_rome_glpk}
+    \label{cvd_rome_multi}
 \end{table}
 $$
 
-We also conducted the same test from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. This time the GLPK solver was best suited for the problem, the results can be seen in table \ref{cvd_rome_glpk}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. Both algorithms perform very similarly, with identical values for $\textnormal{Opt}^*$ and the hitting set sizes.\todo{reword this} Both have a high maximum hitting set size of at most 80, which is almost double the size compared to our algorithm. The median hitting set size being 21 indicates that our graph dataset contains instances, that are especially hard for these LP algorithms. The $\textnormal{Opt}^*$ values for both are very similar to the estimated optimum values that our algorithm computes, but the difference between optimum and actual hitting set size is smaller with our algorithm. This can be observed for every statistic we calculated. The most extreme case is the standard deviation for hitting set size and $\textnormal{Opt}^*$. We can see that the standard deviation for the hitting set size with a value of 16, is twice as big as the standard deviation for $\textnormal{Opt}^*$, for both algorithms.\todo{update with new data}
+We also conducted the same benchmark from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. Both algorithms perform very similarly, with algorithm (1) slightly outperforming algorithm (2) regarding mean hitting set size. This time the GLPK solver was best suited for the problem, the results for algorithm (1) can be seen in table \ref{cvd_rome_multi}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. We also added two additional columns "opt" and "actual ratio" to table \ref{cvd_rome_multi}, where "opt" denotes the size of an optimal solution and "actual ratio" denotes $\frac{|C|}{\text{opt}}$. The values for "opt" were obtained by solving the \textsc{Hitting Set} ILP for each \textsc{Cluster Vertex Deletion} instance in the dataset. We can see that both the Hitting Set LP algorithm and our algorithm overestimate the ratio. Our algorithm achieves a mean actual ratio of 1.04 while the mean estimated ratio is about 1.10. We can also see that our algorithm never exceeded an actual ratio of 1.5.
 
 ### Preferential Attachment Hypergraphs
 
@@ -1303,15 +1298,15 @@ Every reduction rule is tested for their correctness with unit tests. We create 
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. It is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but not feasible for larger 3-uniform hypergraphs. The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade for hypergraphs with millions of edges.
+
+\todo{keep this?} The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
 
 ## Further Questions
 
-The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
-
-There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
-
-Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic. 
-
-One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+- The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The graph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
+- There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
+- Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic. 
+- One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary graph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+- Do better rule strategies exist? 
 

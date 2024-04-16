@@ -97,6 +97,8 @@ $$
 \end{figure}
 $$
 
+\input{out/amazon_cvd_lp_naive}
+
 $$
 \begin{table}[h]
     \begin{subtable}[b]{0.45\textwidth}
