@@ -61,11 +61,7 @@ __Definition.__ Let $\mathcal{P} = (I_\mathcal{P} , \textnormal{SOL}_\mathcal{P}
 
 We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, for $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum htting set of $G$. 
 
-_Proof._ Let $Y$ be the vertices that $R$ puts into the hitting set and let $G'$ be the hypergraph obtained by applying $R$. For every hitting set $C'$ of $G'$, by adding the vertices in $Y$ to $C'$, we obtain a hitting set $C$ for $G$ with 
-
-$$
-|C'| + |Y| \geq |C|.
-$$ 
+_Proof._ Let $Y$ be the vertices that $R$ puts into the hitting set and let $G'$ be the hypergraph obtained by applying $R$. For every hitting set $C'$ of $G'$, by adding the vertices in $Y$ to $C'$, we obtain a hitting set $C$ for $G$ with $|C'| + |Y| \geq |C|$. 
 
 Let $C^*$ be a minimum hitting set of $G$. Let $G''$ be the hypergraph obtained by removing the vertices in $Z = \{ v \mid v \in Y,\; v \in C^*\}$ and all edges incident to $Z$ from $G$. Since $C^*\setminus Z$ is a hitting set for $G''$, it holds that $|C^*| - |Z| \geq |C''^*|$, with $C''^*$ being a minimal hitting set of $G''$. Since $Z$ is a subset of $Y$, $G'$ has to be a subgraph of $G''$. The size of $C'^*$ is then at most the size of $C''^*$. It then holds that,
 
@@ -77,9 +73,11 @@ $$
 \qed
 $$
 
+The compostion of two $\alpha$-preserving reduction rules is also an $\alpha$-preserving reduction, which is necessary for the a posteriori analysis. For a more comprehensive overview, we direct to [@WS:fernau/fptapprox] section 2.2 and 2.3.
+
 ## Programming Language
 
-We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flamegraphs or standard graphs, which makes it easy to spot performance bottlenecks.
+We chose the [_Go_](https://go.dev/) programming language. It is a statically typed, compiled language, with a C-like syntax and built-in concurrency primitives. It is using a garbage collector to handle memory management, which at first seems off-putting for an application like this. Since Go's GC is very efficient, we are not worried about that fact. Go also provides great developer tooling without the need for additional third party tools. The built-in profiler _pprof_ can visualize captured performance profiles as flamegraphs or standard graphs, which makes it easy to spot performance bottlenecks. Another strength of Go is its simplicity, which makes writing idiomatic Go code very easy. 
 
 # Data Structures
 
@@ -232,9 +230,7 @@ size(\texttt{r})=
 \end{cases}
 $$
 
-The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph.
-
-That results in the hypergraph having at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we did not want to artificially saturate the hypergraph with edges. One could also look into generating random bipartite graphs that translate back to a hypergraph with the desired vertex and edge numbers. The advantage of this model over a model like the Erdős–Rényi model is that we can compute hypergraphs with large vertex count fast. The model was primarily used during the implementation phase of the algorithm to gather profiling data.
+The result of $size(\texttt{r})$ is stored in a variable $\texttt{d}$. We then randomly pick vertices in the half-open interval $[ 0, \texttt{n} )$, until we have picked $\texttt{d}$ many distinct vertices. If an edge with these endpoints does not exist, we add it to our graph. The hypergraph has at most $\texttt{m}$ edges and not exactly $\texttt{m}$, since we remove duplicate edges. The advantage of this model over a model like the Erdős–Rényi model is, that we can compute hypergraphs with large vertex count in time $O(m)$. The model was primarily used during the implementation phase of the algorithm to gather profiling data.
 
 ## Preferential Attachment Hypergraph Model
 
@@ -247,6 +243,16 @@ func GeneratePrefAttachmentGraph(n int, p float64, maxEdgesize int32)
 -   $\texttt{n}$ is the amount of vertices the hypergraph will have
 -   $\texttt{p}$ is the probability of adding a new vertex to the hypergraph
 -   $\texttt{maxEdgesize}$ is the maximum size of a generated edge
+
+We start by generating a random hypergraph with five vertices and five edges, using the first model for the generation. With probability $p$ add a new vertex $v$ to the hypergraph and select at most $maxEdgesize-1$ other vertices that will form a new edge together with $v$. Else, with probability $1-p$ select at most $maxEdgesize$ many vertices that will form a new edge. Whenever we select a vertex $u$ to be included in an edge, we do this with probability
+
+$$
+P[\text{u is chosen}] = \frac{deg(u)}{\sum_{w\in V}deg(w)}.
+$$
+
+## Erdős–Rényi Model
+
+The Erdős–Rényi model was published by Paul Erdős and Alfréd Rényi in [@erdren/random]. The model requires two inputs, the amount of vertices $n$ and a probability $p$. Let $E'$ be the set of all possible edges on $n$ vertices. To construct a random graph, for all edges $e \in E'$ include $e$ in the graph with probability $p$, independently for all $e$. We can generalize this model for $d$-uniform hypergraphs quite easily by defining $E'$ as the set of all size $d$ subsets of $\{ 1,\dots,n \}$. This immediatly results in a lower bound of $\binom{n}{d}$ for any generation algorithm. and the reason why it is not feasible to compute hypergraphs with large $n$ with this model. 
 
 # Reduction Rules
 
@@ -844,7 +850,7 @@ $$
 
 ## Self-Monitoring
 
-Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We store the ratios for each rule in a map of the form:
+Each of the reduction rule functions returns a $\texttt{int32}$ value, which indicates the number of rule executions. We store the $a$ and $b$ values for each rule in a map called $\texttt{Ratios}$. The vertex domination and edge domination rule do not have entries in this map, since they do not put any vertex into the partial hitting set.
 
 ```go
 var Ratios = map[string]pkg.IntTuple{
@@ -1292,15 +1298,17 @@ We also conducted the same benchmark from the Cluster Vertex Deletion section wi
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade for hypergraphs with millions of edges.
-
-\todo{keep this?} The algorithm also yields smaller hitting sets compared to LP randomized rounding based algorithms. We also indirectly highlighted the weaknesses of these LP based algorithms. In order to guarantee the algorithm's approximation ratio, the probabilities during the randomized rounding have to be dependant on parameters of the hypergraph. Using constants for these probabilities will most likely lead to smaller hitting sets. 
+The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade significantly for large hypergraphs. Our algorithm can also compete with LP randomized rounding based algorithms, and even manages to outperform them on select hypergraphs. 
 
 ## Further Questions
 
-- The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The hypergraph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
-- There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
-- Could our hypergraph data structure be further improved? Right now we only use Go primitives to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic. 
-- One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary hypergraph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
-- Do better rule strategies exist? 
+The only part of the algorithm that is parallelized is the edge domination rule. The incremental variant of the main algorithm could also be parallelized. The hypergraph could at some point during the run of the algorithm consist of multiple disjoint connected components. These components could then be processed in parallel. Every component would yield its own number of rule executions and hitting sets, which are aggregated at the end. The question is, if the overhead of finding these components is greater than the possible speed up.
+
+There already exist parallel algorithms for the vertex and edge domination rule, which run on a GPU as shown by Bevern et al. in [@DBLP:journals/jcss/BevernKSST24]. It would be interesting to know if such algorithms also exist for the other domination type reduction rules, namely the approximate (double) vertex domination rule. Our implementation of these rules rely on arguments about vertex degrees and adjacency between vertices, which is similar to the standard vertex domination implementation. 
+
+Could our hypergraph data structure be further improved? Right now we only use "primitive" data structures like maps to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic.
+
+One could also try integrating linear programming into our algorithm. For a concrete example, let us recall strategy 3 of our algorithm. This strategy executes a rule one at a time. The incremental version will search for a new "entry point", if no rules can be applied in the auxiliary hypergraph. Right now, the algorithm will apply the first applicable rule $R$ in the precedence, selecting the first occurance of $R$. We could alternatively assign weights to each vertex, corresponding to the value obtained from an LP solution. We then would consider all occurances of $R$ and select the one with the highest weight. The weight of a rules occurance being the sum of the weights of the vertices that are put into the hitting set. 
+
+Do better rule strategies exist? 
 

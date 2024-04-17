@@ -20,7 +20,7 @@ max & 2.0364 & 79 & 375 & 8 & 3 & 1 & 61 & 2 & 7 & 57 & 19 & 70 & 622 & 320 \\
 \bottomrule
 \end{tabular}
 }
-\caption{random edge in F3 rule}
+\caption{random edge in fallback rule}
 \end{subtable}
 \newline
 \vspace{4mm}
@@ -71,7 +71,7 @@ median & 1.3142 & 80926.50 & 61579.50 & 168 sec\\
 max & 1.3157 & 81071 & 61654 & 176 sec\\
 \bottomrule
 \end{tabular}
-\caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph using rule strategy 3; F3 rule selects a random size three edge;  $n=100$}
+\caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph using rule strategy 3; fallback rule selects a random size three edge;  $n=100$}
 \label{amzn_str_3_f3rand}
 \end{table}
 $$
