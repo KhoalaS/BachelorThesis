@@ -269,7 +269,7 @@ func ModPrefAttachmentGraph(n int, r int, p float64, alpha float64) *HyperGraph 
 	return g
 }
 
-func UniformERGraph(n int, p float64, evr float64, size int) *HyperGraph {
+func UniformERGraph(n int, p float64, evr float64, d int) *HyperGraph {
 	g := NewHyperGraph()
 	nArr := make([]int32, n)
 
@@ -279,12 +279,12 @@ func UniformERGraph(n int, p float64, evr float64, size int) *HyperGraph {
 	}
 
 	if p == 0.0 {
-		p = float64(n) * evr / float64(binomialCoefficient(n, size))
+		p = float64(n) * evr / float64(binomialCoefficient(n, d))
 	}
 
 	// Dont actually compute all of them but compute them one at at time
 
-	getSubsetsRec2(nArr, size, func(arg []int32) {
+	getSubsetsRec2(nArr, d, func(arg []int32) {
 		if rand.Float64() < p {
 			g.AddEdge(arg...)
 		}
