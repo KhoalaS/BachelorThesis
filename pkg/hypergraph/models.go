@@ -278,7 +278,7 @@ func UniformERGraph(n int, p float64, evr float64, size int) *HyperGraph {
 		nArr[i] = int32(i)
 	}
 
-	if evr > 0 {
+	if p == 0.0 {
 		p = float64(n) * evr / float64(binomialCoefficient(n, size))
 	}
 

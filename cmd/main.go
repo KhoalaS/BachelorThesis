@@ -13,7 +13,7 @@ import (
 	"github.com/KhoalaS/BachelorThesis/pkg/hypergraph"
 )
 
-func makeHypergraph(input string, u int, f string, n int, m int, prefAttach float64, prefAttachMod bool, er bool, evr int) (*hypergraph.HyperGraph, string) {
+func makeHypergraph(input string, u int, f string, n int, m int, prefAttach float64, prefAttachMod bool, er bool, evr int, er_p float64) (*hypergraph.HyperGraph, string) {
 	var g *hypergraph.HyperGraph
 	graphtype := "STD"
 
@@ -39,7 +39,7 @@ func makeHypergraph(input string, u int, f string, n int, m int, prefAttach floa
 		g = hypergraph.ModPrefAttachmentGraph(int(n), 5, 0.5, 0.21)
 		graphtype = "---"
 	} else if er {
-		g = hypergraph.UniformERGraph(int(n), 0.0, float64(evr), 3)
+		g = hypergraph.UniformERGraph(int(n), er_p, float64(evr), 3)
 		graphtype = "ERU3"
 	} else {
 		g = hypergraph.TestGraph(int32(n), int32(m), true)
@@ -62,10 +62,11 @@ func main() {
 	er := flag.Bool("er", false, "Generate a andom Erdös Renyi hypergraph")
 	logging := flag.Int("log", 0, "Amount of logging passes.")
 	outdir := flag.String("d", "./data", "directory of output log file")
+	er_p := flag.Float64("p", 0.0, "")
 
 	flag.Parse()
 
-	g, graphtype := makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
+	g, graphtype := makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr, *er_p)
 	c := make(map[int32]bool)
 
 	if len(*export) > 0 {
@@ -125,7 +126,7 @@ func main() {
 				break
 			}
 
-			g, _ = makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr)
+			g, _ = makeHypergraph(*input, *u, *f, *n, *m, *prefAttach, *prefAttachMod, *er, *evr, *er_p)
 			c = make(map[int32]bool)
 		}
 	} else {
