@@ -48,12 +48,36 @@ $$
 
 \input{out/f3_logs}
 
+\clearpage 
+
 $$
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{./img/er3_evr_f3_rules}
     \caption{Mean number of rule executions for 100 random 3-uniform ER hypergraphs with an edge to vertex ratio of 3. Data was collected 10 times per graph to account for run to run variance.}
     \label{fig:er3_evr3_rules}
+\end{figure}
+$$
+
+
+$$
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{img/flame_fr_base.png}
+        \caption{3-unifrom ER graph with 1000 vertices and 20000 edges, using rule strategy 2}
+        \label{A:flame_base}
+   \end{subfigure}
+    \newline
+    \vspace{4mm}
+    \newline
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{img/flame_fr_dblp.png}
+        \caption{\textsc{Triangle Vertex Deletion} instance from DBLP coauthor graph, using rule strategy 3}
+        \label{A:flame_dblp}
+    \end{subfigure}
+    \caption{Flamegraph of pprof CPU performance profile. Sections marked with a red box are related to frontier expansion.}
+    \label{A:flamegraph}
 \end{figure}
 $$
 
@@ -79,22 +103,82 @@ $$
 $$
 \begin{figure}[h]
     \centering
-    \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\textwidth]{img/flame_fr_base.png}
-        \caption{3-unifrom ER graph with 1000 vertices and 20000 edges, using rule strategy 2}
-        \label{A:flame_base}
-   \end{subfigure}
+    \includegraphics[width=\textwidth]{./img/amazon_tvd_rules_strat.png}
+    \caption{Mean number of rule executions for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph per rule strategy; $n=100$}
+    \label{amzn_rules_strat}
+\end{figure}
+$$
+
+$$
+\begin{table}[h]
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & est. ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.7466 & 95256 & 54539 & 3 sec\\
+            std & 0.0003 & 82 & 41 & 0 sec\\
+            min & 1.7458 & 95032 & 54433 & 3 sec\\
+            median & 1.7466 & 95269 & 54543 & 3 sec\\
+            max & 1.7474 & 95441 & 54632 & 4 sec\\
+            \bottomrule
+        \end{tabular}
+        \caption{base rule strategy\label{amzn_str_base}}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & est. ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4731 & 86359 & 58624 & 6 sec\\
+            std & 0.0005 & 61 & 36 & 0 sec\\
+            min & 1.4719 & 86213 & 58534 & 6 sec\\
+            median & 1.4731 & 86359 & 58627 & 6 sec\\
+            max & 1.4741 & 86496 & 58723 & 6 sec\\
+            \bottomrule
+        \end{tabular}
+        \caption{rule strategy 1\label{amzn_str_1}}
+    \end{subtable}
     \newline
     \vspace{4mm}
     \newline
-    \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\textwidth]{img/flame_fr_dblp.png}
-        \caption{\textsc{Triangle Vertex Deletion} instance from DBLP coauthor graph, using rule strategy 3}
-        \label{A:flame_dblp}
-    \end{subfigure}
-    \caption{Flamegraph of pprof CPU performance profile. Sections marked with a red box are related to frontier expansion.}
-    \label{A:flamegraph}
-\end{figure}
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & est. ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.4215 & 84813 & 59666 & 38 sec\\
+            std & 0.0005 & 58 & 32.33 & 0 sec\\
+            min & 1.4206 & 84670 & 59586 & 37 sec\\
+            median & 1.4215 & 84814 & 59664 & 38 sec\\
+            max & 1.4227 & 84927 & 59740 & 39 sec\\
+            \bottomrule
+        \end{tabular}
+        \caption{rule strategy 2\label{amzn_str_2}}
+    \end{subtable}
+    \hfill
+    \begin{subtable}[b]{0.45\textwidth}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            & est. ratio & $|C|$ & est. opt & time \\
+            \midrule
+            mean & 1.3136 & 80829 & 61532 & 166 sec\\
+            std & 0.0006 & 59 & 34.63 & 2 sec\\
+            min & 1.3121 & 80684 & 61444 & 160 sec\\
+            median & 1.3136 & 80836 & 61535 & 166 sec\\
+            max & 1.3149 & 80943 & 61616 & 171 sec\\
+            \bottomrule
+        \end{tabular}
+        \caption{rule strategy 3\label{amzn_str_3}}
+    \end{subtable}
+    \caption{Results for \textsc{Triangle Vertex Deletion} on Amazon product co-purchasing graph; $n=100$}
+    \label{stats_amzn}
+\end{table}
 $$
 
 \input{out/amazon_cvd_lp_naive}
