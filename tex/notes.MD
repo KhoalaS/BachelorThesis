@@ -32,7 +32,7 @@ $$
 \end{center}
 $$
 
-The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for some $r \geq 1$. 
+The problem is $\NP$-hard, meaning that there exist no reasonably fast algorithms to solve the problem, unless $\P = \NP$. One way to tackle these kinds of problems is the use of approximation algorithms. Such algorithms will compute a solution to a (minimization) problem, that is at most $r$ times the size of an optimal solution, for some $r \geq 1$. 
 
 We are going to implement a 3-\textsc{Hitting Set} 3-approximation algorithm, which is based on the work of Brankovic and Fernau in [@BraFer]. Note that this is a preliminary version of the paper, the latest version contains full proofs and is still unpublished. The algorithm is based on exact and approximative reduction rules and the analysis is made via techniques reminiscent of the _local ratio theorem_ by Bar-Yehuda and Even. The idea behind this theorem is to view an approximate solution to a problem as a decomposition of its cost and lower bound. We direct to [@DBLP:journals/csur/Bar-YehudaBFR04] for a more in-depth presentation. An algorithm using local ratio techniques is practically building this composition step by step, which is essentially what the reduction rules are doing. Recording the number of executions for each rule during the run of the algorithm, allows us to make an estimation of the actual approximation ratio. This method of analyzing the approximation ratio has been described as _a posteriori analysis_ or _self-monitoring_ by Fernau in [@WS:fernau/fptapprox].
 
@@ -61,7 +61,7 @@ __Definition.__ Let $\mathcal{P} = (I_\mathcal{P} , \textnormal{SOL}_\mathcal{P}
 2. $m_\mathcal{P}^* (\texttt{inst}_\mathcal{P} (x)) + a \leq m_\mathcal{P}^* (x)$, and
 3. $\forall y' \in \textnormal{SOL}_\mathcal{P} (\texttt{inst}_\mathcal{P} (x))( m_\mathcal{P} (\texttt{inst}_\mathcal{P} (x), y') + b \geq m_\mathcal{P} (x, \texttt{sol}_\mathcal{P} (y')))$.
 
-We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, for $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum htting set of $G$. 
+We will now illustrate how one can formulate $\alpha$-preserving reduction rules for the 3-Hitting Set problem, for $\alpha = 3$. Let $G=(V,E)$ be a hypergraph and $a,b \geq 1$ with $b \leq \alpha \cdot a$. Let $R$ be a reduction rule which will put $b$ many vertices into the hitting set, by removing these vertices from $V$ and removing all edges incident to them from $E$. We now argue that $R$ is $\alpha$-preserving, iff at least $a$ many of these vertices are always present in any minimum hitting set of $G$. 
 
 _Proof._ Let $Y$ be the vertices that $R$ puts into the hitting set and let $G'$ be the hypergraph obtained by applying $R$. For every hitting set $C'$ of $G'$, by adding the vertices in $Y$ to $C'$, we obtain a hitting set $C$ for $G$ with $|C'| + |Y| \geq |C|$. 
 
@@ -75,7 +75,7 @@ $$
 \qed
 $$
 
-The compostion of two $\alpha$-preserving reduction rules is also an $\alpha$-preserving reduction, which is necessary for the a posteriori analysis. For a more comprehensive overview, we direct to [@WS:fernau/fptapprox] section 2.2 and 2.3.
+The composition of two $\alpha$-preserving reduction rules is also an $\alpha$-preserving reduction, which is necessary for the a posteriori analysis. For a more comprehensive overview, we direct to [@WS:fernau/fptapprox] section 2.2 and 2.3.
 
 ## Programming Language
 
@@ -138,26 +138,26 @@ We start by sorting $S$ with a $\textsc{Quick-Sort}$-algorithm. We then join the
 
 ## Compute Subsets of Size $k$
 
-Given an array $arr$ and an integer $k$, compute all subsets of $arr$ of size $k$.
+Given an array $A$ and an integer $k$, compute all subsets of $A$ of size $k$.
 
-Time Complexity: $O(n^k)$, where $n$ denotes the size of $arr$. 
+Time Complexity: $O(n^k)$, where $n$ denotes the size of $A$. 
 
 $$
 \begin{algorithm}[H]
 \label{subset}
 
-\KwIn{An array $arr$, the subset size $k$ and a list $subsets$.}
+\KwIn{An array $A$, the subset size $k$ and a list $subsets$.}
 \KwOut{None}
 \BlankLine
 
 $data\gets [\;]$\;
-$n\gets |arr|$\;
+$n\gets |A|$\;
 $last\gets k-1$\;
 $\texttt{FnRecursive}(0,0)$\;
 
 \Fn{\FRecurs{i, next}}{
     \For{$j\gets next$ \KwTo $n$}{
-        $data[i] \gets arr[j]$\;
+        $data[i] \gets A[j]$\;
         \eIf{$i=last$}{
             $subsets.push(data)$\;
         }{
@@ -169,7 +169,7 @@ $\texttt{FnRecursive}(0,0)$\;
 \end{algorithm}
 $$
 
-Lists in Go are not very memory efficient, but since we exclusively call this function with $arr$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that is called whenever we find a subset, using the found subset as an argument.
+Lists in Go are not very memory efficient, but since we exclusively call this function with $A$ representing the vertices in an edge, the value is usually fixed at 3. The raised memory problems occur at values of $n>10000$, justifying the continued usage of lists. For the case where we have to compute a lot of subsets, we provide a slightly different version of this function. Instead of passing in the $subsets$ list, we pass in a callback function that is called whenever we find a subset, using the found subset as an argument.
 
 ## Two-Sum
 
@@ -250,7 +250,7 @@ $$
 
 ## Erdős–Rényi Model
 
-The Erdős–Rényi model was published by Paul Erdős and Alfréd Rényi in [@erdren/random]. The model requires two inputs, the amount of vertices $n$ and a probability $p$. Let $E'$ be the set of all possible edges on $n$ vertices. To construct a random graph, for all edges $e \in E'$ include $e$ in the graph with probability $p$, independently for all $e$. We can generalize this model for $d$-uniform hypergraphs quite easily by defining $E'$ as the set of all size $d$ subsets of $\{ 1,\dots,n \}$. This immediatly results in a lower bound of $\binom{n}{d}$ for any generation algorithm. and the reason why it is not feasible to compute hypergraphs with large $n$ with this model. 
+The Erdős–Rényi model was published by Paul Erdős and Alfréd Rényi in [@erdren/random]. The model requires two inputs, the amount of vertices $n$ and a probability $p$. Let $E'$ be the set of all possible edges on $n$ vertices. To construct a random graph, for all edges $e \in E'$ include $e$ in the graph with probability $p$, independently for all $e$. We can generalize this model for $d$-uniform hypergraphs quite easily by defining $E'$ as the set of all size $d$ subsets of $\{ 1,\dots,n \}$. This immediately results in a lower bound of $\binom{n}{d}$ for any generation algorithm. and the reason why it is not feasible to compute hypergraphs with large $n$ with this model. 
 
 ```go
 func UniformERGraph(n int, p float64, evr float64, d int) *HyperGraph
@@ -271,7 +271,7 @@ The generated hypergraph will have $\texttt{evr}$ times as many edges as vertice
  
 # Reduction Rules
 
-The ususal signature of an implemented reduction rule looks as follows.
+The usual signature of an implemented reduction rule looks as follows.
 
 ```go
 func NameRule(g *HyperGraph, c map[int32]bool) int32
@@ -308,7 +308,7 @@ We further introduce a $map$ data structure in our pseudocode with syntax $\text
 -   small edges: If $e$ is a hyperedge of size two, i.e. $e = \{ x,y \}$, then put both $x$
     and $y$ into the hitting set.
 
-$O(|E|\cdot\Delta)$ **Algortihm**. We iterate over all edges of the hypergraph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges incident to vertices in $e$ from the hypergraph.
+$O(|E|\cdot\Delta)$ **Algorithm**. We iterate over all edges of the hypergraph. If the current edge $e$ is of size $t$, put $e$ into the partial hitting set and remove $e$ and all edges incident to vertices in $e$ from the hypergraph.
 
 $$
 \begin{algorithm}
@@ -915,9 +915,9 @@ It is crucial to apply the rules in a given order. Some rules expect that other 
 5. extended triangle rule
 6. small edge rule
 
-The main algorithm will apply all rules exhaustively according to the precedence, possibly mutating the input hypergraph. If the hypergraph has no more edges, then we are done. If not, apply the fallback rule by putting a size three edge into the partial hitting set and start over with the rule application. Note that the step of "applying all rules exhaustively" leaves room for interpretation and that the produced hitting sets are highly dependant on the actions taken during this step. We will refer to the procedure in this step as _rule strategy_ or just _strategy_ if the context allows it. We now present three strategies to apply the rules in the precedence.
+The main algorithm will apply all rules exhaustively according to the precedence, possibly mutating the input hypergraph. If the hypergraph has no more edges, then we are done. If not, apply the fallback rule by putting a size three edge into the partial hitting set and start over with the rule application. Note that the step of "applying all rules exhaustively" leaves room for interpretation and that the produced hitting sets are highly dependent on the actions taken during this step. We will refer to the procedure in this step as _rule strategy_ or just _strategy_ if the context allows it. We now present three strategies to apply the rules in the precedence.
 
-The base strategy is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check wether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics that preserve the fast execution time and improve on effectiveness. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times consecutively. By just doing this, we can recoup a lot of cascades we might have missed with the base strategy. Iteration values higher than three did not yield better results. We should also execute this cascade after rules that are applied the most. Since these rules are the ones most likely to make the extact rules applicable. That would be the approximative (double) vertex domination rules.
+The base strategy is quite simple. Execute a rule exhaustively and then do the same for the next rule in the precedence. Do this until no more rules can be applied. This is obviously not very optimal, since we do not check whether a "better" rule can be applied again, before possibly executing a worse rule. We can however add some heuristics that preserve the fast execution time and improve on effectiveness. Instead of executing the vertex domination $\rightarrow$ tiny edge $\rightarrow$ edge domination cascade only once, we execute it three times consecutively. By just doing this, we can recoup a lot of cascades we might have missed with the base strategy. Iteration values higher than three did not yield better results. We should also execute this cascade after rules that are applied the most. Since these rules are the ones most likely to make the exact rules applicable. That would be the approximative (double) vertex domination rules.
 The second strategy is also derived from the same base strategy. The only modification is that we start over with the vertex domination rule, whenever one of the rules was applied at least once. This should in theory lead to more exact rules being executed, while sacrificing a bit of execution time.
 The third strategy tries to maximize the exact rule executions. We start by applying the exact rules exhaustively. We then execute the other rules at most once, according to the precedence. If a rule has been applied, we execute the exact rules exhaustively and start over with the first non-exact rule in the precedence.
 
@@ -1048,7 +1048,7 @@ It was considered to use the complete DBLP coauthor graph, which was quite large
 
 Rule strategy 1 has the fastest execution time with a mean of 29 seconds, but also the worst ratio with a mean of $1.5708$. Rule strategy 3 has the best ratio with a mean of $1.4195$, but also the worst execution time of about 8 minutes. We used the frontier technique in all the tests, since we could observe a speedup of about 90, just using the base rule strategy. This speedup can be attributed to the fact that the original coauthor graph exerts a community structure. These communities are preserved when converting it to a $\textsc{Triangle Vertex Deletion}$ and thus $\textsc{3-Hitting Set}$ instance. The expansion steps will only expand the auxiliary hypergraph $H$ inside these communities. This drastically reduces the number of edges the algorithm has to process per iteration. One can see the opposite happen in dense hypergraphs. Due to the high density, even a small expansion two neighborhoods deep will add all edges of $G$ to $H$, eliminating possible gains. In fact, constant rebuilding of the auxiliary hypergraph $H$ will even worsen the execution time. This can be observed when using any rule strategy besides strategy 3 on a dense 3-uniform ER hypergraph. On inspection of the generated CPU profile, around 30% of the time is spent computing the auxiliary hypergraph $H$. See figure \ref{A:flame_base} for a flamegraph obtained from one of those profiles.
 
-Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted seperately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1. Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
+Figure \ref{dblp_rules_strat} displays the number of rule executions per strategy. Note that the there is a rule called SED2* in this chart. Recall that the small edge degree 2 rule can either put four or three vertices into the hitting set. Both cases were counted separately, where SED2* refers to the version that puts three vertices into the hitting set. There are several interesting observations to be made, for example the decrease of edge domination rule executions for strategy 2 compared to strategy 1. Quite frankly we do not know why this happens. We can also see that strategy 3 does indeed increase the amount of exact rule executions. Another observation can be made about the number of small edge rule executions. Strategy 2 does not apply the small edge rule at all, which is surprising since it is conceptually similar to strategy 3. This is probably a result of only applying rules one at a time using strategy 3. The exact rules that are executed after each rule application will possibly destroy situations that are favorable for other rules. The approximative vertex domination rule, which is executed a lot more with strategy 2 compared to 3, might have removed all the size two edges as a byproduct. The number of fallback rule executions is also interesting. All strategies are executing this rule around 3000 times. This leads us to the hypothesis that as long as the order in the precedence is obeyed, a "worse" strategy will not result in significantly more fallback rule executions.
 
 $$
 \begin{table}[t]
@@ -1228,7 +1228,7 @@ $$
 \end{table}
 $$
 
-We also conducted the same benchmark from the Cluster Vertex Deletion section with both algorithms using the the same solvers and methods. Both algorithms perform very similarly, with algorithm (1) slightly outperforming algorithm (2) regarding mean hitting set size. This time the GLPK solver was best suited for the problem, the results for algorithm (1) can be seen in table \ref{cvd_rome_multi}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. We also added two additional columns "opt" and "actual ratio" to table \ref{cvd_rome_multi}, where "opt" denotes the size of an optimal solution and "actual ratio" denotes $\frac{|C|}{\text{opt}}$. The values for "opt" were obtained by solving the \textsc{Hitting Set} ILP for each \textsc{Cluster Vertex Deletion} instance in the dataset. We can see that both the Hitting Set LP algorithm and our algorithm overestimate the ratio. Our algorithm achieves a mean actual ratio of 1.04 while the mean estimated ratio is about 1.10. We can also see that our algorithm never exceeded an actual ratio of 1.5.
+We also conducted the same benchmark from the Cluster Vertex Deletion section with both algorithms using the same solvers and methods. Both algorithms perform very similarly, with algorithm (1) slightly outperforming algorithm (2) regarding mean hitting set size. This time the GLPK solver was best suited for the problem, the results for algorithm (1) can be seen in table \ref{cvd_rome_multi}. For results from the other solvers see table \ref{A:cvd_rome_all} in the appendix. We also added two additional columns "opt" and "actual ratio" to table \ref{cvd_rome_multi}, where "opt" denotes the size of an optimal solution and "actual ratio" denotes $\frac{|C|}{\text{opt}}$. The values for "opt" were obtained by solving the \textsc{Hitting Set} ILP for each \textsc{Cluster Vertex Deletion} instance in the dataset. We can see that both the Hitting Set LP algorithm and our algorithm overestimate the ratio. Our algorithm achieves a mean actual ratio of 1.04 while the mean estimated ratio is about 1.10. We can also see that our algorithm never exceeded an actual ratio of 1.5.
 
 ### Random Preferential Attachment Hypergraphs
 
@@ -1253,7 +1253,7 @@ $$
 
 # Conclusion
 
-The implmented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade significantly for large hypergraphs. We switched to an incremental algorithm design, to cope with long running times on large hypergraphs. Our algorithm can also compete with LP randomized rounding based algorithms, and even manages to outperform them on select hypergraphs. We could also observe that the algorithm never exceeded an estimated ratio of 2 on our benchmarks. 
+The implemented \textsc{Hitting Set} algorithm can compute hitting sets for large inputs in a reasonable amount of time. In order to achieve this, it is important that every rule used in the algorithm is reasonably fast. A "bad" implementation of a single rule can slow down the entire algorithm. We experienced this for both the approximative (double) vertex domination rules. A naive implementation is fast for smaller hypergraphs, but performance will degrade significantly for large hypergraphs. We switched to an incremental algorithm design, to cope with long running times on large hypergraphs. Our algorithm can also compete with LP randomized rounding based algorithms, and even manages to outperform them on select hypergraphs. We could also observe that the algorithm never exceeded an estimated ratio of 2 on our benchmarks. 
 
 ## Further Questions {-}
 
@@ -1263,6 +1263,6 @@ There already exist parallel algorithms for the vertex and edge domination rule,
 
 Could our hypergraph data structure be further improved? Right now we only use "primitive" data structures like maps to model our hypergraph. Improvements could be made for both the incidence and adjacency map struct fields. When accessing elements of a map with the \texttt{range} operator, Go does not guarantee that the order of elements is always the same. Using a real sparse matrix could improve performance and make the algorithm more deterministic.
 
-We could technically use optimal solutions of the htting set LP to assess the quality of our estimated optimum. The value of an optimal solution of the ILP is at least the value of an optimal solution of the LP relaxation. If our estimated optimum is lower than an optimal solution of the LP, then we know that we are underestimating the actual optimum by at least $\text{Opt}^* - \text{est. opt}$.
+We could technically use optimal solutions of the hitting set LP to assess the quality of our estimated optimum. The value of an optimal solution of the ILP is at least the value of an optimal solution of the LP relaxation. If our estimated optimum is lower than an optimal solution of the LP, then we know that we are underestimating the actual optimum by at least $\text{Opt}^* - \text{est. opt}$.
 
-Do rule strategies exist that are better than strategy 3? One might have noticed a small flaw in rule strategy 3. Let us highlight this flaw with a small exmaple. Let $G$ be a hypergraph, where none of the exact rules are applicable. According to rule strategy 3 we now apply the next approximative rule $R_0$ in the precedence. We then construct our auxiliary graph $H$. Let $R_1$ be the only applicable rule in $H$. The algorithm would apply $R_1$, even if there exist other approximative rules lower in the precedence that are applicable in $G$.
+Do rule strategies exist that are better than strategy 3? One might have noticed a small flaw in rule strategy 3. Let us highlight this flaw with a small example. Let $G$ be a hypergraph, where none of the exact rules are applicable. According to rule strategy 3 we now apply the next approximative rule $R_0$ in the precedence. We then construct our auxiliary graph $H$. Let $R_1$ be the only applicable rule in $H$. The algorithm would apply $R_1$, even if there exist other approximative rules lower in the precedence that are applicable in $G$.
