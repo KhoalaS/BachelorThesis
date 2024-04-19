@@ -28,7 +28,7 @@ func GetEstOpt(execs map[string]int) int {
 	opt := 0
 
 	for key, val := range execs {
-		opt += Ratios[key].B * val
+		opt += Ratios[key].A * val
 	}
 	return opt
 }
