@@ -95,20 +95,10 @@ if prob.status == LpStatusOptimal:
 if args.sol:
     buffer = []
     counter = 0
-    os.remove("VC-Relax.sol")
-    out = open("VC-Relax.sol", "ab+")
+    out = open("VC-Relax.sol", "w+")
 
-    for val in V:
-        if value(x[val]) >= float(args.sol):
-            buffer.append(V_lookup_inv[val])
-            counter += 1
-            if counter == 8192:
-                out.write(b''.join([j.to_bytes(4, byteorder='big', signed=False) for j in buffer]))  # Assuming 32-bit integers
-                counter = 0
-                buffer.clear()
-
-    if counter > 0:
-        out.write(b''.join([j.to_bytes(4, byteorder='big', signed=False) for j in buffer]))
+    for v in V:
+        out.write("{} {}\n".format(V_lookup_inv[v], value(x[v])))
 
     out.close()
     sys.exit(0)
