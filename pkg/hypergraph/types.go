@@ -194,7 +194,7 @@ func (gf *HyperGraph) F_RemoveElem(elem int32, g *HyperGraph) bool {
 		if _, ex := gf.Edges[e]; ex {
 			delete(gf.Edges[e].V, elem)
 			if len(g.Edges[e].V) == 0 {
-				g.RemoveEdge(e)
+				delete(gf.Edges, e)
 			}
 		}
 	}
