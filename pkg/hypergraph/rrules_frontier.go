@@ -453,6 +453,10 @@ func S_ExtendedTriangleRule(gf *HyperGraph, g *HyperGraph, c map[int32]bool, exp
 							if ep == z {
 								continue
 							}
+							if ep == y {
+								cond = false
+								break
+							}
 							// check if the other vertices of g are in f
 							if !g.Edges[f].V[ep] {
 								cond = false

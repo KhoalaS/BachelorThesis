@@ -193,7 +193,7 @@ func (gf *HyperGraph) F_RemoveElem(elem int32, g *HyperGraph) bool {
 	for e := range g.IncMap[elem] {
 		if _, ex := gf.Edges[e]; ex {
 			delete(gf.Edges[e].V, elem)
-			if len(g.Edges[e].V) == 0 {
+			if len(gf.Edges[e].V) == 0 {
 				delete(gf.Edges, e)
 			}
 		}
