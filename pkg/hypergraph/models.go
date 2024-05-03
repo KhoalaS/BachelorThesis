@@ -381,7 +381,7 @@ func selectEndpoints(g *HyperGraph, size int32) []int32 {
 
 		for k := 0; k < len(pSum); k++ {
 			if r <= pSum[k] {
-				endpoints = append(endpoints, int32(k))
+				endpoints = append(endpoints, int32(ids[k]))
 				ids = append(ids[:k], ids[k+1:]...)
 				break
 			}
