@@ -20,14 +20,14 @@ filename = str(args.file).split("/")[-1]
 print("file loaded...")
 
 if args.opt:
-    opt = pd.read_csv("data_final/rome_cvd_ilphs_clp.csv", delimiter=";")
+    opt = pd.read_csv("data_final/rome_cvd/rome_cvd_ilphs_clp.csv", delimiter=";")
     opt.drop(columns=["RatioUB", "Ratio", "HittingSet"], inplace=True)
     opt.rename(columns={"Opt": "opt"}, inplace=True)
     opt["File"] = opt["File"].str.replace(".txt", "")
 
     df = pd.merge(df, opt, how="inner", on="File")
 
-df = df.loc[df.groupby("Filename")["Ratio"].idxmin()]
+df = df.loc[df.groupby("File")["Ratio"].idxmin()]
 
 df.drop(columns=["Vertices", "Edges"], inplace=True)
 

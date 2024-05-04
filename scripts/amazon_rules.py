@@ -6,13 +6,13 @@ from opts import rule_names
 import os
 
 df_base = pd.read_csv(
-    "./data/amazon_base/master_CUSTOM_1711206743.csv", delimiter=";")
+    "./data_etri_fix/amazon/base.csv", delimiter=";")
 df_str1 = pd.read_csv(
-    "./data/amazon_str1/master_CUSTOM_1711208193.csv", delimiter=";")
+    "./data_etri_fix/amazon/str1.csv", delimiter=";")
 df_str2 = pd.read_csv(
-    "./data/amazon_str2/master_CUSTOM_1711209017.csv", delimiter=";")
+    "./data_etri_fix/amazon/str2.csv", delimiter=";")
 df_str3 = pd.read_csv(
-    "./data/amazon_str3/master_CUSTOM_1711213524.csv", delimiter=";")
+    "./data_etri_fix/amazon/str3.csv", delimiter=";")
 
 frames = [df_base, df_str1, df_str2, df_str3]
 strat = ["base", "str1", "str2", "str3"]
@@ -26,7 +26,7 @@ exclude = ["kTiny",
            "kEdgeDom",
            "kApVertDom"]
 
-out = open("out/amazon_rules.tex", "w+")
+out = open("out/etri_fix/amazon_rules.tex", "w+")
 
 i = 0
 for df in frames:
@@ -88,5 +88,5 @@ grid = Grid()
 grid.add(bar_s, grid_opts=opts.GridOpts(pos_left="45%"))
 grid.add(bar, grid_opts=opts.GridOpts(pos_right="65%"))
 
-grid.render("out/amazon_rules.html")
-os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/amazon_rules.html")
+grid.render("out/etri_fix/amazon_rules.html")
+os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/etri_fix/amazon_rules.html")

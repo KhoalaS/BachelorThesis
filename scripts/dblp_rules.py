@@ -6,13 +6,13 @@ from opts import rule_names
 import os
 
 df_base = pd.read_csv(
-    "./data/dblp_base/master_CUSTOM_1711049002.csv", delimiter=";")
+    "./data_etri_fix/dblp/base.csv", delimiter=";")
 df_str1 = pd.read_csv(
-    "./data/dblp_str1/master_ER_1710866151.csv", delimiter=";")
+    "./data_etri_fix/dblp/str1.csv", delimiter=";")
 df_str2 = pd.read_csv(
-    "./data/dblp_str2/master_ER_1710773299.csv", delimiter=";")
+    "./data_etri_fix/dblp/str2.csv", delimiter=";")
 df_str3 = pd.read_csv(
-    "./data/dblp_str3/master_CUSTOM_1710947310.csv", delimiter=";")
+    "./data_etri_fix/dblp/str3.csv", delimiter=";")
 
 frames = [df_base, df_str1, df_str2, df_str3]
 strat = ["base", "str1", "str2", "str3"]
@@ -28,7 +28,7 @@ exclude = ["kTiny",
            "kApDoubleVertDom",
            "kFallback"]
 
-out = open("out/dblp_rules.md", "w+")
+out = open("out/etri_fix/dblp_rules.tex", "w+")
 
 i = 0
 for df in frames:
@@ -43,7 +43,11 @@ for df in frames:
 
     frames[i] = df
     i += 1
-    out.write(df.to_markdown())
+
+    df_new = df[["Ratio", "HittingSet", "Opt", "Time"]]
+
+    out.write(df_new.rename(columns={
+        "Ratio": "ratio", "HittingSet": "$|C|$", "Opt": "est. opt", "Time": "time"}).to_latex(float_format="%.4f"))
     out.write("\n\n")
 
 bar = Bar().set_global_opts(toolbox_opts=_opts.img_opts())
@@ -87,5 +91,5 @@ grid = Grid()
 grid.add(bar_s, grid_opts=opts.GridOpts(pos_left="60%"))
 grid.add(bar, grid_opts=opts.GridOpts(pos_right="50%"))
 
-grid.render("out/dblp_rules.html")
-os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/dblp_rules.html")
+grid.render("out/etri_fix/dblp_rules.html")
+os.system("sed -i 's/https:\/\/assets.pyecharts.org\/assets\/v5\/echarts.min.js/.\/echarts.min.js/g' out/etri_fix/dblp_rules.html")
