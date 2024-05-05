@@ -21,6 +21,11 @@ func GetRatio(execs map[string]int) float64 {
 		num += float64(Ratios[key].B * val)
 		denom += float64(Ratios[key].A * val)
 	}
+
+	if denom == 0 {
+		return -1
+	} 
+	
 	return num / denom
 }
 
