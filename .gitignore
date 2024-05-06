@@ -1,24 +1,38 @@
+# generated outputs
 out
 **/*.test
 **/*.prof
 profiles
-qs.md
 !samplegraph.html
+
+# python venv
 venv
+
 graphs
+
+# data directories
 data
+data_final/*
+temp
+
 test*.go
 coauthor.txt
 **/__pycache__
 **/*.pgo
+
+# binaries
 tvd
 !cmd/tvd
 main
-tvd.exe
 main.exe
+tvd.exe
 cvd*
-img/rev*
+
+# test files
 tex/test
 scripts/test.py
-data_final/*
+
+# old files
+img/rev*
+
 TODO.MD
