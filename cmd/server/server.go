@@ -75,12 +75,14 @@ func setGraph(w http.ResponseWriter, r *http.Request) {
 	resetGraph()
 	g = hypergraph.ReadFromFile(filepath)
 
-	payload := getGraphPres()
+	payload := getGraphPres(false)
 	body, _ := json.Marshal(payload)
 	w.Write(body)
 }
 
 func nextRule(w http.ResponseWriter, r *http.Request) {
+	frontierOnly := len(r.URL.Query().Get("fronly")) > 0
+
 	if logging {
 		adjFile, err := os.OpenFile(adjLog, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -113,7 +115,7 @@ func nextRule(w http.ResponseWriter, r *http.Request) {
 		alg.PreProcessOnly(g, c, execs, expand)
 		gf = hypergraph.ExpandFrontier(g, 1, expand)
 		log.Default().Println("preprocess")
-		payload := getGraphPres()
+		payload := getGraphPres(frontierOnly)
 		body, _ := json.Marshal(payload)
 		w.Write(body)
 		return
@@ -123,7 +125,7 @@ func nextRule(w http.ResponseWriter, r *http.Request) {
 
 	if len(expand) > 0 {
 		gf = hypergraph.ExpandFrontier(g, expDepth, expand)
-		payload := getGraphPres()
+		payload := getGraphPres(frontierOnly)
 		body, _ := json.Marshal(payload)
 		w.Write(body)
 		return
@@ -131,7 +133,7 @@ func nextRule(w http.ResponseWriter, r *http.Request) {
 		ApplyRulesSingle(g, g, c, execs, expand, false)
 		gf = hypergraph.ExpandFrontier(g, expDepth, expand)
 		if len(expand) > 0 {
-			payload := getGraphPres()
+			payload := getGraphPres(frontierOnly)
 			body, _ := json.Marshal(payload)
 			w.Write(body)
 			return
@@ -153,7 +155,7 @@ func nextRule(w http.ResponseWriter, r *http.Request) {
 	gf = hypergraph.F3_ExpandFrontier(g, e, expDepth)
 	execs["kFallback"] += 1
 
-	payload := getGraphPres()
+	payload := getGraphPres(frontierOnly)
 	body, _ := json.Marshal(payload)
 	w.Write(body)
 }
@@ -177,7 +179,7 @@ func getRandom(w http.ResponseWriter, r *http.Request) {
 
 	hypergraph.WriteToFileSimple(g, "./temp/rand.txt")
 
-	payload := getGraphPres()
+	payload := getGraphPres(false)
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Default().Println(err)
@@ -197,7 +199,7 @@ func resetCurrent(w http.ResponseWriter, r *http.Request) {
 		delete(c, k)
 	}
 
-	payload := getGraphPres()
+	payload := getGraphPres(false)
 	body, _ := json.Marshal(payload)
 	w.Write(body)
 }
@@ -326,9 +328,17 @@ func ApplyRulesSingle(gf *hypergraph.HyperGraph, g *hypergraph.HyperGraph, c map
 	}
 }
 
-func getGraphPres() *GraphPayload {
+func getGraphPres(useFrontier bool) *GraphPayload {
+	var pg *hypergraph.HyperGraph
+
+	if useFrontier {
+		pg = gf
+	} else {
+		pg = g
+	}
+
 	graphPres := make(map[int32][]int32)
-	for eId, e := range g.Edges {
+	for eId, e := range pg.Edges {
 		graphPres[eId] = make([]int32, len(e.V))
 		i := 0
 		for v := range e.V {
@@ -345,8 +355,8 @@ func getGraphPres() *GraphPayload {
 	}
 
 	i = 0
-	vertices := make([]int32, len(g.Vertices))
-	for v := range g.Vertices {
+	vertices := make([]int32, len(pg.Vertices))
+	for v := range pg.Vertices {
 		vertices[i] = v
 		i++
 	}
