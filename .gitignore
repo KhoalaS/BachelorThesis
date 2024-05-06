@@ -13,6 +13,7 @@ graphs
 # data directories
 data
 data_final/*
+data_etri_fix/*
 temp
 
 test*.go
