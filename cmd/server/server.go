@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -20,7 +21,8 @@ var execs map[string]int
 var currFilename string
 var initFrontier bool
 
-const logging = false
+var logging bool
+var graphDir string
 const adjLog = "temp/adj.log"
 const incLog = "temp/inc.log"
 
@@ -39,7 +41,7 @@ var short_names = map[string]string{
 }
 
 func getGraphs(w http.ResponseWriter, r *http.Request) {
-	dir, err := os.ReadDir("./temp")
+	dir, err := os.ReadDir(graphDir)
 	if err != nil {
 		log.Default().Println(err)
 		w.WriteHeader(400)
@@ -48,6 +50,9 @@ func getGraphs(w http.ResponseWriter, r *http.Request) {
 
 	files := make([]string, len(dir))
 	for idx, file := range dir {
+		if file.IsDir() {
+			continue
+		}
 		files[idx] = file.Name()
 	}
 
@@ -65,7 +70,7 @@ func setGraph(w http.ResponseWriter, r *http.Request) {
 
 	currFilename = filename
 
-	filepath := fmt.Sprintf("./temp/%s", filename)
+	filepath := fmt.Sprintf("./%s/%s",graphDir, filename)
 	_, err := os.Stat(filepath)
 	if err != nil {
 		w.WriteHeader(404)
@@ -221,6 +226,9 @@ func resetGraph() {
 }
 
 func main() {
+	logging = *flag.Bool("log", false, "log adjaceny map and incidence map")
+	graphDir = *flag.String("g", "./graphs", "path to graph files directory")	
+
 	if logging {
 		os.Create(adjLog)
 		os.Create(incLog)
