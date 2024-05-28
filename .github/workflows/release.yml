@@ -30,6 +30,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.TOKEN }}
           files: |
             main
             tvd
