@@ -19,7 +19,7 @@ jobs:
           go-version: '1.22.1' # specify the Go version you want to use
       
       - name: Install dependencies
-        run: go get .
+        run: go mod download
 
       - name: Build the Go project
         run: |
